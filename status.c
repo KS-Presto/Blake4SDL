@@ -1548,7 +1548,7 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
     {
         case pis_scaled:
             VW_Bar (x,y,37,37,InfoAreaSetup.backgr_color);
-            MegaSimpleScaleShape (x + 19,y + 20,37,shapenum,shade);
+            MegaSimpleScaleShape (x + 20,y + 19,37,shapenum,shade);
             width = 37;
             break;
 #if NUMPICS
