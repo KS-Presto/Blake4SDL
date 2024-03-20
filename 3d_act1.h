@@ -247,13 +247,6 @@ unsigned  TransformAreas (int tilex, int tiley, int xform);
 void      CheckSpawnGoldstern (void);
 void      FindNewGoldieSpawnSite (void);
 
-void      InitMsgCache (mCacheList *mList, unsigned listSize, unsigned infoSize);
-void      FreeMsgCache (mCacheList *mList, unsigned listSize);
-void      CacheMsg (mCacheInfo *ci, unsigned SegNum, unsigned MsgNum);
-int       LoadMsg (const char *hint_buffer, unsigned SegNum, unsigned MsgNum, unsigned MaxMsgLen);
-void      CacheConcessionMsg (void);
-bool      ReuseMsg (mCacheInfo *ci, int count, int struct_size);
-
 void      DropPlasmaDetonator (void);
 void      BlockDoorOpen (int door);
 void      BlastNearDoors (int tilex, int tiley);

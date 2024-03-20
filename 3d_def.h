@@ -1598,6 +1598,15 @@ extern  char  pd_donthaveany[];
 extern  char  pd_no_computer[];
 extern  char  pd_floornotlocked[];
 
+extern  char  int_xx[];
+
+void      InitMsgCache (mCacheList *mList, int listsize, int infosize);
+void      FreeMsgCache (mCacheList *mList, int listsize);
+void      CacheMsg (mCacheInfo *ci, int segnum, int msgnum);
+int       LoadMsg (char *buffer, int segnum, int msgnum, int maxlen);
+void      CacheConcessionMsg (void);
+bool      ReuseMsg (mCacheInfo *ci, int count, int structsize);
+
 
 /*
 =============================================================================
@@ -1612,7 +1621,7 @@ extern  char BreifingText[];
 void     UpdateScreenPic (void);
 void     DisplayPrepingMsg (const char *text);
 bool     Breifing (int BreifingType, int episode);
-void     ShPrint (const char *text, int shadow_color, bool single_char);
+void     ShPrint (const char *text, int shadowcolor, bool singlechar);
 unsigned Random (unsigned Max);
 
 

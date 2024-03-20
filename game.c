@@ -386,6 +386,8 @@ void SetupGameLevel (void)
     if (mapwidth != MAPSIZE || mapheight != MAPSIZE)
         Quit ("Map %d not 64x64!",gamestate.mapon + 1);
 
+    LoadLocationText (gamestate.mapon + (MAPS_PER_EPISODE * gamestate.episode));
+
     memset (tilemap,0,sizeof(tilemap));
     memset (actorat,0,sizeof(actorat));
 
@@ -557,6 +559,27 @@ void SetupGameLevel (void)
 /*
 ===================
 =
+= LoadLocationText
+=
+===================
+*/
+
+void LoadLocationText (int textnum)
+{
+	char *temp;
+
+	LoadMsg (LocationText,LEVEL_DESCS,textnum + 1,MAX_LOCATION_DESC_LEN);
+
+	temp = strstr(LocationText,"^XX");
+
+	if (temp)
+		*temp = '\0';
+}
+
+
+/*
+===================
+=
 = SetFontColor
 =
 ===================
@@ -640,9 +663,9 @@ void DrawPlayScreen (bool InitInfoMsg)
 
     VW_DrawPic (0,200 - STATUSLINES,STATUSBARPIC);
     VW_DrawPic (0,0,TOP_STATUSBARPIC);
-#ifdef NOTYET
+
     ShadowPrintLocationText (sp_normal);
-#endif
+
     DrawHealth ();
     DrawKeys ();
     DrawWeapon ();
@@ -656,6 +679,149 @@ void DrawPlayScreen (bool InitInfoMsg)
         DisplayNoMoMsgs ();
 
     ForceUpdateStatusBar ();
+}
+
+
+/*
+===================
+=
+= ShPrint
+=
+===================
+*/
+
+void ShPrint (const char *text, int shadowcolor, bool singlechar)
+{
+    size_t len;
+    int    oldcolor,oldx,oldy;
+    char   *str,buf[2] = {'\0','\0'};
+
+    oldcolor = fontcolor;
+    oldx = px;
+    oldy = py;
+
+    if (singlechar)
+    {
+        str = buf;
+        buf[0] = *text;
+    }
+    else
+    {
+        len = strlen(text) + 1;
+        str = SafeMalloc(len);
+
+        snprintf (str,len,text);
+    }
+
+    fontcolor = shadowcolor;
+    px++;
+    py++;
+    VW_DrawString (str);
+
+    fontcolor = oldcolor;
+    px = oldx;
+    py = oldy;
+    VW_DrawString (str);
+
+    if (!singlechar)
+        free (str);
+}
+
+
+/*
+==========================
+=
+= ShadowPrintLocationText
+=
+==========================
+*/
+
+void ShadowPrintLocationText (int type)
+{
+    const char *DemoMsg = "-- DEMO --";
+    const char *DebugText = "-- DEBUG MODE ENABLED --";
+    const char *s,*ls_text[3] = {"-- LOADING --","-- SAVING --","-- CHANGE VIEW SIZE --"};
+    word       w,h;
+
+    py = 5;
+    fontcolor = 0xaf;
+
+    //
+    // print LOCATION info
+    //
+    switch (type)
+    {
+        case sp_normal:
+            //
+            // print LEVEL info
+            //
+            px = 13;
+
+            if (gamestate.mapon > GOLD_MORPH_LEVEL)
+                ShPrint (" SECRET ",0,false);
+            else
+            {
+                ShPrint (" AREA: ",0,false);
+
+                if (!type)
+                    ShPrint (itoa(gamestate.mapon + 1,str,10),0,false);
+            }
+
+            //
+            // print LIVES info
+            //
+            px = 267;
+
+            ShPrint ("LIVES: ",0,false);
+
+            if (!type)
+                ShPrint (itoa(gamestate.lives,str,10),0,false);
+
+            //
+            // print location text
+            //
+            if (demoplayback || demorecord)
+                s = DemoMsg;
+            else if (DebugOk || (gamestate.flags & (GS_QUICKRUN | GS_STARTLEVEL | GS_TICS_FOR_SCORE | GS_MUSIC_TEST | GS_SHOW_OVERHEAD)))
+                s = DebugText;
+            else
+                s = LocationText;
+            break;
+
+        case sp_changeview:
+        case sp_loading:
+        case sp_saving:
+            s = ls_text[type - sp_loading];
+            break;
+    }
+
+    VW_MeasureString (s,&w,&h);
+
+    px = 160 - (w / 2);
+
+    ShPrint (s,0,false);
+}
+
+
+/*
+==========================
+=
+= DrawTopInfo
+=
+==========================
+*/
+
+void DrawTopInfo (int type)
+{
+    int oldfontnumber = fontnumber;
+
+    VW_DrawPic (0,0,TOP_STATUSBARPIC);
+
+    fontnumber = 2;
+
+    ShadowPrintLocationText (type);
+
+    fontnumber = oldfontnumber;
 }
 
 

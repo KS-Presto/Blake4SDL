@@ -492,100 +492,295 @@ char actor_info56[] =   "^AN2c^FC17\r  ATTACKING:\r"
                         "^FCA6 THE CRAWLER\r"
                         "    BEAST";
 
-
-
-
-char *ActorInfoMsg[]=
+char *ActorInfoMsg[] =
 {
-//   0,0,      // nothing,player
-//   0,0,0,     // inert,fixup,dead
+    //0,0,            // nothing,player
+    //0,0,0,          // inert,fixup,dead
 
-   actor_info4,   // Sector Patrol
-   actor_info5,   // Turret
-   actor_info9,   // Bio-Tech
-   actor_info10,        // Pod
-   actor_info11,        // Electro-Alien
-   actor_info12,        // Electro-Sphere
-   actor_info13,        // STAR Sentinel
-   actor_info14,        // Genetic Guard
-   actor_info15,        // Mutant Human 1
-   actor_info16,        // Mutant Human 2
-   0,       // lg canister wait
-   actor_info18,        // Lg Canister Alien
-   0,       // sm canister wait
-   actor_info20,        // Sm canister Alien
-   0,                   // gurney wait
-   actor_info22,        // Gurney Mutant
-   actor_info36,        // Liquid Alien
-   actor_info24,        // Alien Protector (old STAR Trooper)
-   actor_info25,        // Goldstern
-   actor_info25m,       // Goldstern Morphed
-   actor_info27,        // Volatile Transport
-   actor_info28,        // Floating Bomb
+    actor_info4,    // Sector Patrol
+    actor_info5,    // Turret
+    actor_info9,    // Bio-Tech
+    actor_info10,   // Pod
+    actor_info11,   // Electro-Alien
+    actor_info12,   // Electro-Sphere
+    actor_info13,   // STAR Sentinel
+    actor_info14,   // Genetic Guard
+    actor_info15,   // Mutant Human 1
+    actor_info16,   // Mutant Human 2
+    0,              // lg canister wait
+    actor_info18,   // Lg Canister Alien
+    0,              // sm canister wait
+    actor_info20,   // Sm canister Alien
+    0,              // gurney wait
+    actor_info22,   // Gurney Mutant
+    actor_info36,   // Liquid Alien
+    actor_info24,   // Alien Protector (old STAR Trooper)
+    actor_info25,   // Goldstern
+    actor_info25m,  // Goldstern Morphed
+    actor_info27,   // Volatile Transport
+    actor_info28,   // Floating Bomb
 
-   actor_info50,   // vital defence
+    actor_info50,   // vital defence
 
-   actor_info44,   // Spider Mutant
-   actor_info45,   // breather beast
-   actor_info46,   // cyborg warrior
-   actor_info47,   // reptilian warrior
-   actor_info48,   // acid dragon
-   actor_info49,   // mech guardian
+    actor_info44,   // Spider Mutant
+    actor_info45,   // breather beast
+    actor_info46,   // cyborg warrior
+    actor_info47,   // reptilian warrior
+    actor_info48,   // acid dragon
+    actor_info49,   // mech guardian
 
-         actor_info53,   // Final Boss 1
-   actor_info54,   // Final Boss 2
-   actor_info55,   // Final Boss 3
-   actor_info56,   // Final Boss 4
+    actor_info53,   // Final Boss 1
+    actor_info54,   // Final Boss 2
+    actor_info55,   // Final Boss 3
+    actor_info56,   // Final Boss 4
 
-   0,0,0,0,     // blake,crate 1, crate 2, crate 3,
+    0,0,0,0,        // blake, crate 1, crate 2, crate 3,
 
-   actor_info41,        // Green Ooze
-   actor_info42,        // Black Ooze
-   actor_info41a,       // Green2 Ooze
-   actor_info42a,       // Black2 Ooze
-   0,       // Pod Egg
+    actor_info41,   // Green Ooze
+    actor_info42,   // Black Ooze
+    actor_info41a,  // Green2 Ooze
+    actor_info42a,  // Black2 Ooze
+    0,              // Pod Egg
 
-   actor_info44,   // morphing_spider mutant
-   actor_info47,   // morphing_reptilian warrior
-   actor_info16,        // morphing_Mutant Human 2
+    actor_info44,   // morphing_spider mutant
+    actor_info47,   // morphing_reptilian warrior
+    actor_info16,   // morphing_Mutant Human 2
 
-   0,                   // SPACER
+    0,              // SPACER
 
-   actor_info31,        // Electro-Alien SHOT
-   0,                   // Post Barrier
-   actor_info43,        // Arc Barrier
-   actor_info43a,       // VPost Barrier
-   actor_info43b,       // VSpike Barrier
-         actor_info25m,   // Gold Morph Shot obj
-   0,                   // Security Light
-   actor_info33,        // Explosion
-   0, 0,                // Steam Grate, Steam Pipe
-   actor_info36,        // Liquid SHOT
+    actor_info31,   // Electro-Alien SHOT
+    0,              // Post Barrier
+    actor_info43,   // Arc Barrier
+    actor_info43a,  // VPost Barrier
+    actor_info43b,  // VSpike Barrier
+    actor_info25m,  // Gold Morph Shot obj
+    0,              // Security Light
+    actor_info33,   // Explosion
+    0,0,            // Steam Grate, Steam Pipe
+    actor_info36,   // Liquid SHOT
 
-   actor_info18,        // Lg Canister Alien SHOT
-   actor_info10,        // POD Alien SHOT
-   actor_info20,        // Genetic Alien SHOT
-   actor_info16,        // Mutant Human 2 SHOT
-   actor_info15,        // Mutant Human 1 SHOT
+    actor_info18,   // Lg Canister Alien SHOT
+    actor_info10,   // POD Alien SHOT
+    actor_info20,   // Genetic Alien SHOT
+    actor_info16,   // Mutant Human 2 SHOT
+    actor_info15,   // Mutant Human 1 SHOT
 
-   0,0,      // vent drip, player sp shot,
-   0,       // flicker light,
-   0,0,      // Door Bomb, Door Bomb reserve
-   0,       // grenade,
+    0,0,            // vent drip, player sp shot,
+    0,              // flicker light,
+    0,0,            // Door Bomb, Door Bomb reserve
+    0,              // grenade,
 
-         0,       // BFG Shot
-   actor_info51,        // BFG Explosion
-   actor_info52,        // BFG Explosion
+    0,              // BFG Shot
+    actor_info51,   // BFG Explosion
+    actor_info52,   // BFG Explosion
 
-   actor_info44,   // Boss 1 SHOT
-   actor_info45,   // Boss 2 SHOT
-   actor_info46,   // Boss 3 SHOT
-   actor_info47,   // Boss 4 SHOT
-   actor_info48,   // Boss 5 SHOT
-   actor_info49,   // Boss 6 SHOT
-   actor_info54,   // Boss 8 SHOT
-   actor_info56,   // Boss 10 SHOT
+    actor_info44,   // Boss 1 SHOT
+    actor_info45,   // Boss 2 SHOT
+    actor_info46,   // Boss 3 SHOT
+    actor_info47,   // Boss 4 SHOT
+    actor_info48,   // Boss 5 SHOT
+    actor_info49,   // Boss 6 SHOT
+    actor_info54,   // Boss 8 SHOT
+    actor_info56,   // Boss 10 SHOT
 
-         0,       // Doorexplosion
-         actor_info52,   // gr_explosion
+    0,              // Doorexplosion
+    actor_info52,   // gr_explosion
 };
+
+
+char int_xx[] = "^XX";  // TODO: this seems to be at the end of the msg chunks in grsegs?
+
+
+/*
+============================================================================
+
+                    'SPECIAL MESSAGE' CACHING SYSTEM
+
+============================================================================
+=
+= When creating special 'types' of message caching structures, make sure
+= all 'special data' is placed at the end of the BASIC message structures.
+= In memory, BASIC INFO should appear first. ex:
+=
+= mCacheList
+=       ---> NumMsgs
+=       ---> mCacheInfo
+=       ---> local_val
+=       ---> global_val
+=       ---> mSeg
+=
+= ... all special data follows ...
+=
+============================================================================
+*/
+
+
+/*
+====================
+=
+= InitMsgCache
+=
+====================
+*/
+
+void InitMsgCache (mCacheList *mList, int listsize, int infosize)
+{
+    FreeMsgCache (mList,infosize);
+    memset (mList,0,listsize);
+}
+
+
+/*
+====================
+=
+= FreeMsgCache
+=
+====================
+*/
+
+void FreeMsgCache (mCacheList *mList, int infosize)
+{
+    mCacheInfo *ci = mList->mInfo;
+
+    while (mList->NumMsgs--)
+    {
+        free (ci->mSeg);
+        ci->mSeg = NULL;
+#if 1
+        ci = (mCacheInfo *)((byte *)ci + infosize);  // TODO: this looks better, but make sure it doesn't break
+#else
+        ch = (char *)ci;
+        ch += infosize;
+        ci = (mCacheInfo *)ch;
+#endif
+    }
+}
+
+
+/*
+====================
+=
+= CacheMsg
+=
+= Caches the specific message in from a given grsegs block to the
+= next available message segment pointer
+=
+====================
+*/
+
+void CacheMsg (mCacheInfo *ci, int segnum, int msgnum)
+{
+    ci->mSeg = SafeMalloc(MAX_CACHE_MSG_LEN);
+
+    LoadMsg (ci->mSeg,segnum,msgnum,MAX_CACHE_MSG_LEN);
+}
+
+
+/*
+====================
+=
+= LoadMsg
+=
+= Loads the specific message in from a given grsegs block to the
+= buffer provided. Memory allocation and handling prior and after
+= this function usage is responsiblity of the calling function(s).
+=
+= PARAMS:  buffer  - destination buffer to store message
+=          segnum  - grsegs index for messages in VGAGRAPH
+=          msgnum  - message number to load
+=          maxlen  - max length of cache msg (length of buffer)
+=
+= Returns the length of the loaded message
+=
+====================
+*/
+
+int LoadMsg (char *buffer, int segnum, int msgnum, int maxlen)
+{
+    char *message,*end;
+    int  pos;
+
+    message = (char *)grsegs[segnum];
+
+    //
+    // search for end of msgnum - 1 (start of our message)
+    //
+    while (--msgnum)
+    {
+        message = strstr(message,int_xx);
+
+        if (!message)
+            Quit ("Invalid cached message number!");
+
+        message += 3;    // bump to start of next message
+    }
+
+    //
+    // move past LFs and CRs that follow "^XX"
+    //
+    while (*message == '\n' || *message == '\r')
+        message++;
+
+    //
+    // find the end of the message
+    //
+    end = strstr(message,int_xx);
+
+    if (!end)
+        Quit ("Invalid cached message number!");
+
+    end += 3;
+
+    //
+    // copy to the buffer
+    //
+    pos = 0;
+
+    while (message != end)
+    {
+        if (*message != '\n')
+            buffer[pos++] = *message;
+
+        if (pos >= maxlen)
+            Quit ("Cached message is too long for allocated space!");
+
+        message++;
+    }
+
+    buffer[pos] = '\0';     // null terminate
+
+    return pos;
+}
+
+
+/*
+====================
+=
+= ReuseMsg
+=
+= KS: this looks pretty sus, make sure it isn't blowing things up
+=
+====================
+*/
+
+bool ReuseMsg (mCacheInfo *ci, int count, int structsize)
+{
+    mCacheInfo *scan = (mCacheInfo *)((byte *)ci - structsize);
+
+    //
+    // scan through all loaded messages - see if we're loading one already
+    // cached in
+    //
+    while (count--)
+    {
+        if (scan->global_val == ci->global_val)
+        {
+            ci->local_val = scan->local_val;
+            return true;
+        }
+
+        scan = (mCacheInfo *)((byte *)scan - structsize);
+    }
+
+    return false;
+}

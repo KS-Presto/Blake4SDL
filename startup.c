@@ -208,10 +208,12 @@ int main (void)
     CA_Startup ();
     SetupSound ();
     Init3DRenderer ();
+
     NewGame (gd_baby,0);
     SetupGameLevel ();
-    DrawPlayScreen (false);
     LoadPlanes (126,126);
+
+    DrawPlayScreen (false);
 
     PlayLoop ();
 

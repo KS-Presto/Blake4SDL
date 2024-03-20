@@ -34,6 +34,7 @@ void    UpdateSoundLoc (void);
 void    SetupGameLevel (void);
 void    NormalScreen (void);
 void    DrawPlayScreen (bool InitInfoMsg);
+void    DrawTopInfo (int type);
 void    SetViewSize (int size);
 void    NewViewSize (int width);
 void    FizzleOut (void);
@@ -55,5 +56,6 @@ void    AddTotalEnemy (unsigned enemies);
 void    SetFontColor (int f, int b);
 void    ShadowPrintLocationText (int type);
 void    LoseScreen (void);
-void    LoadLocationText (int textNum);
+void    LoadLocationText (int textnum);
+
 #endif

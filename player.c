@@ -31,7 +31,7 @@ int             lastmusicoffset;
 
 int             music_num;
 
-int             DebugOk = 1;
+int             DebugOk = 0;
 
 bool            godmode;
 
@@ -56,6 +56,10 @@ bool buttonheld[NUMBUTTONS];
 //
 int  controlx,controly;         // range from -100 to 100 per tic
 bool buttonstate[NUMBUTTONS];
+
+bool demorecord,demoplayback;
+
+char LocationText[MAX_LOCATION_DESC_LEN];
 
 bool    TryMove (void);
 void    Thrust (int angle, int32_t speed);
