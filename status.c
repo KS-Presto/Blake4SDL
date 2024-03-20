@@ -381,7 +381,7 @@ void DrawScoreNum (void)
         if (gamestate.flags & GS_TICS_FOR_SCORE)
             StatusDrawNumber (x,y,7,realtics);
         else if (gamestate.flags & GS_MUSIC_TEST)
-            StatusDrawNumber (x,y,7,music_num);
+            StatusDrawNumber (x,y,7,musicnum);
         else
             StatusDrawNumber (x,y,7,gamestate.tic_score);
     }
@@ -1089,46 +1089,6 @@ void GiveToken (int tokens)
 */
 
 
-#define TP_CASE_SENSITIVE            // ctrl codes are case sensitive
-
-#define TP_640x200              0    // is presenter in 640 x 200 mode?
-
-#define TP_RETURN_CHAR          '\r'
-#define TP_CONTROL_CHAR         '^'
-
-#define TP_CURSOR_SAVES         8    // MAX different points to save
-
-#define TP_CNVT_CODE(c1,c2)     ((c1) | (c2 << 8))
-
-#define TP_MAX_ANIMS            10
-#define TP_MAX_PAGES            41
-
-#define TP_MARGIN               1    // distance between xl/xh/yl/yh points and text
-
-unsigned TP_VALUE (char *ptr, int num_nybbles)
-{
-    int      ch,nybble,shift;
-    unsigned value = 0;
-
-    for (nybble = 0; nybble < num_nybbles; nybble++)
-    {
-        shift = 4 * (num_nybbles - nybble - 1);
-
-        ch = *ptr++;
-
-        if (isxdigit(ch))
-        {
-            if (isalpha(ch))
-                value |= (toupper(ch) - 'A' + 10) << shift;
-            else
-                value |= (ch - '0') << shift;
-        }
-    }
-
-    return value;
-}
-
-
 /*
 ======================
 =
@@ -1467,12 +1427,9 @@ void DrawInfoArea (void)
 
 char *HandleControlCodes (char *first_ch)
 {
-#ifdef NOTYET
     piShapeInfo *shape;
     piAnimInfo  *anim;
-#endif
-    int         code;
-    int         shapenum;
+    int         code,shapenum;
 
     first_ch++;
 
@@ -1486,7 +1443,6 @@ char *HandleControlCodes (char *first_ch)
 
     switch (code)
     {
-#ifdef NOTYET
         //
         // INIT ANIMATION
         //
@@ -1517,7 +1473,7 @@ char *HandleControlCodes (char *first_ch)
             DrawShape (InfoAreaSetup.x,InfoAreaSetup.y,shape->shapenum,shape->shapetype);
             InfoAreaSetup.left_margin = InfoAreaSetup.x;
             break;
-#endif
+
         //
         // FONT COLOR
         //
@@ -1579,21 +1535,20 @@ char *HandleControlCodes (char *first_ch)
 
 int DrawShape (int x, int y, int shapenum, int shapetype)
 {
-#ifdef NOTYET
     int width,shade;
 
     //width = TP_BoxAroundShape(x,y,shapenum,shapetype);
 
     if (LastInfoAttacker_Cloaked)
-        shade = 35;    // 63 == BLACK | 0 == NO SHADING
+        shade = 35;
     else
-        shade = 0;
+        shade = NO_SHADING;
 
     switch (shapetype)
     {
         case pis_scaled:
             VW_Bar (x,y,37,37,InfoAreaSetup.backgr_color);
-            SimpleScaleShape (x + 19,y + 20,shapenum,37,shade);
+            MegaSimpleScaleShape (x + 19,y + 20,37,shapenum,shade);
             width = 37;
             break;
 #if NUMPICS
@@ -1609,9 +1564,6 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
     InfoAreaSetup.x += width;
 
     return x;
-#else
-    return 0;    // just to silence the warning
-#endif
 }
 
 
@@ -1625,9 +1577,10 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
 
 void AnimatePage (void)
 {
-#ifdef NOTYET
-    piAnimInfo  *anim = piAnimList;
+    piAnimInfo  *anim;
     piShapeInfo *shape;
+
+    anim = piAnimList;
 
     anim->delay += tics;
 
@@ -1662,7 +1615,6 @@ void AnimatePage (void)
                 anim->frame = 0;
         }
     }
-#endif
 }
 
 

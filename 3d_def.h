@@ -7,7 +7,6 @@
 #include "id_heads.h"
 
 #ifdef NOTYET
-#include "jm_io.h"
 #include "jm_cio.h"
 #endif
 
@@ -1253,6 +1252,8 @@ typedef struct
 // temp definitions
 //
 extern  int     currentsong;
+
+int     StartCPMusic (int song);
 
 
 /*

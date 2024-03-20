@@ -106,10 +106,11 @@ typedef struct
 #include "id_in.h"
 #include "id_sd.h"
 #include "id_us.h"
-#ifdef NOTYET
+
+#include "jm_io.h"
 #include "jm_tp.h"
+#ifdef NOTYET
 #include "jm_debug.h"
-#include "jm_error.h"
 
 #include "movie.h"
 

@@ -8,9 +8,85 @@
 
 char  str[256],error[256];
 int   loop,currentsong;
+bool  EscPressed;
 
 int   param_samplerate = 44100;
 int   param_audiobuffer = 2048;
+int   lastmusic;
+
+//
+// TODO: this can be merged with StartMusic
+//
+int StartCPMusic (int song)
+{
+    int lastoffs;
+
+    lastmusic = song;
+    lastoffs = SD_MusicOff();
+    CA_UncacheAudioChunk (STARTMUSIC + song);
+
+    SD_StartMusic (STARTMUSIC + song);
+
+    return lastoffs;
+}
+
+
+void CycleColors (void)
+{
+#ifdef NOTYET
+    #define NUM_RANGES     5
+    #define CRNG_LOW       0xf0
+    #define CRNG_HIGH      0xfe
+    #define CRNG_SIZE      (CRNG_HIGH - CRNG_LOW + 1)
+
+    static CycleInfo crange[NUM_RANGES] =
+    {
+        {7,0,0xf0,0xf1},
+        {15,0,0xf2,0xf3},
+        {30,0,0xf4,0xf5},
+        {10,0,0xf6,0xf9},
+        {12,0,0xfa,0xfe},
+    };
+
+    int       i;
+    CycleInfo *c;
+    byte      cbuffer[CRNG_SIZE][3],temp[3];
+    int       first,last,numregs;
+    bool      changes = false;
+
+    for (i = 0; i < NUM_RANGES; i++)
+    {
+        c = &crange[i];
+
+        if (tics >= c->delay_count)
+        {
+            if (!changes)
+            {
+                VW_GetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+
+                changes = true;
+            }
+
+            first = c->firstreg - CRNG_LOW;
+            numregs = c->lastreg - c->firstreg;    // is one less than in range
+            last = first + numregs;
+
+            memcpy (temp,cbuffer[last],sizeof(temp));
+            memmove (cbuffer[first + 1],cbuffer[first],numregs * 3);
+            memcpy (cbuffer[first],temp,sizeof(temp));
+
+            c->delay_count = c->init_delay;
+        }
+        else
+            c->delay_count -= tics;
+    }
+
+    if (changes)
+        VW_SetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+    else
+        VW_WaitVBL (1);
+#endif
+}
 
 
 /*
