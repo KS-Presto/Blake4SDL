@@ -263,3 +263,25 @@ void SimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int s
         }
     }
 }
+
+
+/*
+===================
+=
+= MegaSimpleScaleShape
+=
+= Adjusts viewheight to draw anywhere on the screen
+=
+===================
+*/
+
+void MegaSimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int shade)
+{
+    int oldviewheight = viewheight;
+
+    viewheight = screen.height;
+
+    SimpleScaleShape (dispx,dispy,dispheight,shapenum,shade);
+
+    viewheight = oldviewheight;
+}
