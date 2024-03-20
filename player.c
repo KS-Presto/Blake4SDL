@@ -29,7 +29,7 @@ int             mapoffset[8] = {1,-1,MAPSIZE,-MAPSIZE,-(MAPSIZE + 1),-(MAPSIZE -
 int             lastmusicchunk;
 int             lastmusicoffset;
 
-int             music_num;
+int             musicnum;
 
 int             DebugOk = 0;
 

@@ -145,7 +145,7 @@ extern  int         playstate;
 
 extern  int         lastmusicoffset;
 
-extern  int         music_num;
+extern  int         musicnum;
 
 extern  objtype     objlist[MAXACTORS],*lastobj;
 extern  objtype     *player,*objfreelist,*lastattcker;
