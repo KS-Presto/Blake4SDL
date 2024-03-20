@@ -22,6 +22,8 @@ extern  int             NumEAWalls,NumEASpawned;
 extern  bool            startgame,ingame,loadedgame;
 extern  gametype        gamestate;
 extern  int             viewsize;
+extern  int             viewscreenx,viewscreeny;
+extern  unsigned        screenofs;
 extern  int             mapwidth,mapheight;
 
 extern  char            demoname[13];

@@ -9,6 +9,8 @@
 unsigned    TopColor,BottomColor;
 
 int         viewsize = 20;
+int         viewscreenx,viewscreeny;
+unsigned    screenofs;
 bool        loadedgame;
 fargametype gamestuff;
 gametype    gamestate;
@@ -846,6 +848,15 @@ void SetViewSize (int size)
     centery = viewheight / 2;
     shootdelta = viewwidth / 10;
     normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
+
+    if (viewwidth == screen.width)
+        viewscreenx = viewscreeny = screenofs = 0;
+    else
+    {
+        viewscreenx = (screen.width - viewwidth) >> 1;
+        viewscreeny = ((screen.height - (STATUSLINES - TOP_STRIP_HEIGHT)) - viewheight) >> 1;
+        screenofs = ylookup[viewscreeny] + viewscreenx;
+    }
 
 //
 // calculate trace angles and projection constants

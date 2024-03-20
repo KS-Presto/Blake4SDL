@@ -1558,30 +1558,30 @@ void Setup3DView (void)
 
 void ThreeDRefresh (void)
 {
-    viewscreenx = (screen.width - viewwidth) >> 1;
-    viewscreeny = ((screen.height - (STATUSLINES - TOP_STRIP_HEIGHT)) - viewheight) >> 1;
-
-    //
-    // clear out the traced array
-    //
+//
+// clear out the traced array
+//
     memset (spotvis,false,sizeof(spotvis));
     spotvis[player->tilex][player->tiley] = true;
-
-    UpdateInfoAreaClock ();
-    UpdateStatusBar ();
 
     vbuf = VW_LockSurface(screen.buffer);
 
     if (!vbuf)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    vbuf += ylookup[viewscreeny] + viewscreenx;
+//
+// call any functions that may draw to a full screen
+//
+    UpdateInfoAreaClock ();
+    UpdateStatusBar ();
+
+//
+// offset the screenbuffer and draw to the viewport
+//
+    vbuf += screenofs;
 
     Setup3DView ();
 
-//
-// follow the walls from there to the right, drawing as we go
-//
 #ifdef CEILING_FLOOR_COLORS
     switch (gamestate.flags & (GS_DRAW_FLOOR | GS_DRAW_CEILING))
     {
