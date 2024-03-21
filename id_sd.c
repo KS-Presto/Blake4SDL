@@ -644,11 +644,11 @@ void SD_SetupDigi (void)
 
     DigiChannel = SafeMalloc(NumDigi * sizeof(*DigiChannel));
 
-    for (i = 0; i < NumDigi; i++)
-    {
+    for (i = 0; i < LASTSOUND; i++)
         DigiMap[i] = -1;
+
+    for (i = 0; i < NumDigi; i++)
         DigiChannel[i] = -1;
-    }
 }
 
 
