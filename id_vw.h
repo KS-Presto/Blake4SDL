@@ -51,36 +51,38 @@ typedef struct
 } fontstruct;
 
 
-extern screen_t     screen;
+extern  screen_t     screen;
 
-extern pictabletype *pictable;
+extern  pictabletype *pictable;
 
-extern uint32_t     *ylookup;
+extern  uint32_t     *ylookup;
 
-extern int          fontcolor,backcolor;
-extern int          fontnumber;
-extern int          px,py;
-extern bool         allcaps;
+extern  int          fontcolor,backcolor;
+extern  int          fontnumber;
+extern  int          px,py;
+extern  bool         allcaps;
 
 
-void VW_Startup (void);
-void VW_Shutdown (void);
-void VW_SetupVideo (void);
-void VW_InitRndMask (void);
-void VW_SetPalette (SDL_Color *palette);
-void VW_FadePaletteOut (int start, int end, int red, int green, int blue, int steps);
-void VW_FadePaletteIn (int start, int end, int steps);
-void VW_UpdateScreen (SDL_Surface *surface);
-void *VW_LockSurface (SDL_Surface *surface);
-void VW_UnlockSurface (SDL_Surface *surface);
-void VW_DrawTile8 (int x, int y, int tile);
-void VW_DrawPic (int x, int y, int chunk);
-void VW_DrawMPic (int x, int y, int chunk);
-void VW_DePlaneVGA (byte *source, int width, int height);
-void VW_Bar (int x, int y, int width, int height, int color);
-void VW_MeasureString (const char *string, word *width, word *height);
-void VW_DrawString (const char *string);
-void VW_Plot (int x, int y, int color);
-bool VW_FizzleFade (int xl, int yl, int width, int height, int frames, bool abortable);
+void    VW_Startup (void);
+void    VW_Shutdown (void);
+void    VW_SetupVideo (void);
+void    VW_InitRndMask (void);
+void    VW_SetPalette (SDL_Color *palette);
+void    VW_FadePaletteOut (int start, int end, int red, int green, int blue, int steps);
+void    VW_FadePaletteIn (int start, int end, int steps);
+void    VW_UpdateScreen (SDL_Surface *surface);
+void    *VW_LockSurface (SDL_Surface *surface);
+void    VW_UnlockSurface (SDL_Surface *surface);
+void    VW_DrawTile8 (int x, int y, int tile);
+void    VW_DrawPic (int x, int y, int chunk);
+void    VW_DrawMPic (int x, int y, int chunk);
+void    VW_DePlaneVGA (byte *source, int width, int height);
+void    VW_MemToScreen (byte *source, int width, int height, int x, int y);
+void    VW_ScreenToMem (byte *dest, int width, int height, int x, int y);
+void    VW_Bar (int x, int y, int width, int height, int color);
+void    VW_MeasureString (const char *string, word *width, word *height);
+void    VW_DrawString (const char *string);
+void    VW_Plot (int x, int y, int color);
+bool    VW_FizzleFade (int xl, int yl, int width, int height, int frames, bool abortable);
 
 #endif

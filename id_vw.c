@@ -599,35 +599,36 @@ void VW_MemToScreen (byte *source, int width, int height, int x, int y)
 =
 = VW_MaskMemToScreen
 =
-= TODO: this might not be correct
+= Draws a masked block of data to the screen.
 =
 =================
 */
 
 void VW_MaskMemToScreen (byte *source, int width, int height, int x, int y, int mask)
 {
-    byte *dest;
+    byte *src,*dest,*basedest;
     int  w,h;
 
-    dest = VW_LockSurface(screen.buffer);
+    basedest = VW_LockSurface(screen.buffer);
 
-    if (!dest)
+    if (!basedest)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    dest += ylookup[y] + x;
+    basedest += ylookup[y] + x;
 
-    for (h = height; h; h--)
+    for (w = width; w; w--)
     {
-        for (w = width; w; w--)
+        src = source++;
+        dest = basedest++;
+
+        for (h = height; h; h--)
         {
-            if (*source != mask)
-                *dest = *source;
+            if (*src != mask)
+                *dest = *src;
 
-            source++;
-            dest++;
+            src += width;
+            dest += screen.buffer->pitch;
         }
-
-        dest += width;
     }
 
     VW_UnlockSurface (screen.buffer);
@@ -639,7 +640,7 @@ void VW_MaskMemToScreen (byte *source, int width, int height, int x, int y, int 
 =
 = VW_ScreenToMem
 =
-= TODO: this is probably for screenshots; can just use SDL_SaveBMP
+= Copies a block of screen pixels to a buffer
 =
 =================
 */
