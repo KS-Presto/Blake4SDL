@@ -1022,14 +1022,25 @@ void DrawScaleds (void)
 
         if ((Keyboard[sc_6] && (Keyboard[sc_7] || Keyboard[sc_8]) && DebugOk) && (statptr->flags & FL_BONUS))
         {
-            //GetBonus (statptr);
-            continue;
+            GetBonus (statptr);
+
+            if (statptr->shapenum == -1)
+                continue;
         }
 
         if (!spotvis[statptr->tilex][statptr->tiley])
             continue;               // not visible
 
-        TransformTile (statptr->tilex,statptr->tiley,&visptr->viewx,&visptr->viewheight);
+        if (TransformTile(statptr->tilex,statptr->tiley,&visptr->viewx,&visptr->viewheight))
+        {
+            if (statptr->flags & FL_BONUS)
+            {
+                GetBonus (statptr);
+
+                if (statptr->shapenum == -1)
+                    continue;
+            }
+        }
 
         if (!visptr->viewheight)
             continue;               // too close to the object
