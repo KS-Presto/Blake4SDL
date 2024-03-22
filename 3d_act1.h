@@ -248,6 +248,7 @@ void      CheckSpawnGoldstern (void);
 void      FindNewGoldieSpawnSite (void);
 
 void      DropPlasmaDetonator (void);
+void      TryDropPlasmaDetonator (void);
 void      BlockDoorOpen (int door);
 void      BlastNearDoors (int tilex, int tiley);
 void      TryBlastDoor (char door);

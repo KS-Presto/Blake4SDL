@@ -1245,9 +1245,10 @@ void BlastNearDoors (int tilex, int tiley)
 =
 =====================
 */
-#ifdef NOTYET
-void DropPlasmaDetonator(void)
+
+void DropPlasmaDetonator (void)
 {
+#ifdef NOTYET
     objtype *obj;
 
     obj = MoveHiddenOfs(plasma_detonator_reserveobj,plasma_detonatorobj,player->x,player->y)
@@ -1264,6 +1265,7 @@ void DropPlasmaDetonator(void)
     }
 
     Quit ("Could not find Fission/Plasma Detonator reserve object!");
+#endif
 }
 
 
@@ -1279,6 +1281,7 @@ void DropPlasmaDetonator(void)
 
 void TryDropPlasmaDetonator (void)
 {
+#ifdef NOTYET
     #define MAX_RANGE_DIST    2
 
     objtype *obj;
@@ -1324,8 +1327,8 @@ void TryDropPlasmaDetonator (void)
     }
     else
         DropPlasmaDetonator ();
-}
 #endif
+}
 
 
 /*

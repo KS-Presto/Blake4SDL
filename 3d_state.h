@@ -26,9 +26,12 @@ void     MoveObj (objtype *obj, fixed move);
 void     KillActor (objtype *obj);
 void     DamageActor (objtype *obj, int damage, objtype *attacker);
 
+int      CalcAngle (objtype *from_obj, objtype *to_obj);
+
 bool     CheckLine (objtype *from_obj, objtype *to_obj);
 bool     CheckSight (objtype *from_obj, objtype *to_obj);
 
+void     FirstSighting (objtype *obj);
 bool     PosVisible (fixed from_x, fixed from_y, fixed to_x, fixed to_y, int from_angle);
 bool     PlayerIsBlocking (objtype *obj);
 

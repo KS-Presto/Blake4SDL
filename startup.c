@@ -14,6 +14,12 @@ int   param_samplerate = 44100;
 int   param_audiobuffer = 2048;
 int   lastmusic;
 
+unsigned Random (unsigned Max)
+{
+    return Max;
+}
+
+
 //
 // TODO: this can be merged with StartMusic
 //
@@ -265,10 +271,111 @@ void SetupSound (void)
     InitDigiMap ();
 
     SD_SetMusicMode (smm_AdLib);
-    SD_SetSoundMode (sdm_PC);
+    SD_SetSoundMode (sdm_AdLib);
     SD_SetDigiDevice (sds_SoundBlaster);
 
     CA_LoadAllSounds ();
+}
+
+
+int32_t FindChunk (FILE *file, const char *chunk)
+{
+    int32_t chunklen;
+    char    fchunk[5] = {0,0,0,0,0};
+
+    while (1)
+    {
+        //
+        // read chunk id
+        //
+        if (fread(fchunk,sizeof(fchunk) - 1,1,file) != 4)
+            break;
+
+        fread (&chunklen,sizeof(chunklen),1,file);
+
+        //
+        // look for chunk (sub-check!)
+        //
+        if (strstr(fchunk,chunk))
+            return chunklen;      // chunk found!
+
+        fseek (file,chunklen,SEEK_CUR);
+    }
+
+    fseek (file,0,SEEK_END);      // make sure we're at the end
+
+    return 0;
+}
+
+
+int32_t DeleteChunk (FILE *sourcefile, const char *chunk)
+{
+    int32_t filesize,cksize,offset,bmove;
+    FILE    *destfile;
+
+    filesize = CA_GetFileLength(sourcefile);
+
+    cksize = FindChunk(sourcefile,chunk);
+
+    if (cksize)
+    {
+        offset = ftell(sourcefile) - 8;
+        bmove = filesize - (offset + 8 + cksize);   // figure bytes to move
+
+        if (bmove)
+        {
+            //
+            // move data: FROM --> the start of NEXT chunk through the end of file
+            //              TO --> the start of THIS chunk
+            //
+            // (ie: erase THIS chunk and re-write it at the end of the file!)
+            //
+            fseek (sourcefile,cksize,SEEK_CUR);     // seek source to NEXT chunk
+
+            MakeDestPath (PLAYTEMP_FILE);
+
+            destfile = fopen(tempPath,"rb+");
+
+            if (!destfile)
+                CA_CannotOpen (tempPath);
+
+            fseek (destfile,offset,SEEK_SET);       // seek dest to THIS chunk
+
+            IO_CopyFile (sourcefile,destfile,bmove);
+
+            fclose (destfile);
+
+            fseek (sourcefile,offset + bmove,SEEK_SET); // go to end of data moved
+        }
+        else
+            fseek (sourcefile,offset,SEEK_SET);
+    }
+
+    return cksize;
+}
+
+
+char    tempPath[MAX_DEST_PATH_LEN + 15];
+
+
+void InitPlaytemp (void)
+{
+    FILE *file;
+
+    MakeDestPath (PLAYTEMP_FILE);
+
+    file = fopen(tempPath,"wb+");  // TODO: need to create the file for now, make sure this changes!!!
+
+    if (!file)
+        CA_CannotOpen (tempPath);
+
+    fclose (file);
+}
+
+
+void MakeDestPath (const char *file)
+{
+    snprintf (tempPath,sizeof(tempPath),file);
 }
 
 
@@ -284,16 +391,35 @@ int main (void)
     CA_Startup ();
     SetupSound ();
     Init3DRenderer ();
-
+    InitPlaytemp ();
     NewGame (gd_baby,0);
-    SetupGameLevel ();
-    LoadPlanes (126,126);
 
-    DrawPlayScreen (false);
+    do
+    {
+        SetupGameLevel ();
+        LoadPlanes (126,126);
 
-    PlayLoop ();
+        if (playstate == ex_transported)
+            DrawWarpIn ();
+        else
+            DrawPlayScreen (false);
 
-    Quit (NULL);
+        PlayLoop ();
+
+        switch (playstate)
+        {
+            case ex_transported:
+                Warped ();
+                gamestate.mapon++;
+                break;
+        }
+
+    } while (playstate != ex_abort);
+
+    if (playstate != ex_abort)
+        Quit ("PlayLoop exited: %d",playstate);
+    else
+        Quit (NULL);
 
     return 0;
 }

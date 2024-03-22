@@ -21,9 +21,6 @@ typedef struct
 } compline_t;
 
 
-extern  bool    useBounceOffset;
-
-
 void    ScaleShape (visobj_t *sprite);
 void    SimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int shade);
 void    MegaSimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int shade);

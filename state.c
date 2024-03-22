@@ -7,6 +7,44 @@
 int   dirtoangle[NUMOBJDIRS] = {0,ANG45,ANG90,ANG135,ANG180,ANG225,ANG270,ANG315,0};
 
 
+void KillActor (objtype *obj)
+{
+}
+
+
+/*
+=====================
+=
+= CalcAngle
+=
+= Calculates angle from 1st object to 2nd object
+=
+=====================
+*/
+
+int CalcAngle (objtype *from_obj, objtype *to_obj)
+{
+    fixed deltax,deltay;
+    float angle;
+    int   iangle;
+
+    deltax = to_obj->x - from_obj->x;
+    deltay = from_obj->y - to_obj->y;
+
+    if (!(deltax | deltay))
+        return 1;
+
+    angle = atan2(deltay,deltax);
+
+    if (angle < 0)
+        angle = (M_PI * 2) + angle;
+
+    iangle = (angle / (M_PI * 2)) * ANG360;
+
+    return iangle;
+}
+
+
 /*
 =====================
 =
@@ -165,4 +203,9 @@ bool CheckLine (objtype *from_obj, objtype *to_obj)
     }
 
     return true;
+}
+
+
+void FirstSighting (objtype *obj)
+{
 }

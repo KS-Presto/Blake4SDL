@@ -1,4 +1,4 @@
-// 3D_AGENT.C
+// 3D_AGENT.H
 
 #ifndef _3D_AGENT_H_
 #define _3D_AGENT_H_
@@ -12,7 +12,7 @@ extern  unsigned    static_points[];
 extern  bool        GAN_HiddenArea;
 extern  int         mapoffset[8];
 extern  void        *InfAreaMsgs[];
-extern  byte        NumAreaMsgs,LastInfArea;
+extern  int         NumAreaMsgs,LastInfArea;
 extern  int         FirstGenInfMsg,TotalGenInfMsgs;
 extern  int         LastInfoAttacker;
 extern  int         LastInfoAttacker_Cloaked;
@@ -64,6 +64,10 @@ extern  int         LastMsgType;
 extern  unsigned    LastMsgPri;
 extern  int         MsgTicsRemain;
 
+extern  bool        useBounceOffset;
+extern  fixed       bounceOffset;
+
+
 void     GunAttack (objtype *obj);
 
 void     GivePoints (int32_t score, bool add_to_stats);
@@ -90,6 +94,8 @@ void     DrawHealthMonitor (void);
 void     CalcHealthDisplay (void);
 void     UpdateScore (void);
 
+void     GetBonus (statobj_t *check);
+
 unsigned ValidAreaTile (unsigned area);
 unsigned GetAreaNumber (int tilex, int tiley);
 int      InputFloor (void);
@@ -113,7 +119,6 @@ void     GiveToken (int tokens);
 void     TakePlasmaDetonator (int count);
 void     GivePlasmaDetonator (int count);
 
-void     CacheDrawPic (int x, int y, int pic);
 void     LoadTerminalCommands (void);
 
 void     ActivateWallSwitch (unsigned iconnum, int x, int y);
@@ -122,10 +127,10 @@ unsigned ScanBarrierTable (int x, int y);
 void     DisplaySwitchOperateMsg (unsigned coords);
 
 void     DisplayNoMoMsgs (void);
-void     PrintStatPercent (int nx, int ny, char percentage);
+void     PrintStatPercent (int nx, int ny, int percentage);
 int      ShowStats (int bx, int by, int type, statsInfoType *stats);
 bool     PerfectStats (void);
 bool     CheckPerfectStats (void);
-bool     OperateSmartSwitch (int tilex, int tiley, char Operation, bool Force);
+bool     OperateSmartSwitch (int tilex, int tiley, int operation, bool force);
 
 #endif

@@ -4,6 +4,12 @@
 #define _3D_PLAY_H_
 
 
+#define BASEMOVE        35
+#define RUNMOVE         70
+#define BASETURN        35
+#define RUNTURN         70
+
+
 enum objdirtype
 {
     east,

@@ -87,6 +87,8 @@ void jsprintf (const char *msg, ...);
 #define LOW_GRN     0x74
 
 
+#define MAX_DEST_PATH_LEN	30
+
 #define MAX_GUN_DELAY       12
 
 #define MAX_RADAR_ENERGY    14400
@@ -287,16 +289,17 @@ void jsprintf (const char *msg, ...);
 #define MINACTORDIST    TILEGLOBAL   // minimum dist from player center to any actor center
 
 
-#define MAX_WVIEW_DIST 44        // Max wrap_view dist in TILES
+#define MAX_WVIEW_DIST  44           // max wrap_view dist in TILES
+#define FULL_VIEW_WIDTH 19
 
+#define TEXTURESHIFT    6
+#define FIXED2TEXSHIFT  4
+#define TEXTURESIZE     (1 << TEXTURESHIFT)
+#define TEXTUREMASK     (TEXTURESIZE * (TEXTURESIZE - 1))
 
-#define TEXTURESHIFT   6
-#define FIXED2TEXSHIFT 4
-#define TEXTURESIZE    (1 << TEXTURESHIFT)
-#define TEXTUREMASK    (TEXTURESIZE * (TEXTURESIZE - 1))
-
-#define MAPSHIFT       6
-#define MAPSIZE        (1 << MAPSHIFT)
+#define MAPSHIFT        6
+#define MAPSIZE         (1 << MAPSHIFT)
+#define MAPAREA         (MAPSIZE * MAPSIZE)
 
 #define NORTH   0
 #define EAST    1
@@ -1270,7 +1273,7 @@ int     StartCPMusic (int song);
                       "ERROR: Insufficient disk space.\n"                  \
                       "Try deleting some files from your hard disk.\n\n"
 
-extern  char      tempPath[];
+extern  char      tempPath[MAX_DEST_PATH_LEN + 15];
 
 extern  levelinfo default_level[MAPS_PER_EPISODE];
 extern  int       view_xl,view_xh,view_yl,view_yh;
@@ -1290,8 +1293,6 @@ extern  byte      colormap[16896];
 extern  int       param_samplerate;
 extern  int       param_audiobuffer;
 
-
-int32_t  DeleteChunk (int handle, char *chunk);
 
 void     LoadFonts (void);
 void     ClearNClose (void);
@@ -1324,8 +1325,9 @@ void     Terminate (const char *func, const char *string, ...);
 void     MakeDestPath (const char *file);
 void     InitDestPath (void);
 
-int32_t  FindChunk (int file, const char *chunk);
-int32_t  NextChunk (int file);
+int32_t  FindChunk (FILE *file, const char *chunk);
+int32_t  NextChunk (FILE *file);
+int32_t  DeleteChunk (FILE *sourcefile, const char *chunk);
 
 
 /*
@@ -1354,6 +1356,7 @@ void CalcMemFree (void);
         InitSmartSpeedAnim(obj,ShapeNum,StartOfs,MaxOfs,AnimType,AnimDir,7)
 
 
+extern  bool      noShots;
 extern  int       detonators_spawned;
 extern  int       starthitpoints[NUMDIFFICULTY][NUMHITENEMIES];
 extern  unsigned  MorphClass[];
@@ -1559,7 +1562,18 @@ extern  char  bevs_msg1[];
 extern  char  food_msg1[];
 
 extern  char  bonus_msg7[];
+extern  char  bonus_msg24[];
+extern  char  bonus_msg25[];
 extern  char  bonus_msg26[];
+
+extern  char  B_GAlienDead2[];
+extern  char  B_GAlienDead[];
+extern  char  B_ScoreRolled[];
+extern  char  B_OneMillion[];
+extern  char  B_ExtraMan[];
+extern  char  B_EnemyDestroyed[];
+extern  char  B_TotalPoints[];
+extern  char  B_InformantsAlive[];
 
 extern  char  *BonusMsg[];
 extern  char  *ActorInfoMsg[];

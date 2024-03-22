@@ -303,6 +303,45 @@ char *BonusMsg[]=
 };
 
 
+//--------------------------------------------------------------------------
+//
+//      Pinball Bonus Text
+//
+//--------------------------------------------------------------------------
+
+char B_GAlienDead2[] =  "^FC57    GUARDIAN ALIEN\r"
+                        "      DESTROYED!\r\r"
+                        "^FCA6 FIND AND DESTROY ALL\r"
+                        "PROJECTION GENERATORS!";
+
+char B_GAlienDead[] =   "^FC57    GUARDIAN ALIEN\r"
+                        "      DESTROYED!\r\r"
+                        "^FCA6   FIND THE EXIT TO\r"
+                        "COMPLETE THIS MISSION";
+
+char B_ScoreRolled[] =  "^FC57\rROLLED SCORE DISPLAY!\r"
+                        "^FCA6   FULL AMMO BONUS!\r"
+                        "  FULL HEALTH BONUS!\r"
+                        "1,000,000 POINT BONUS!";
+
+char B_OneMillion[] =   "^FC57\r     GREAT SCORE!\r"
+                        "^FCA6   FULL AMMO BONUS!\r"
+                        "  FULL HEALTH BONUS!\r"
+                        "1,000,000 POINT BONUS!";
+
+char B_ExtraMan[] =     "^FC57\r\r     GREAT SCORE!\r"
+                        "^FCA6  EXTRA LIFE BONUS!\r";
+
+char B_EnemyDestroyed[] =   "^FC57\r\r ALL ENEMY DESTROYED!\r"
+                            "^FCA6  50,000 POINT BONUS!\r";
+
+char B_TotalPoints[] =  "^FC57\r\r ALL POINTS COLLECTED!\r"
+                        "^FCA6  50,000 POINT BONUS!\r";
+
+char B_InformantsAlive[] =  "^FC57\r\r ALL INFORMANTS ALIVE!\r"
+                            "^FCA6  50,000 POINT BONUS!\r";
+
+
 //---------------------------------------------------------------------------
 //
 //        ACTOR MSGS (ATTACKING & GEN INFO)
