@@ -1624,7 +1624,7 @@ void ThreeDRefresh (void)
 
     DrawPlayerWeapon (); // draw player's hands
 
-    DrawRadar ();    // TODO: check if we want this while fizzling
+    DrawRadar ();       // TODO: check if we want this while fizzling
 
 //
 // show screen and time last cycle
@@ -1723,6 +1723,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
     objtype  *obj;
     unsigned iconnum;
     fixed    lmx,lmy,baselmx,baselmy;
+    fixed    psin,pcos;
     int      rx,ry,mx,my;
     int      i,rndindex;
     bool     drawplayerok = true;
@@ -1744,8 +1745,11 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
 //
 // convert radius to fixed integer and calc rotation
 //
-    baselmx = player->x + ((radius * viewcos) - (radius * viewsin));
-    baselmy = player->y - ((radius * viewsin) + (radius * viewcos));
+    psin = sintable[player->angle];
+    pcos = costable[player->angle];
+
+    baselmx = player->x + ((radius * pcos) - (radius * psin));
+    baselmy = player->y - ((radius * psin) + (radius * pcos));
 
 //
 // calculate starting destination address
@@ -1769,94 +1773,96 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
         while (ry--)
         {
             if (snow)
-                color = 0x42 + (rndtable[rndindex++] & 3);
+                color = 0x42 + (rndtable[rndindex++ & 0xff] & 3);
             else
+            {
                 color = UNMAPPED_COLOR;
 
-            //
-            // don't evaluate if point is outside of map
-            //
-            mx = lmx >> TILESHIFT;
-            my = lmy >> TILESHIFT;
+                //
+                // don't evaluate if point is outside of map
+                //
+                mx = lmx >> TILESHIFT;
+                my = lmy >> TILESHIFT;
 
-            if (!snow && mx >= 0 && mx <= (mapwidth - 1) && my >= 0 && my <= (mapheight - 1))
-            {
-                if (drawplayerok && player->tilex == mx && player->tiley == my)
+                if (mx >= 0 && mx <= (mapwidth - 1) && my >= 0 && my <= (mapheight - 1))
                 {
-                    //
-                    // SHOW PLAYER
-                    //
-                    color = PLAYER_COLOR;
-                    drawplayerok = false;
-                }
-                else
-                {
-                    //
-                    // SHOW TRAVELED
-                    //
-                    if ((TravelTable[mx][my] & TT_TRAVELED) || (flags & OV_SHOWALL))
+                    if (drawplayerok && player->tilex == mx && player->tiley == my)
                     {
                         //
-                        // what's at this map location?
+                        // SHOW PLAYER
                         //
-                        tile = tilemap[mx][my];
-                        door = tile & 0x3f;
-
+                        color = PLAYER_COLOR;
+                        drawplayerok = false;
+                    }
+                    else
+                    {
                         //
-                        // evaluate wall or floor?
+                        // SHOW TRAVELED
                         //
-                        if (tile)
+                        if ((TravelTable[mx][my] & TT_TRAVELED) || (flags & OV_SHOWALL))
                         {
                             //
-                            // SHOW DOORS
+                            // what's at this map location?
                             //
-                            if (tile & 0x80)
+                            tile = tilemap[mx][my];
+                            door = tile & 0x3f;
+
+                            //
+                            // evaluate wall or floor?
+                            //
+                            if (tile)
                             {
-                                if (doorobjlist[door].lock != kt_none)
-                                    color = 0x18;                   // locked!
-                                else
+                                //
+                                // SHOW DOORS
+                                //
+                                if (tile & 0x80)
                                 {
-                                    if (doorobjlist[door].action == dr_closed)
-                                        color = 0x58;               // closed!
+                                    if (doorobjlist[door].lock != kt_none)
+                                        color = 0x18;                   // locked!
                                     else
-                                        color = MAPPED_COLOR;       // floor!
+                                    {
+                                        if (doorobjlist[door].action == dr_closed)
+                                            color = 0x58;               // closed!
+                                        else
+                                            color = MAPPED_COLOR;       // floor!
+                                    }
+                                }
+                            }
+                            else
+                                color = MAPPED_COLOR;                   // floor!
+
+                            //
+                            // SHOW KEYS
+                            //
+                            if ((flags & OV_KEYS) && (TravelTable[mx][my] & TT_KEYS))
+                                color = 0xf3;
+
+                            if (zoom > 1 || (ExtraRadarFlags & OV_ACTORS))
+                            {
+                                obj = actorat[mx][my];
+
+                                //
+                                // SHOW ACTORS
+                                //
+                                if ((flags & OV_ACTORS) && ISPOINTER(obj) && !(obj->flags & FL_DEADGUY)
+                                 && obj->obclass > deadobj && obj->obclass < SPACER1_OBJ)
+                                    color = 0x10 + obj->obclass;
+
+                                if (zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS))
+                                {
+                                    iconnum = MAPSPOT(mx,my,1);
+
+                                    //
+                                    // SHOW PUSHWALLS
+                                    //
+                                    if ((flags & OV_PUSHWALLS) && iconnum == PUSHABLETILE)
+                                        color = 0x79;
                                 }
                             }
                         }
                         else
-                            color = MAPPED_COLOR;                   // floor!
-
-                        //
-                        // SHOW KEYS
-                        //
-                        if ((flags & OV_KEYS) && (TravelTable[mx][my] & TT_KEYS))
-                            color = 0xf3;
-
-                        if (zoom > 1 || (ExtraRadarFlags & OV_ACTORS))
-                        {
-                            obj = actorat[mx][my];
-
-                            //
-                            // SHOW ACTORS
-                            //
-                            if ((flags & OV_ACTORS) && ISPOINTER(obj) && !(obj->flags & FL_DEADGUY)
-                             && obj->obclass > deadobj && obj->obclass < SPACER1_OBJ)
-                                color = 0x10 + obj->obclass;
-
-                            if (zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS))
-                            {
-                                iconnum = MAPSPOT(mx,my,1);
-
-                                //
-                                // SHOW PUSHWALLS
-                                //
-                                if ((flags & OV_PUSHWALLS) && iconnum == PUSHABLETILE)
-                                    color = 0x79;
-                            }
-                        }
+                            color = UNMAPPED_COLOR;
                     }
-                    else
-                        color = UNMAPPED_COLOR;
                 }
             }
 
@@ -1870,12 +1876,12 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                 dest += screen.buffer->pitch;
             }
 
-            lmx -= viewcos;
-            lmy += viewsin;
+            lmx -= pcos;
+            lmy += psin;
         }
 
-        baselmx += viewsin;
-        baselmy += viewcos;
+        baselmx += psin;
+        baselmy += pcos;
 
         basedest += zoom;
     }
