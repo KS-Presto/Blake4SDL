@@ -10,6 +10,8 @@ unsigned    TopColor,BottomColor;
 
 int         viewsize = 20;
 int         viewscreenx,viewscreeny;
+int         fizzlewidth,fizzleheight;
+int         fizzlex,fizzley;
 unsigned    screenofs;
 bool        loadedgame;
 fargametype gamestuff;
@@ -687,6 +689,97 @@ void DrawPlayScreen (bool InitInfoMsg)
 /*
 ===================
 =
+= SetupFizzlein
+=
+===================
+*/
+
+void SetupFizzlein (int x, int y, int width, int height)
+{
+    screen.flags |= SC_FIZZLEIN;
+    fizzlex = x;
+    fizzley = y;
+    fizzlewidth = width;
+    fizzleheight = height;
+}
+
+
+/*
+===================
+=
+= DrawWarpIn
+=
+===================
+*/
+
+void DrawWarpIn (void)
+{
+    InitInfoArea ();
+    DisplayInfoMsg ("\r\r    TRANSPORTING...",MP_POWERUP,2 * 60,MT_GENERAL);
+
+    DrawHealth ();
+    DrawKeys ();
+    DrawWeapon ();
+    DrawScore ();
+    WindowW = 253;
+    WindowH = 8;
+    fontnumber = 2;
+
+    VW_DrawPic (0,200 - STATUSLINES,STATUSBARPIC);
+    VW_DrawPic (0,0,TOP_STATUSBARPIC);
+
+    ShadowPrintLocationText (sp_normal);
+    UpdateStatusBar ();
+    VW_UpdateScreen (screen.buffer);    // TODO: temp fix until GameLoop redraws it
+
+    SD_PlaySound (WARPINSND);
+
+    SetupFizzlein (viewscreenx,viewscreeny,viewwidth,viewheight);
+    ThreeDRefresh ();               // TODO: this call might not be necessary
+}
+
+
+/*
+===================
+=
+= Warped
+=
+===================
+*/
+
+void Warped (void)
+{
+    int iangle;
+
+    DisplayInfoMsg ("\r\r\r   TRANSPORTING OUT",MP_POWERUP,7 * 60,MT_GENERAL);
+
+    gamestate.old_weapons[3] = gamestate.weapon;
+    gamestate.weapon = -1;      // take away weapon
+
+    if (screen.flags & SC_FADED)
+        ThreeDRefresh ();
+
+    iangle = (((player->dir + 4) % 8) >> 1) * ANG90;
+
+    RotateView (iangle,2);
+
+    gamestate.weapon = gamestate.old_weapons[3];
+    gamestate.attackframe = gamestate.attackcount = gamestate.weaponframe = 0;
+
+    IN_ClearKeysDown ();
+    SD_PlaySound (WARPINSND);
+
+    VW_Bar (viewscreenx,viewscreeny,viewwidth,viewheight,0);
+    VW_FizzleFade (viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
+
+    IN_UserInput (100);
+    SD_WaitSoundDone ();
+}
+
+
+/*
+===================
+=
 = ShPrint
 =
 ===================
@@ -849,7 +942,7 @@ void SetViewSize (int size)
     shootdelta = viewwidth / 10;
     normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
 
-    if (viewwidth == screen.width)
+    if (viewheight == screen.height)
         viewscreenx = viewscreeny = screenofs = 0;
     else
     {
@@ -862,4 +955,104 @@ void SetViewSize (int size)
 // calculate trace angles and projection constants
 //
     CalcProjection (FOCALLENGTH);
+}
+
+
+/*
+==========================
+=
+= RotateView
+=
+==========================
+*/
+
+void RotateView (int destangle, int speed)
+{
+    int	    curangle,clockwise,counter,change;
+    objtype *obj;
+    bool    oldgodmode;
+
+    if (player->angle > destangle)
+    {
+        counter = player->angle - destangle;
+        clockwise = ANG360 - player->angle + destangle;
+    }
+    else
+    {
+        clockwise = destangle - player->angle;
+        counter = player->angle + ANG360 - destangle;
+    }
+
+    oldgodmode = godmode;
+    godmode = true;             // player is invulnerable while rotating
+    curangle = player->angle;
+
+    controly = 0;
+
+    if (clockwise < counter)
+    {
+        //
+        // rotate clockwise
+        //
+        if (curangle > destangle)
+            curangle -= ANG360;
+
+        controlx = -1;
+
+        do
+        {
+            change = tics * speed;
+
+            if (curangle + change > destangle)
+                change = destangle - curangle;
+
+            curangle += change;
+            player->angle += change;
+
+            if (player->angle >= ANG360)
+                player->angle -= ANG360;
+
+            for (obj = player->next; obj; obj = obj->next)
+                DoActor (obj);
+
+            ThreeDRefresh ();
+            CalcTics ();
+
+        } while (curangle != destangle);
+    }
+    else
+    {
+        //
+        // rotate counterclockwise
+        //
+        if (curangle < destangle)
+            curangle += ANG360;
+
+        controlx = 1;
+
+        do
+        {
+            change = -tics * speed;
+
+            if (curangle + change < destangle)
+                change = destangle - curangle;
+
+            curangle += change;
+            player->angle += change;
+
+            if (player->angle < 0)
+                player->angle += ANG360;
+
+            for (obj = player->next; obj; obj = obj->next)
+                DoActor (obj);
+
+            ThreeDRefresh ();
+            CalcTics ();
+
+        } while (curangle != destangle);
+    }
+
+    controlx = 0;
+    player->dir = ((player->angle + (ANG45 / 2)) % ANG360) / ANG45;
+    godmode = oldgodmode;
 }

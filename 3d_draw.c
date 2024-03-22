@@ -1645,9 +1645,12 @@ void ThreeDRefresh (void)
 
     if (screen.flags & SC_FIZZLEIN)
     {
-        VW_FizzleFade (0,0,viewwidth,viewheight,70,false);
+        VW_FizzleFade (fizzlex,fizzley,fizzlewidth,fizzleheight,70,false);
 
         screen.flags &= ~SC_FIZZLEIN;
+        fizzlex = fizzley = 0;
+        fizzlewidth = viewwidth;
+        fizzleheight = viewheight;
 
         lasttimecount = GetTimeCount();  // don't make a big tic count
     }

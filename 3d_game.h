@@ -23,6 +23,8 @@ extern  bool            startgame,ingame,loadedgame;
 extern  gametype        gamestate;
 extern  int             viewsize;
 extern  int             viewscreenx,viewscreeny;
+extern  int             fizzlewidth,fizzleheight;
+extern  int             fizzlex,fizzley;
 extern  unsigned        screenofs;
 extern  int             mapwidth,mapheight;
 
@@ -36,6 +38,7 @@ void    UpdateSoundLoc (void);
 void    SetupGameLevel (void);
 void    NormalScreen (void);
 void    DrawPlayScreen (bool InitInfoMsg);
+void    SetupFizzlein (int x, int y, int width, int height);
 void    DrawTopInfo (int type);
 void    SetViewSize (int size);
 void    NewViewSize (int width);
@@ -45,7 +48,7 @@ void    GameLoop (void);
 void    PlaySoundLocGlobal (int sound, fixed gx, fixed gy);
 
 void    Warped (void);
-void    RotateView (int DestAngle, unsigned RotSpeed);
+void    RotateView (int destangle, int speed);
 void    DrawWarpIn (void);
 void    BMAmsg (const char *msg);
 void    CacheBMAmsg (unsigned MsgNum);
