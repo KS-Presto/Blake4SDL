@@ -8,6 +8,7 @@
 *.bs1
 *.bs6
 *.vsi
+PLAYTEMP
 
 # Intermediate source #
 ###################
