@@ -46,7 +46,6 @@ bool  Paused;
 char  textinput[TEXTINPUTSIZE];
 ScanCode LastScan;
 
-KeyboardDef KbdDefs = {0x1d,0x38,0x47,0x48,0x49,0x4b,0x4d,0x4f,0x50,0x51};
 JoystickDef JoyDefs[MaxJoys];
 ControlType Controls[MaxPlayers];
 
@@ -585,7 +584,7 @@ static void IN_HandleEvent (SDL_Event *event)
                     DrawPlayScreen (false);
                 }
                 else if (Keyboard[sc_Escape])
-                    playstate = ex_died;
+                    playstate = ex_abort;
             }
             break;
 
@@ -766,45 +765,56 @@ void IN_ClearTextInput (void)
 
 void IN_ReadControl (ControlInfo *info)
 {
-    bool  realdelta=false;
-    word  buttons;
-    int   dx,dy;
-    Motion  mx,my;
-    KeyboardDef *def;
+    bool realdelta = false;
+    word buttons;
+    int  dx,dy;
+    int  mx,my;
 
     dx = dy = 0;
-    mx = my = motion_None;
+    mx = my = 0;
     buttons = 0;
+
+    IN_ProcessEvents ();
 
     ControlTypeUsed = ctrl_None;
 
     if (ControlTypeUsed == ctrl_None)
     {
-        def = &KbdDefs;
+        if (Keyboard[sc_Home])
+        {
+            mx = -1;
+            my = -1;
+        }
+        else if (Keyboard[sc_PgUp])
+        {
+            mx = 1;
+            my = -1;
+        }
+        else if (Keyboard[sc_End])
+        {
+            mx = -1;
+            my = 1;
+        }
+        else if (Keyboard[sc_PgDn])
+        {
+            mx = 1;
+            my = 1;
+        }
 
-        if (Keyboard[def->upleft])
-            mx = motion_Left,my = motion_Up;
-        else if (Keyboard[def->upright])
-            mx = motion_Right,my = motion_Up;
-        else if (Keyboard[def->downleft])
-            mx = motion_Left,my = motion_Down;
-        else if (Keyboard[def->downright])
-            mx = motion_Right,my = motion_Down;
+        if (Keyboard[sc_LeftArrow])
+            mx = -1;
+        else if (Keyboard[sc_RightArrow])
+            mx = 1;
 
-        if (Keyboard[def->up])
-            my = motion_Up;
-        else if (Keyboard[def->down])
-            my = motion_Down;
+        if (Keyboard[sc_UpArrow])
+            my = -1;
+        else if (Keyboard[sc_DownArrow])
+            my = 1;
 
-        if (Keyboard[def->left])
-            mx = motion_Left;
-        else if (Keyboard[def->right])
-            mx = motion_Right;
-
-        if (Keyboard[def->button0])
-            buttons += 1 << 0;
-        if (Keyboard[def->button1])
-            buttons += 1 << 1;
+        if (Keyboard[sc_Control])
+            buttons += 1;
+        if (Keyboard[sc_Alt])
+            buttons += 2;
 
         realdelta = false;
 
@@ -835,8 +845,8 @@ void IN_ReadControl (ControlInfo *info)
 #endif
     if (realdelta)
     {
-        mx = (dx < 0)? motion_Left : ((dx > 0)? motion_Right : motion_None);
-        my = (dy < 0)? motion_Up : ((dy > 0)? motion_Down : motion_None);
+        mx = (dx < 0) ? -1 : ((dx > 0) ? 1 : 0);
+        my = (dy < 0) ? 1 : ((dy > 0) ? 1 : 0);
     }
     else
     {
@@ -980,8 +990,7 @@ bool IN_UserInput (longword delay)
 
     do
     {
-        //VL_WaitVBL (1);
-        SDL_Delay (5);
+        VW_WaitVBL (1);
 
         if (IN_CheckAck())
             return true;

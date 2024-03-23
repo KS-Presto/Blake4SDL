@@ -47,7 +47,10 @@
 #define sc_KeyPad5      SDL_SCANCODE_KP_5
 #define sc_KeyPad6      SDL_SCANCODE_KP_6
 #define sc_KeyPad8      SDL_SCANCODE_KP_8
+#define sc_KeyPadMinus  SDL_SCANCODE_KP_MINUS
+#define sc_KeyPadPlus   SDL_SCANCODE_KP_PLUS
 #define sc_KeyPadEnter  SDL_SCANCODE_KP_ENTER
+
 #define sc_F1           SDL_SCANCODE_F1
 #define sc_F2           SDL_SCANCODE_F2
 #define sc_F3           SDL_SCANCODE_F3
@@ -77,6 +80,7 @@
 #define sc_0            SDL_SCANCODE_0
 #define sc_Equal        SDL_SCANCODE_EQUALS
 #define sc_Minus        SDL_SCANCODE_MINUS
+#define sc_Tilde        SDL_SCANCODE_GRAVE
 
 #define sc_A            SDL_SCANCODE_A
 #define sc_B            SDL_SCANCODE_B
@@ -133,13 +137,6 @@ typedef enum
 
 typedef enum
 {
-    motion_Left = -1,motion_Up = -1,
-    motion_None = 0,
-    motion_Right = 1,motion_Down = 1
-} Motion;
-
-typedef enum
-{
     dir_North,dir_NorthEast,
     dir_East,dir_SouthEast,
     dir_South,dir_SouthWest,
@@ -151,17 +148,9 @@ typedef struct
 {
     bool  button0,button1,button2,button3;
     int   x,y;
-    Motion  xaxis,yaxis;
+    int   xaxis,yaxis;
     Direction dir;
 } ControlInfo;
-
-typedef struct
-{
-    ScanCode button0,button1,
-    upleft,  up,  upright,
-    left,    right,
-    downleft, down, downright;
-} KeyboardDef;
 
 typedef struct
 {
@@ -181,11 +170,10 @@ extern ControlType ControlTypeUsed;    // JAM - added
 extern bool  Keyboard[sc_Last];
 extern char  textinput[TEXTINPUTSIZE];
 extern bool     MousePresent;
-extern bool     JoysPresent[];
+extern bool     JoysPresent[MaxJoys];
 extern bool  Paused;
 extern ScanCode LastScan;
-extern KeyboardDef KbdDefs;
-extern JoystickDef JoyDefs[];
+extern JoystickDef JoyDefs[MaxJoys];
 extern ControlType Controls[MaxPlayers];
 
 
