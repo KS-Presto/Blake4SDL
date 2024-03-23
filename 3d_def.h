@@ -1566,6 +1566,11 @@ extern  char  bonus_msg24[];
 extern  char  bonus_msg25[];
 extern  char  bonus_msg26[];
 
+extern  char  default_msg[];
+extern  char  needDetonator_msg[];
+extern  char  haveDetonator_msg[];
+extern  char  destroyGoldfire_msg[];
+
 extern  char  B_GAlienDead2[];
 extern  char  B_GAlienDead[];
 extern  char  B_ScoreRolled[];

@@ -96,6 +96,8 @@ void     UpdateScore (void);
 
 void     GetBonus (statobj_t *check);
 
+void     WriteTokenString (char *string);
+
 unsigned ValidAreaTile (unsigned area);
 unsigned GetAreaNumber (int tilex, int tiley);
 int      InputFloor (void);
@@ -112,6 +114,7 @@ void     TerminalPrint (const char *msg, bool FastPrint);
 void     FloorCheat (unsigned RadarFlags);
 bool     Interrogate (objtype *obj);
 
+void     HealSelf (int points);
 void     GiveKey (int key);
 void     TakeKey (int key);
 void     GiveToken (int tokens);

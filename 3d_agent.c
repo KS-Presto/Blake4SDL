@@ -235,7 +235,6 @@ PinballBonusInfo PinballBonus[] =
 
 
 char    *HandleControlCodes (char *first_ch);
-void    WriteTokenString (char *string);
 
 void    ShowOverheadChunk (void);
 void    LoadOverheadChunk (int tpNum);
@@ -803,9 +802,9 @@ void GivePoints (int32_t points, bool add_to_stats)
 {
     if (add_to_stats)
         gamestuff.level[gamestate.mapon].stats.accum_points += points;
-#ifdef NOTYET
+
     CheckPinballBonus (points);
-#endif
+
     gamestate.score += points;
 }
 
@@ -1596,26 +1595,18 @@ void UpdateInfoAreaClock (void)
 ======================
 */
 
-char default_msg[] = {  "\r    NO MESSAGES."
-                        "^FCA8\r    FOOD TOKENS:      "
-                        "                                 "};
-
-char needDetonator_msg[] = "\r\r^FC39 FIND THE DETONATOR!";
-
-char haveDetonator_msg[] = "\r\r^FC39DESTROY SECURITY CUBE!";
-
-char destroyGoldfire_msg[] = "\r\r^FC39  DESTROY GOLDFIRE!";
-
 void DisplayNoMoMsgs (void)
 {
+    size_t len;
+
     LastMsgPri = MP_min_val;
-#ifdef NOTYET
+
     if (BONUS_QUEUE)
     {
         DisplayPinballBonus ();
         return;
     }
-#endif
+
     MsgTicsRemain = 0;
     StatusDrawPic (0,40,DIM_LIGHTPIC);
 
@@ -1645,7 +1636,9 @@ void DisplayNoMoMsgs (void)
     //
     // TODO: disgusting; refactor
     //
-    snprintf (&default_msg[40],sizeof(default_msg) - 40,"%-d%s",gamestate.tokens,str);
+    len = strlen(default_msg);
+
+    snprintf (&default_msg[40],len - 40,"%-d%s",gamestate.tokens,str);
 
     DisplayInfoMsg (default_msg,MP_max_val,0,MT_NOTHING);
 }
@@ -2074,9 +2067,9 @@ void RedrawStatusAreas (void)
     DrawInfoArea_COUNT = InitInfoArea_COUNT = 3;
 
     VW_DrawPic (0,0,TOP_STATUSBARPIC);
-#ifdef NOTYET
+
     ShadowPrintLocationText (sp_normal);
-#endif
+
     StatusDrawPic (0,0,STATUSBARPIC);
     DrawAmmoPic ();
     DrawScoreNum ();
@@ -2832,9 +2825,7 @@ void Cmd_Use (void)
                 //
                 case FOODTILE:
                 case SODATILE:
-#ifdef NOTYET
                     OperateConcession ((uintptr_t)actorat[checkx][checky]);
-#endif
                     break;
 
                 default:

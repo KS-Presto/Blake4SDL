@@ -510,7 +510,6 @@ void SetupGameLevel (void)
             }
             else
             {
-#ifdef NOTYET
                 switch (tile)
                 {
                     case SODATILE:
@@ -528,7 +527,7 @@ void SetupGameLevel (void)
                             *map1 = 0;
                         }
                         break;
-
+#ifdef NOTYET
                     case EATILE:
                         eaList[NumEAWalls].tilex = x;
                         eaList[NumEAWalls].tiley = y;
@@ -550,8 +549,8 @@ void SetupGameLevel (void)
 
                         switchon = false;    // init for next time
                         break;
-                }
 #endif
+                }
             }
 
             map1++;

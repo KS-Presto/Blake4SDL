@@ -139,6 +139,17 @@ char SwitchNotActivateMsg[] =   "\r\r   WALL SWITCH NOT\r"
 char NoFoodTokens[] =   "\r\r  YOU DON'T HAVE ANY\r"
                         "     FOOD TOKENS!";
 
+char default_msg[] =    "\r    NO MESSAGES."
+                        "^FCA8\r    FOOD TOKENS:      "
+                        "                                 ";
+
+char needDetonator_msg[] = "\r\r^FC39 FIND THE DETONATOR!";
+
+char haveDetonator_msg[] = "\r\r^FC39DESTROY SECURITY CUBE!";
+
+char destroyGoldfire_msg[] = "\r\r^FC39  DESTROY GOLDFIRE!";
+
+
 //---------------------------------------------------------------------------
 //
 //              FISSION DETONATOR(S) MESSAGES

@@ -236,8 +236,8 @@ void      MoveDoors (void);
 void      PushWall (int checkx, int checky, int dir);
 void      MovePWalls (void);
 
-void      OperateConcession (unsigned concession);
-void      SpawnConcession (int tilex, int tiley, unsigned credits, unsigned machinetype);
+void      OperateConcession (int concession);
+void      SpawnConcession (int tilex, int tiley, int credits, int machinetype);
 unsigned  LoadConcessionHint (unsigned MsgNum);
 void      CacheInfoAreaMsg (unsigned block, unsigned MsgNum, const char *hint_buffer, unsigned MaxBufferLen);
 void      CheckSpawnEA(void);
