@@ -13,9 +13,11 @@ int         viewscreenx,viewscreeny;
 int         fizzlewidth,fizzleheight;
 int         fizzlex,fizzley;
 unsigned    screenofs;
-bool        loadedgame;
+bool        startgame,ingame,loadedgame;
 fargametype gamestuff;
 gametype    gamestate;
+
+int         LS_current,LS_total;
 
 int         mapwidth,mapheight;
 int         leftchannel,rightchannel;
@@ -689,6 +691,79 @@ void DrawPlayScreen (bool InitInfoMsg)
 /*
 ===================
 =
+= BMAmsg
+=
+= These messages are displayed by the Text Presenter
+=
+===================
+*/
+
+void BMAmsg (const char *msg)
+{
+    #define BMAx1 0             // outer bevel
+    #define BMAy1 152
+    #define BMAw1 320
+    #define BMAh1 48
+
+    #define BMAx2 (BMAx1 + 7)   // inner bevel
+    #define BMAy2 (BMAy1 + 4)
+    #define BMAw2 (BMAw1 - 14)
+    #define BMAh2 (BMAh1 - 8)
+
+    PresenterInfo pi;
+    fontstruct    *font;
+    char          *string,*s;
+    char          numlines;
+    int           cheight;
+    size_t        len;
+
+    BevelBox (BMAx1,BMAy1,BMAw1,BMAh1,BORDER_HI_COLOR,BORDER_MED_COLOR,BORDER_LO_COLOR);
+    BevelBox (BMAx2,BMAy2,BMAw2,BMAh2,BORDER_LO_COLOR,BORDER_MED_COLOR,BORDER_HI_COLOR);
+
+    if (msg)
+    {
+        font = (fontstruct *)grsegs[STARTFONT + fontnumber];
+        numlines = 1;
+
+        len = strlen(msg) + 1;
+        string = SafeMalloc(len);
+
+        snprintf (string,len,msg);
+        s = string;
+
+        memset (&pi,0,sizeof(pi));
+        pi.flags = TPF_CACHE_NO_GFX;
+        pi.script[0] = s;
+
+        while (*s)
+        {
+            if (*s++ == TP_RETURN_CHAR)
+                numlines++;
+        }
+
+        cheight = ((font->height * numlines) + 1) + (TP_MARGIN * 2);
+
+        pi.xl = BMAx2 + 1;
+        pi.yl = BMAy2 + ((BMAh2 - cheight) / 2);
+        pi.xh = pi.xl + BMAw2 - 3;
+        pi.yh = pi.yl + cheight - 1;
+        pi.bgcolor = BORDER_MED_COLOR;
+        pi.ltcolor = BORDER_HI_COLOR;
+        fontcolor = BORDER_TEXT_COLOR;
+        pi.shcolor = pi.dkcolor = BORDER_LO_COLOR;
+        pi.fontnumber = fontnumber;
+
+        TP_InitScript (&pi);
+        TP_Presenter (&pi);
+
+        free (string);
+    }
+}
+
+
+/*
+===================
+=
 = SetupFizzlein
 =
 ===================
@@ -1055,4 +1130,202 @@ void RotateView (int destangle, int speed)
     controlx = 0;
     player->dir = ((player->angle + (ANG45 / 2)) % ANG360) / ANG45;
     godmode = oldgodmode;
+}
+
+
+const char *prep_msg = "^ST1^CEGet Ready, Blake!\r^XX";
+
+
+void DisplayPrepingMsg (const char *text)
+{
+    fontnumber = 1;
+
+    BMAmsg (text);
+
+//
+// set thermometer boundaries
+//
+    WindowX = 36;
+    WindowY = 188;
+    WindowW = 260;
+    WindowH = 32;
+
+    VW_Bar (WindowX,WindowY - 7,WindowW - 10,2,BORDER_LO_COLOR);
+    VW_Bar (WindowX,WindowY - 7,WindowW - 11,1,BORDER_TEXT_COLOR - 15);
+    VW_Bar (WindowX,WindowY,WindowW - 10,2,BORDER_LO_COLOR);
+    VW_Bar (WindowX,WindowY,WindowW - 11,1,BORDER_TEXT_COLOR - 15);
+
+    if (screen.flags & SC_FADED)
+        VW_FadeIn ();
+    else
+        VW_UpdateScreen (screen.buffer);
+}
+
+
+void PreloadUpdate (int current, int total)
+{
+    int w = WindowW - 10;
+
+    if (current > total)
+        current = total;
+
+    w = ((int32_t)w * current) / total;
+
+    if (w)
+        VW_Bar (WindowX,WindowY,w - 1,1,BORDER_TEXT_COLOR);
+
+    VW_UpdateScreen (screen.buffer);
+}
+
+
+void PreloadGraphics (void)
+{
+    WindowY = 188;
+
+    if (!(gamestate.flags & GS_QUICKRUN))
+        VW_FadeIn ();
+
+    PreloadUpdate (10,10);
+    IN_UserInput (70);
+
+    if (playstate != ex_transported)
+        VW_FadeOut ();
+
+    DrawPlayBorder ();
+    VW_UpdateScreen (screen.buffer);
+}
+
+
+/*
+==========================
+=
+= GameLoop
+=
+==========================
+*/
+
+void GameLoop (void)
+{
+    SD_StopDigitized ();
+    SetFontColor (0,15);
+    DrawPlayScreen (true);
+
+    while (playstate != ex_abort)
+    {
+        ingame = true;
+
+        //if (!(loadedgame || LevelInPlaytemp(gamestate.mapon)))
+        if (!loadedgame)
+        {
+            gamestate.tic_score = gamestate.score = gamestate.oldscore;
+            memcpy (gamestate.numkeys,gamestate.old_numkeys,sizeof(gamestate.numkeys));
+            memcpy (gamestate.barrier_table,gamestate.old_barrier_table,sizeof(gamestate.barrier_table));
+            gamestate.rpower = gamestate.old_rpower;
+            gamestate.tokens = gamestate.old_tokens;
+            gamestate.weapons = gamestate.old_weapons[0];
+            gamestate.weapon = gamestate.old_weapons[1];
+            gamestate.chosenweapon = gamestate.old_weapons[2];
+            gamestate.ammo = gamestate.old_ammo;
+            gamestate.plasma_detonators = gamestate.old_plasma_detonators;
+            gamestate.boss_key_dropped=gamestate.old_boss_key_dropped;
+            memcpy (&gamestuff.level[0],gamestuff.old_levelinfo,sizeof(gamestuff.old_levelinfo));
+            DrawKeys ();
+            DrawScore ();
+        }
+
+        startgame = false;
+
+        if (!loadedgame)
+        {
+#ifdef NOTYET
+            if (LS_current == -1)
+            {
+                DrawTopInfo (sp_loading);
+                DisplayPrepingMsg (prep_msg);
+                LS_current = 1;
+                LS_total = 20;
+            }
+
+            LoadLevel (gamestate.mapon);
+#else
+            SetupGameLevel ();
+#endif
+        }
+        else
+            loadedgame = false;
+
+        LS_current = LS_total = -1;
+
+        LoadPlanes (126,126);
+#ifdef NOTYET
+        PreloadGraphics ();
+#endif
+        if (playstate == ex_transported)
+            DrawWarpIn ();
+        else
+            DrawPlayScreen (false);
+
+        //if (!sqActive)
+            StartMusic ();
+
+        PlayLoop ();
+
+        LS_current = LS_total = -1;
+
+        StopMusic ();
+        ingame = false;
+
+#ifdef DEMOS_EXTERN
+        if (demorecord && playstate != ex_warped)
+            FinishDemoRecord ();
+#endif
+        if (startgame || loadedgame)
+        {
+            SD_StopDigitized ();
+            SetFontColor (0,15);
+            DrawPlayScreen (true);
+
+            continue;
+        }
+
+        switch (playstate)
+        {
+            case ex_transported:    // same as ex_completed
+                Warped ();
+
+            case ex_completed:
+            case ex_secretlevel:
+            case ex_warped:
+                SD_StopDigitized ();
+                gamestate.mapon++;
+                ClearNClose ();
+#ifdef NOTYET
+                DrawTopInfo (sp_loading);
+                DisplayPrepingMsg (prep_msg);
+#endif
+                WindowY = 181;
+                LS_current = 1;
+                LS_total = 38;
+                StartMusic ();
+#ifdef NOTYET
+                SaveLevel (gamestate.lastmapon);
+#endif
+                gamestate.old_rpower = gamestate.rpower;
+                gamestate.oldscore = gamestate.score;
+                memcpy (gamestate.old_numkeys,gamestate.numkeys,sizeof(gamestate.old_numkeys));
+                gamestate.old_tokens = gamestate.tokens;
+                memcpy (gamestate.old_barrier_table,gamestate.barrier_table,sizeof(gamestate.old_barrier_table));
+                gamestate.old_weapons[0] = gamestate.weapons;
+                gamestate.old_weapons[1] = gamestate.weapon;
+                gamestate.old_weapons[2] = gamestate.chosenweapon;
+                gamestate.old_ammo = gamestate.ammo;
+                gamestate.old_boss_key_dropped = gamestate.boss_key_dropped;
+                memcpy (gamestuff.old_levelinfo,&gamestuff.level[0],sizeof(gamestuff.old_levelinfo));
+                break;
+
+            default:
+                SD_StopDigitized ();
+                break;
+        }
+    }
 }

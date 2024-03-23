@@ -379,6 +379,60 @@ void MakeDestPath (const char *file)
 }
 
 
+/*
+==========================
+=
+= ClearNClose
+=
+= Called when changing levels via standard elevator
+=
+= This code doesn't CLEAR the elevator door as originally
+= planned because actors were coded to stay out of the
+= elevator doorway
+=
+==========================
+*/
+
+void ClearNClose (void)
+{
+    int x,y,tx,ty,px,py;
+    int doornum;
+
+    tx = ty = 0;
+    px = player->x >> TILESHIFT;
+    py = player->y >> TILESHIFT;
+
+ //
+ // locate the door
+ //
+    for (x = -1; x < 2 && !tx; x += 2)
+    {
+        for (y = -1; y < 2; y += 2)
+        {
+            if (tilemap[px + x][py + y] & 0x80)
+            {
+                tx = px + x;
+                ty = py + y;
+                break;
+            }
+        }
+    }
+
+    if (tx)
+    {
+        //
+        // close the door & make it solid
+        //
+        doornum = tilemap[tx][ty] & 63;
+
+        doorobjlist[doornum].action = dr_closed;
+        doorobjlist[doornum].position = 0;
+
+        actorat[tx][ty] = (objtype *)(doornum | 0x80);
+    }
+}
+
+
 int main (void)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -396,23 +450,7 @@ int main (void)
 
     do
     {
-        SetupGameLevel ();
-        LoadPlanes (126,126);
-
-        if (playstate == ex_transported)
-            DrawWarpIn ();
-        else
-            DrawPlayScreen (false);
-
-        PlayLoop ();
-
-        switch (playstate)
-        {
-            case ex_transported:
-                Warped ();
-                gamestate.mapon++;
-                break;
-        }
+        GameLoop ();
 
     } while (playstate != ex_abort);
 
