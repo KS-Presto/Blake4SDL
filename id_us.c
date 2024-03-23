@@ -335,10 +335,10 @@ void US_ClearWindow (void)
 ======================
 */
 
-void US_DrawWindow (word x, word y, word w, word h)
+void US_DrawWindow (int x, int y, int w, int h)
 {
-    int  i;
-    word sx,sy,sw,sh;
+    int i;
+    int sx,sy,sw,sh;
 
     WindowX = x * 8;
     WindowY = y * 8;
@@ -385,7 +385,7 @@ void US_DrawWindow (word x, word y, word w, word h)
 ======================
 */
 
-void US_CenterWindow (word w, word h)
+void US_CenterWindow (int w, int h)
 {
     US_DrawWindow (((MaxX / 8) - w) / 2,((MaxY / 8) - h) / 2,w,h);
 }

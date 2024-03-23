@@ -10,7 +10,7 @@
 
 
 #define MaxX         320
-#define MaxY         200
+#define MaxY         160
 
 #define MaxHighName  57
 #define MaxScores    10
@@ -61,8 +61,8 @@ extern  bool            usecustomcursor;
 #define US_HomeWindow() {PrintX = WindowX; PrintY = WindowY;}
 
 void    US_InitRndT (bool randomize);
-void    US_DrawWindow (word x, word y, word w, word h);
-void    US_CenterWindow (word w, word h);
+void    US_DrawWindow (int x, int y, int w, int h);
+void    US_CenterWindow (int w, int h);
 void    US_SaveWindow (WindowRec *win);
 void    US_RestoreWindow (WindowRec *win);
 void    US_ClearWindow (void);
