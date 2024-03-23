@@ -227,6 +227,7 @@ void      InitStatObjList (void);
 statobj_t *ReserveStatic (void);
 void      SpawnStatic (int tilex, int tiley, int type);
 void      InitAreas (void);
+void      ConnectAreas (void);
 void      InitDoorObjList (void);
 void      SpawnDoor (int tilex, int tiley, bool vertical, int lock, int type);
 void      OperateDoor (int door);

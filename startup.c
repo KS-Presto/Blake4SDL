@@ -9,6 +9,7 @@
 char  str[256],error[256];
 int   loop,currentsong;
 bool  EscPressed;
+bool  ShowQuickMsg;
 
 int   param_samplerate = 44100;
 int   param_audiobuffer = 2048;

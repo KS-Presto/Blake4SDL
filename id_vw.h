@@ -62,6 +62,8 @@ extern  int          fontnumber;
 extern  int          px,py;
 extern  bool         allcaps;
 
+extern  SDL_Color    gamepal[256];
+
 
 void    VW_Startup (void);
 void    VW_Shutdown (void);

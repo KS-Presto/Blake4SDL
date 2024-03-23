@@ -11,6 +11,10 @@ void KillActor (objtype *obj)
 {
 }
 
+void DamageActor (objtype *obj, int damage, objtype *attacker)
+{
+}
+
 
 /*
 =====================

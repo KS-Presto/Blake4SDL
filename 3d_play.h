@@ -155,15 +155,16 @@ extern  int         musicnum;
 
 extern  objtype     objlist[MAXACTORS],*lastobj;
 extern  objtype     *player,*objfreelist,*lastattcker;
+extern  objtype     dummyobj;
 
 extern  objtype     *actorat[MAPSIZE][MAPSIZE];
-extern  objtype     *DeadGuys[],dummyobj;
-extern  int         NumDeadGuys;
+extern  objtype     *deadguys[MAXACTORS];
+extern  int         numdeadguys;
 
 extern  int         bordertime;
 
 extern  bool        madenoise,usedummy,nevermark;
-extern  int         alerted,alerted_areanum;
+extern  unsigned    alerted,alertedareanum;
 
 extern  unsigned    farmapylookup[MAPSIZE];
 
@@ -198,12 +199,11 @@ extern  bool        buttonstate[NUMBUTTONS];
 
 extern  bool        demorecord,demoplayback;
 extern  int8_t      *demoptr,*lastdemoptr;
-extern  void        *demobuffer;
+extern  int8_t      *demobuffer;
 
-extern  const char  Computing[];
+extern  const char  *Computing;
 
 
-void    CenterWindow (int w, int h);
 void    InitObjList (void);
 objtype *GetNewObj (void);
 void    RemoveObj (objtype *gone);
