@@ -3185,9 +3185,8 @@ int InputFloor (void)
             }
         }
 
-#ifdef NOTYET
         CheckMusicToggle ();
-#endif
+
         //
         // handle delay
         //

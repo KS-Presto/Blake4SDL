@@ -1654,6 +1654,7 @@ unsigned Random (unsigned Max);
 */
 
 extern   bool  EscPressed;
+extern   int   pickquick;
 
 void     DrawInstructions (int Type);
 void     CacheMessage (unsigned MessageNum);

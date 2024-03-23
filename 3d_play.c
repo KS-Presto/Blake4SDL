@@ -104,6 +104,15 @@ int             controlx,controly;          // range from -100 to 100 per tic
 bool            buttonstate[NUMBUTTONS];
 
 
+bool            refreshscreen;
+#if (GAME_VERSION != SHAREWARE_VERSION) || GEORGE_CHEAT
+byte            jam_buff_cmp[] = {sc_J,sc_A,sc_M};
+byte            jam_buff[sizeof(jam_buff_cmp)];
+#endif
+
+const char      *PAUSED_MSG = "^ST1^CEGame Paused\r^CEPress any key to resume.^XX";
+
+
 void    SpaceEntryExit (bool entry);
 void    FinishPaletteShifts (void);
 void    ShowQuickInstructions (void);
@@ -455,17 +464,6 @@ void PollControls (void)
 =====================
 */
 
-extern bool PP_step,sqActive;
-extern int pickquick;
-
-bool refreshscreen;
-#if (GAME_VERSION != SHAREWARE_VERSION) || GEORGE_CHEAT
-byte jam_buff_cmp[] = {sc_J,sc_A,sc_M};
-byte jam_buff[sizeof(jam_buff_cmp)];
-#endif
-
-const char *PAUSED_MSG = "^ST1^CEGame Paused\r^CEPress any key to resume.^XX";
-
 void CheckKeys (void)
 {
 #ifdef NOTYET
@@ -508,7 +506,7 @@ void CheckKeys (void)
     }
 #endif
 
-    CheckMusicToggle();
+    CheckMusicToggle ();
 
     if (gamestate.rpower)
     {
@@ -634,7 +632,7 @@ void CheckKeys (void)
         }
         else
 #endif
-        oneeighty = true;
+            oneeighty = true;
     }
 
     //
@@ -950,7 +948,6 @@ const char *computing = "Computing...";
 
 void ChangeSwapFiles (bool display)
 {
-#ifdef NOTYET
     SD_StopDigitized ();
 
     if (display)
@@ -970,39 +967,8 @@ void ChangeSwapFiles (bool display)
         CleanDrawPlayBorder ();
         IN_ClearKeysDown ();
     }
-#endif
 }
 #endif
-
-/*
-=====================
-=
-= OpenPageFile
-=
-=====================
-*/
-
-void OpenPageFile (void)
-{
-#ifdef NOTYET
-#if DUAL_SWAP_FILES
-
-    if ((gamestate.flags & GS_DRAW_FLOOR) || !ShadowsAvail)
-    {
-        PML_OpenPageFile (PageFileName);
-        FileUsed = sd_NO_SHADOWS;
-    }
-    else
-    {
-        PML_OpenPageFile (AltPageFileName);
-        FileUsed = sd_SHADOWS;
-    }
-#else
-    PML_OpenPageFile (PageFileName);
-#endif
-#endif
-}
-
 
 /*
 =====================

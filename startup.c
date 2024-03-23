@@ -7,7 +7,7 @@
 #include "3d_def.h"
 
 char  str[256],error[256];
-int   loop,currentsong;
+int   pickquick;
 bool  EscPressed;
 bool  ShowQuickMsg;
 

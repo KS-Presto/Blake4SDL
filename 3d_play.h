@@ -163,12 +163,10 @@ extern  int         numdeadguys;
 
 extern  int         bordertime;
 
-extern  bool        madenoise,usedummy,nevermark;
-extern  unsigned    alerted,alertedareanum;
+extern  bool        madenoise,usedummy;
+extern  unsigned    alerted,alertedarea;
 
-extern  unsigned    farmapylookup[MAPSIZE];
-
-extern  bool        singlestep,godmode,noclip;
+extern  bool        singlestep,godmode;
 extern  int         DebugOk,extravbls;
 extern  int         InstantWin,InstantQuit;
 

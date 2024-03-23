@@ -118,6 +118,8 @@ typedef struct
 
 extern  globalsound_t channelSoundPos[MIX_CHANNELS];
 
+extern  bool          sqActive;
+
 extern  bool          AdLibPresent;
 extern  bool          SoundBlasterPresent;
 extern  bool          SoundPositioned;
