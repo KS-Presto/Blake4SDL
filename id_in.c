@@ -7,12 +7,6 @@
 
 #include "3d_def.h"
 
-//
-// mouse constants
-//
-#define MReset  0
-#define MButtons 3
-#define MDelta  11
 
 //
 // joystick constants
@@ -35,7 +29,7 @@
 bool   MousePresent;
 bool   JoysPresent[MaxJoys];
 bool   JoyPadPresent;
-bool   NGinstalled=false;
+bool   NGinstalled;
 bool   btnstate[8];
 
 //  Global variables
@@ -48,8 +42,6 @@ ScanCode LastScan;
 
 JoystickDef JoyDefs[MaxJoys];
 ControlType Controls[MaxPlayers];
-
-longword MouseDownCount;
 
 
 /*
@@ -76,38 +68,36 @@ static Direction DirTable[] =  // Quick lookup for total direction
 
 char *IN_ParmStrings[] = {"nojoys","nomouse","enablegp",0};
 
-// Internal routines
-#ifdef NOTYET
-///////////////////////////////////////////////////////////////////////////
-//
-// INL_GetMouseDelta() - Gets the amount that the mouse has moved from the
-//  mouse driver
-//
-///////////////////////////////////////////////////////////////////////////
-static void
-INL_GetMouseDelta(int *x,int *y)
+
+/*
+=====================
+=
+= IN_GetMouseButtons
+=
+= Get the status of the mouse buttons from the mouse driver
+=
+=====================
+*/
+
+uint32_t IN_GetMouseButtons (void)
 {
- Mouse(MDelta);
- *x = _CX;
- *y = _DX;
+    if (!MousePresent)
+        return 0;
+
+    int buttons = SDL_GetMouseState(NULL,NULL);
+    int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+    int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+
+    buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
+
+    if (middlePressed)
+        buttons |= 1 << 2;
+    if (rightPressed)
+        buttons |= 1 << 1;
+
+    return buttons;
 }
 
-///////////////////////////////////////////////////////////////////////////
-//
-// INL_GetMouseButtons() - Gets the status of the mouse buttons from the
-//  mouse driver
-//
-///////////////////////////////////////////////////////////////////////////
-static word
-INL_GetMouseButtons(void)
-{
- word buttons;
-
- Mouse(MButtons);
- buttons = _BX;
- return(buttons);
-}
-#endif
 
 #ifdef NOTYET
 ///////////////////////////////////////////////////////////////////////////
@@ -897,22 +887,23 @@ ScanCode IN_WaitForKey (void)
 
 void IN_StartAck (void)
 {
- //   unsigned i,buttons;
+    int      i;
+    uint32_t buttons;
 
     IN_ClearKeysDown();
     memset (btnstate,0,sizeof(btnstate));
 #ifdef NOTYET
     buttons = IN_JoyButtons () << 4;
-
-    if (MousePresent)
-        buttons |= IN_MouseButtons ();
+#else
+    buttons = 0;
+#endif
+    buttons |= IN_GetMouseButtons();
 
     for (i = 0; i < 8; i++, buttons >>= 1)
     {
         if (buttons & 1)
             btnstate[i] = true;
     }
-#endif
 }
 
 
@@ -926,7 +917,8 @@ void IN_StartAck (void)
 
 bool IN_CheckAck (void)
 {
-//    unsigned i,buttons;
+    int      i;
+    uint32_t buttons;
 
 //
 // see if something has been pressed
@@ -935,21 +927,39 @@ bool IN_CheckAck (void)
         return true;
 #ifdef NOTYET
     buttons = IN_JoyButtons () << 4;
-
-    if (MousePresent)
-        buttons |= IN_MouseButtons ();
+#else
+    buttons = 0;
+#endif
+    buttons |= IN_GetMouseButtons();
 
     for (i = 0; i < 8; i++, buttons >>= 1)
     {
         if (buttons & 1)
         {
             if (!btnstate[i])
+            {
+                //
+                // wait until button has been released
+                //
+                do
+                {
+                    IN_WaitAndProcessEvents();
+#ifdef NOTYET
+                    buttons = IN_JoyButtons() << 4;
+#else
+                    buttons = 0;
+#endif
+                    buttons |= IN_GetMouseButtons();
+
+                } while (buttons & (1 << i));
+
                 return true;
+            }
         }
         else
             btnstate[i] = false;
     }
-#endif
+
     return false;
 }
 
@@ -990,6 +1000,8 @@ bool IN_UserInput (longword delay)
 
     do
     {
+        IN_ProcessEvents ();
+
         VW_WaitVBL (1);
 
         if (IN_CheckAck())
@@ -1000,27 +1012,6 @@ bool IN_UserInput (longword delay)
     return false;
 }
 
-
-/*
-===================
-=
-= IN_MouseButtons
-=
-===================
-*/
-#ifdef NOTYET
-byte IN_MouseButtons (void)
-{
-    if (MousePresent)
-    {
-        Mouse (MButtons);
-
-        return _BX;
-    }
-
-    return 0;
-}
-#endif
 
 /*
 ===================

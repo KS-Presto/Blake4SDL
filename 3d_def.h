@@ -1658,6 +1658,8 @@ unsigned Random (unsigned Max);
 extern   bool  EscPressed;
 extern   int   pickquick;
 
+extern   int   mouseadjustment;
+
 
 void     DrawInstructions (int Type);
 void     CacheMessage (int messagenum);

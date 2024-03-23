@@ -114,10 +114,6 @@
 #define sc_Enter        sc_Return
 #define key_None        sc_None
 
-//  Stuff for the mouse
-#define MReset  0
-#define MButtons 3
-#define MDelta  11
 
 #ifdef NOTYET
 #define  NGint 0x15
@@ -194,9 +190,8 @@ bool    IN_UserInput (longword delay);
 ScanCode IN_WaitForKey (void);
 word     IN_GetJoyButtonsDB (word joy);
 byte    *IN_GetScanName (ScanCode scan);
-
+uint32_t IN_GetMouseButtons (void);
 void    IN_CenterMouse (void);
-byte    IN_MouseButtons (void);
 byte    IN_JoyButtons (void);
 
 

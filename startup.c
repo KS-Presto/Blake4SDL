@@ -7,6 +7,7 @@
 #include "3d_def.h"
 
 char  str[256],error[256];
+int   mouseadjustment;
 int   pickquick;
 bool  EscPressed;
 bool  ShowQuickMsg;
@@ -506,6 +507,8 @@ int main (void)
     Init3DRenderer ();
     InitPlaytemp ();
     NewGame (gd_baby,0);
+
+    mouseenabled = true;
 
     do
     {

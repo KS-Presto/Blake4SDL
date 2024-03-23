@@ -156,10 +156,9 @@ void PollKeyboardButtons (void)
 
 void PollMouseButtons (void)
 {
-#ifdef NOTYET
     int buttons;
 
-    buttons = IN_MouseButtons();
+    buttons = IN_GetMouseButtons();
 
     if (buttons & 1)
         buttonstate[buttonmouse[0]] = true;
@@ -167,7 +166,6 @@ void PollMouseButtons (void)
         buttonstate[buttonmouse[1]] = true;
     if (buttons & 4)
         buttonstate[buttonmouse[2]] = true;
-#endif
 }
 
 
@@ -245,12 +243,9 @@ void PollKeyboardMove (void)
 
 void PollMouseMove (void)
 {
-#ifdef NOTYET
     int mousexmove,mouseymove;
 
-    Mouse(MDelta);
-    mousexmove = _CX;
-    mouseymove = _DX;
+    SDL_GetRelativeMouseState (&mousexmove,&mouseymove);
 
     //
     // double speed when shift is pressed
@@ -263,7 +258,6 @@ void PollMouseMove (void)
 
     controlx += (mousexmove * 10) / (13 - mouseadjustment);
     controly += (mouseymove * 20) / (13 - mouseadjustment);
-#endif
 }
 
 
@@ -384,7 +378,7 @@ void PollControls (void)
 //
     PollKeyboardButtons ();
 
-    if (mouseenabled)
+    if (mouseenabled && (screen.flags & SC_INPUTGRABBED))
         PollMouseButtons ();
 
     if (joystickenabled)
@@ -395,7 +389,7 @@ void PollControls (void)
 //
     PollKeyboardMove ();
 
-    if (mouseenabled)
+    if (mouseenabled && (screen.flags & SC_INPUTGRABBED))
         PollMouseMove ();
 
     if (joystickenabled)
