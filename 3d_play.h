@@ -180,12 +180,11 @@ extern  int         tics,realtics;
 //
 // control info
 //
-extern  bool        mouseenabled,joystickenabled,joypadenabled,joystickprogressive;
-extern  int         joystickport;
+extern  bool        mouseenabled,joystickenabled;
 extern  int         dirscan[4];
 extern  int         buttonscan[NUMBUTTONS];
 extern  int         buttonmouse[4];
-extern  int         buttonjoy[4];
+extern  int         buttonjoy[32];
 
 extern  bool        buttonheld[NUMBUTTONS];
 

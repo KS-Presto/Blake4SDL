@@ -110,23 +110,6 @@
 #define key_None        sc_None
 
 
-#ifdef NOTYET
-#define  MaxJoys  2
-#define  NGint 0x15
-#define  NGjoy(com) _AH=0x84;_DX=com;geninterrupt(NGint);
-
-#define  MaxJoyValue  5000   // JAM
-#endif
-typedef enum
-{
-    ctrl_None,         // JAM - added
-    ctrl_Keyboard,
-    ctrl_Keyboard1 = ctrl_Keyboard,ctrl_Keyboard2,
-    ctrl_Joystick,
-    ctrl_Joystick1 = ctrl_Joystick,ctrl_Joystick2,
-    ctrl_Mouse
-} ControlType;
-
 enum direction
 {
     dir_North,
@@ -150,29 +133,13 @@ typedef struct
     byte    dir;
 } ControlInfo;
 
-typedef struct
-{
-    word  joyMinX,joyMinY,
-          threshMinX,threshMinY,
-          threshMaxX,threshMaxY,
-          joyMaxX,joyMaxY,
-          joyMultXL,joyMultYL,
-          joyMultXH,joyMultYH;
-} JoystickDef;
 
-#ifdef NOTYET
-extern  bool        NGinstalled;     // JAM
-
-extern  bool        JoystickCalibrated;    // JAM - added
-extern  bool        JoysPresent[MaxJoys];
-extern  JoystickDef JoyDefs[MaxJoys];
-#endif
-
-extern  ControlType ControlTypeUsed;    // JAM - added
 extern  bool        Keyboard[sc_Last];
 extern  char        textinput[TEXTINPUTSIZE];
 extern  bool        MousePresent;
+extern  bool        JoystickPresent;
 extern  bool        Paused;
+extern  int         numjoybuttons;
 extern  ScanCode    LastScan;
 
 
@@ -184,18 +151,16 @@ void        IN_WaitAndProcessEvents (void);
 void        IN_ClearKeysDown (void);
 void        IN_ClearTextInput (void);
 void        IN_ReadControl (ControlInfo *info);
-void        IN_GetJoyAbs (word joy, word *xp, word *yp);
-void        IN_SetupJoy (word joy, word minx, word maxx, word miny, word maxy);
 void        IN_StartAck (void);
 bool        IN_CheckAck (void);
 void        IN_Ack (void);
 bool        IN_UserInput (longword delay);
 ScanCode    IN_WaitForKey (void);
-word        IN_GetJoyButtonsDB (word joy);
 byte        *IN_GetScanName (ScanCode scan);
 uint32_t    IN_GetMouseButtons (void);
+void        IN_GetJoyDelta (int *dx, int *dy);
+void        IN_GetJoyFineDelta (int *dx, int *dy);
+uint32_t    IN_GetJoyButtons (void);
 void        IN_CenterMouse (void);
-byte        IN_JoyButtons (void);
-
 
 #endif

@@ -83,12 +83,19 @@ bool            usedummy;
 //
 // control info
 //
-bool            mouseenabled,joystickenabled,joypadenabled,joystickprogressive;
-int             joystickport;
+bool            mouseenabled,joystickenabled;
 int             dirscan[4] = {sc_UpArrow,sc_RightArrow,sc_DownArrow,sc_LeftArrow};
 int             buttonscan[NUMBUTTONS] = {sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7};
 int             buttonmouse[4] = {bt_attack,bt_strafe,bt_use,bt_nobutton};
-int             buttonjoy[4] = {bt_attack,bt_strafe,bt_use,bt_run};
+int             buttonjoy[32] =
+{
+    bt_attack, bt_strafe, bt_use, bt_run, bt_strafeleft, bt_straferight, bt_esc, bt_pause,
+    bt_prevweapon, bt_nextweapon, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton,
+
+    bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton,
+    bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton, bt_nobutton,
+};
+
 bool            buttonheld[NUMBUTTONS];
 
 bool            demorecord,demoplayback;
@@ -179,34 +186,16 @@ void PollMouseButtons (void)
 
 void PollJoystickButtons (void)
 {
-#ifdef NOTYET
-    int buttons;
+    int      i;
+    uint32_t buttons,bits;
 
-    buttons = IN_JoyButtons();
+    buttons = IN_GetJoyButtons();
 
-    if (joystickport && !joypadenabled)
+    for (i = 0, bits = 1; i < numjoybuttons; i++, bits <<= 1)
     {
-        if (buttons & 4)
-            buttonstate[buttonjoy[0]] = true;
-        if (buttons & 8)
-            buttonstate[buttonjoy[1]] = true;
+        if (buttons & bits)
+            buttonstate[buttonjoy[i]] = true;
     }
-    else
-    {
-        if (buttons & 1)
-            buttonstate[buttonjoy[0]] = true;
-        if (buttons & 2)
-            buttonstate[buttonjoy[1]] = true;
-
-        if (joypadenabled)
-        {
-            if (buttons & 4)
-                buttonstate[buttonjoy[2]] = true;
-            if (buttons & 8)
-                buttonstate[buttonjoy[3]] = true;
-        }
-    }
-#endif
 }
 
 
@@ -271,37 +260,22 @@ void PollMouseMove (void)
 
 void PollJoystickMove (void)
 {
-#ifdef NOTYET
-    int joyx,joyy;
+    int x,y;
     int delta;
 
-    INL_GetJoyDelta (joystickport,&joyx,&joyy);
+    IN_GetJoyDelta (&x,&y);
 
-    if (joystickprogressive)
-    {
-        if (joyx > 64)
-            controlx += ((joyx - 64) * JOYSCALE) * tics;
-        else if (joyx < -64)
-            controlx -= ((-joyx - 64) * JOYSCALE) * tics;
-        if (joyy > 64)
-            controlx += ((joyy - 64) * JOYSCALE) * tics;
-        else if (joyy < -64)
-            controly -= ((-joyy - 64) * JOYSCALE) * tics;
-    }
-    else
-    {
-        delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
+    delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
 
-        if (joyx > 64)
-            controlx += delta;
-        else if (joyx < -64)
-            controlx -= delta;
-        if (joyy > 64)
-            controly += delta;
-        else if (joyy < -64)
-            controly -= delta;
-    }
-#endif
+    if (x > 64 || buttonstate[bt_turnright])
+        controlx += delta;
+    else if (x < -64 || buttonstate[bt_turnleft])
+        controlx -= delta;
+
+    if (y > 64 || buttonstate[bt_movebackward])
+        controly += delta;
+    else if (y < -64 || buttonstate[bt_moveforward])
+        controly -= delta;
 }
 
 

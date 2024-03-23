@@ -1292,6 +1292,8 @@ extern  byte      colormap[16896];
 
 extern  int       param_samplerate;
 extern  int       param_audiobuffer;
+extern  int       param_joystickindex;
+extern  int       param_joystickhat;
 
 
 void     LoadFonts (void);

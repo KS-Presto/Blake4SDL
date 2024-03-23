@@ -14,6 +14,8 @@ bool  ShowQuickMsg;
 
 int   param_samplerate = 44100;
 int   param_audiobuffer = 2048;
+int   param_joystickindex;
+int   param_joystickhat = -1;
 int   lastmusic;
 
 
@@ -495,7 +497,7 @@ void ClearNClose (void)
 
 int main (void)
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
         Quit ("Unable to init SDL: %s\n",SDL_GetError());
 
     VW_Startup ();
@@ -509,6 +511,7 @@ int main (void)
     NewGame (gd_baby,0);
 
     mouseenabled = true;
+    joystickenabled = true;
 
     do
     {
