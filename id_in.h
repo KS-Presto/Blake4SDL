@@ -9,11 +9,6 @@
 #define _ID_IN_H_
 
 
-#define MaxPlayers 4
-#define MaxKbds  2
-#define MaxJoys  2
-#define NumCodes 128
-
 #define TEXTINPUTSIZE   SDL_TEXTINPUTEVENT_TEXT_SIZE
 
 #define sc_None         SDL_SCANCODE_UNKNOWN
@@ -116,10 +111,11 @@
 
 
 #ifdef NOTYET
+#define  MaxJoys  2
 #define  NGint 0x15
 #define  NGjoy(com) _AH=0x84;_DX=com;geninterrupt(NGint);
 
-#define MaxJoyValue  5000   // JAM
+#define  MaxJoyValue  5000   // JAM
 #endif
 typedef enum
 {
@@ -131,21 +127,27 @@ typedef enum
     ctrl_Mouse
 } ControlType;
 
-typedef enum
+enum direction
 {
-    dir_North,dir_NorthEast,
-    dir_East,dir_SouthEast,
-    dir_South,dir_SouthWest,
-    dir_West,dir_NorthWest,
-    dir_None
-} Direction;
+    dir_North,
+    dir_NorthEast,
+    dir_East,
+    dir_SouthEast,
+    dir_South,
+    dir_SouthWest,
+    dir_West,
+    dir_NorthWest,
+    dir_None,
+
+    NUMDIRECTIONS
+};
 
 typedef struct
 {
-    bool  button0,button1,button2,button3;
-    int   x,y;
-    int   xaxis,yaxis;
-    Direction dir;
+    bool    button0,button1,button2,button3;
+    int16_t x,y;
+    int16_t xaxis,yaxis;
+    byte    dir;
 } ControlInfo;
 
 typedef struct
@@ -158,41 +160,42 @@ typedef struct
           joyMultXH,joyMultYH;
 } JoystickDef;
 
+#ifdef NOTYET
+extern  bool        NGinstalled;     // JAM
 
-extern bool   NGinstalled;     // JAM
+extern  bool        JoystickCalibrated;    // JAM - added
+extern  bool        JoysPresent[MaxJoys];
+extern  JoystickDef JoyDefs[MaxJoys];
+#endif
 
-extern bool JoystickCalibrated;    // JAM - added
-extern ControlType ControlTypeUsed;    // JAM - added
-extern bool  Keyboard[sc_Last];
-extern char  textinput[TEXTINPUTSIZE];
-extern bool     MousePresent;
-extern bool     JoysPresent[MaxJoys];
-extern bool  Paused;
-extern ScanCode LastScan;
-extern JoystickDef JoyDefs[MaxJoys];
-extern ControlType Controls[MaxPlayers];
+extern  ControlType ControlTypeUsed;    // JAM - added
+extern  bool        Keyboard[sc_Last];
+extern  char        textinput[TEXTINPUTSIZE];
+extern  bool        MousePresent;
+extern  bool        Paused;
+extern  ScanCode    LastScan;
 
 
-void    IN_Startup (void);
-void    IN_Shutdown (void);
-void    IN_ProcessEvents (void);
-void    IN_WaitEvent (void);
-void    IN_WaitAndProcessEvents (void);
-void    IN_ClearKeysDown (void);
-void    IN_ClearTextInput (void);
-void    IN_ReadControl (ControlInfo *info);
-void    IN_GetJoyAbs (word joy, word *xp, word *yp);
-void    IN_SetupJoy (word joy, word minx, word maxx, word miny, word maxy);
-void    IN_StartAck (void);
-bool    IN_CheckAck (void);
-void    IN_Ack (void);
-bool    IN_UserInput (longword delay);
-ScanCode IN_WaitForKey (void);
-word     IN_GetJoyButtonsDB (word joy);
-byte    *IN_GetScanName (ScanCode scan);
-uint32_t IN_GetMouseButtons (void);
-void    IN_CenterMouse (void);
-byte    IN_JoyButtons (void);
+void        IN_Startup (void);
+void        IN_Shutdown (void);
+void        IN_ProcessEvents (void);
+void        IN_WaitEvent (void);
+void        IN_WaitAndProcessEvents (void);
+void        IN_ClearKeysDown (void);
+void        IN_ClearTextInput (void);
+void        IN_ReadControl (ControlInfo *info);
+void        IN_GetJoyAbs (word joy, word *xp, word *yp);
+void        IN_SetupJoy (word joy, word minx, word maxx, word miny, word maxy);
+void        IN_StartAck (void);
+bool        IN_CheckAck (void);
+void        IN_Ack (void);
+bool        IN_UserInput (longword delay);
+ScanCode    IN_WaitForKey (void);
+word        IN_GetJoyButtonsDB (word joy);
+byte        *IN_GetScanName (ScanCode scan);
+uint32_t    IN_GetMouseButtons (void);
+void        IN_CenterMouse (void);
+byte        IN_JoyButtons (void);
 
 
 #endif

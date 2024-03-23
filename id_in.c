@@ -8,65 +8,47 @@
 #include "3d_def.h"
 
 
+#define SENSITIVE     60
+
 //
 // joystick constants
 //
+#ifdef NOTYET
 #define JoyScaleMax  32768
 #define JoyScaleShift 8
 //#define MaxJoyValue  5000
 
-/*
-=============================================================================
-
-                        GLOBAL VARIABLES
-
-=============================================================================
-*/
+bool    JoysPresent[MaxJoys];
+bool    JoyPadPresent;
+bool    NGinstalled;
+bool    JoystickCalibrated;    // JAM - added
+JoystickDef JoyDefs[MaxJoys];
+#endif
 
 //
 // configuration variables
 //
-bool   MousePresent;
-bool   JoysPresent[MaxJoys];
-bool   JoyPadPresent;
-bool   NGinstalled;
-bool   btnstate[8];
+bool        MousePresent;
+bool        btnstate[8];
 
-//  Global variables
-bool JoystickCalibrated;    // JAM - added
 ControlType ControlTypeUsed;    // JAM - added
-bool  Keyboard[sc_Last];
-bool  Paused;
-char  textinput[TEXTINPUTSIZE];
-ScanCode LastScan;
+bool        Keyboard[sc_Last];
+bool        Paused;
+char        textinput[TEXTINPUTSIZE];
+ScanCode    LastScan;
 
-JoystickDef JoyDefs[MaxJoys];
-ControlType Controls[MaxPlayers];
-
-
-/*
-=============================================================================
-
-     LOCAL VARIABLES
-
-=============================================================================
-*/
-
-bool  IN_Started;
-#ifdef NOTYET
-static bool  CapsLock;
-static ScanCode CurCode,LastCode;
-#endif
-
-static Direction DirTable[] =  // Quick lookup for total direction
+int controldirtable[NUMDIRECTIONS] =
 {
-    dir_NorthWest, dir_North, dir_NorthEast,
-    dir_West,  dir_None, dir_East,
-    dir_SouthWest, dir_South, dir_SouthEast
+    dir_NorthWest,
+    dir_North,
+    dir_NorthEast,
+    dir_West,
+    dir_None,
+    dir_East,
+    dir_SouthWest,
+    dir_South,
+    dir_SouthEast,
 };
-
-
-char *IN_ParmStrings[] = {"nojoys","nomouse","enablegp",0};
 
 
 /*
@@ -649,9 +631,10 @@ void IN_WaitAndProcessEvents (void)
 
 void IN_Startup (void)
 {
-//    bool checkjoys,checkNG;
-//    int i;
-
+#ifdef NOTYET
+    bool checkjoys,checkNG;
+    int  i;
+#endif
     IN_ClearKeysDown ();
     IN_CenterMouse ();
 
@@ -659,6 +642,8 @@ void IN_Startup (void)
 
     if (screen.flags & (SC_FULLSCREEN | SC_INPUTGRABBED))
         IN_SetWindowGrab (screen.window);
+
+    MousePresent = true;
 
 #ifdef NOTYET
     checkjoys = true;
@@ -672,9 +657,7 @@ void IN_Startup (void)
         if ((_AX==WORD_CODE('S','G')) && _BX)
             NGinstalled=true;
     }
-#endif
-    MousePresent = true;
-#ifdef NOTYET
+
     for (i = 0;i < MaxJoys;i++)
         JoysPresent[i] = checkjoys ? INL_StartJoy(i) : false;
 #endif
@@ -755,104 +738,122 @@ void IN_ClearTextInput (void)
 
 void IN_ReadControl (ControlInfo *info)
 {
-    bool realdelta = false;
-    word buttons;
-    int  dx,dy;
-    int  mx,my;
+    static int totalmousex,totalmousey;
+    bool       rightpressed,middlepressed;
+    bool       mouseactive;
+    uint32_t   buttons;
+    int        mx,my;
+    int        mousex,mousey;
 
-    dx = dy = 0;
     mx = my = 0;
     buttons = 0;
+    mouseactive = false;
 
     IN_ProcessEvents ();
 
-    ControlTypeUsed = ctrl_None;
-
-    if (ControlTypeUsed == ctrl_None)
+    if (Keyboard[sc_Home])
     {
-        if (Keyboard[sc_Home])
+        mx = -1;
+        my = -1;
+    }
+    else if (Keyboard[sc_PgUp])
+    {
+        mx = 1;
+        my = -1;
+    }
+    else if (Keyboard[sc_End])
+    {
+        mx = -1;
+        my = 1;
+    }
+    else if (Keyboard[sc_PgDn])
+    {
+        mx = 1;
+        my = 1;
+    }
+
+    if (Keyboard[sc_LeftArrow])
+        mx = -1;
+    else if (Keyboard[sc_RightArrow])
+        mx = 1;
+
+    if (Keyboard[sc_UpArrow])
+        my = -1;
+    else if (Keyboard[sc_DownArrow])
+        my = 1;
+
+    if (mouseenabled && (screen.flags & SC_INPUTGRABBED))
+    {
+        buttons = SDL_GetRelativeMouseState(&mousex,&mousey);
+        rightpressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+        middlepressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+        buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
+
+        if (rightpressed)
+            buttons |= 1 << 1;
+        if (middlepressed)
+            buttons |= 1 << 2;
+
+        totalmousex += mousex;
+        totalmousey += mousey;
+
+        if (totalmousey < -SENSITIVE)
         {
             mx = -1;
-            my = -1;
+            mouseactive = true;
         }
-        else if (Keyboard[sc_PgUp])
+        else if (totalmousey > SENSITIVE)
         {
             mx = 1;
-            my = -1;
+            mouseactive = true;
         }
-        else if (Keyboard[sc_End])
+
+        if (totalmousex  < -SENSITIVE)
         {
-            mx = -1;
-            my = 1;
-        }
-        else if (Keyboard[sc_PgDn])
-        {
-            mx = 1;
-            my = 1;
-        }
-
-        if (Keyboard[sc_LeftArrow])
-            mx = -1;
-        else if (Keyboard[sc_RightArrow])
-            mx = 1;
-
-        if (Keyboard[sc_UpArrow])
             my = -1;
-        else if (Keyboard[sc_DownArrow])
+            mouseactive = true;
+        }
+        else if (totalmousex  > SENSITIVE)
+        {
             my = 1;
+            mouseactive = true;
+        }
 
-        if (Keyboard[sc_Control])
-            buttons += 1;
-        if (Keyboard[sc_Alt])
-            buttons += 2;
+        if (mouseactive)
+            totalmousex = totalmousey = 0;
 
-        realdelta = false;
-
-        if (mx || my || buttons)
-            ControlTypeUsed = ctrl_Keyboard;
+        if (buttons)
+            mouseactive = true;
     }
 #ifdef NOTYET
-    if (MousePresent && ControlTypeUsed == ctrl_None)
+    if (joystickenabled && !mouseactive)
     {
-        INL_GetMouseDelta(&dx,&dy);
-        buttons = INL_GetMouseButtons();
-        realdelta = true;
+        int jx,jy;
 
-        if (dx || dy || buttons)
-            ControlTypeUsed = ctrl_Mouse;
+        IN_GetJoyDelta (&jx,&jy);
+
+        if (jx < -SENSITIVE)
+            mx = -1;
+        else if (jx > SENSITIVE)
+            mx = 1;
+
+        if (jy < -SENSITIVE)
+            my = -1;
+        else if (jy > SENSITIVE)
+            my = 1;
+
+        buttons = IN_JoyButtons();
     }
 #endif
-#ifdef NOTYET
-    if (JoystickCalibrated && ControlTypeUsed == ctrl_None)
-    {
-        INL_GetJoyDelta(ctrl_Joystick1 - ctrl_Joystick,&dx,&dy);
-        buttons = INL_GetJoyButtons(ctrl_Joystick1 - ctrl_Joystick);
-        realdelta = true;
-
-        if (dx || dy || buttons)
-            ControlTypeUsed = ctrl_Joystick;
-    }
-#endif
-    if (realdelta)
-    {
-        mx = (dx < 0) ? -1 : ((dx > 0) ? 1 : 0);
-        my = (dy < 0) ? 1 : ((dy > 0) ? 1 : 0);
-    }
-    else
-    {
-        dx = mx * 127;
-        dy = my * 127;
-    }
-
-    info->x = dx;
+    info->x = mx * 127;
+    info->y = my * 127;
     info->xaxis = mx;
-    info->y = dy;
     info->yaxis = my;
-    info->button0 = buttons & (1 << 0);
+    info->button0 = buttons & 1;
     info->button1 = buttons & (1 << 1);
     info->button2 = buttons & (1 << 2);
     info->button3 = buttons & (1 << 3);
-    info->dir = DirTable[((my + 1) * 3) + (mx + 1)];
+    info->dir = controldirtable[((my + 1) * 3) + (mx + 1)];
 }
 
 
@@ -890,7 +891,7 @@ void IN_StartAck (void)
     int      i;
     uint32_t buttons;
 
-    IN_ClearKeysDown();
+    IN_ClearKeysDown ();
     memset (btnstate,0,sizeof(btnstate));
 #ifdef NOTYET
     buttons = IN_JoyButtons () << 4;
