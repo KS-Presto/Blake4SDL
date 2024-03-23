@@ -8,14 +8,11 @@
 #include "3d_def.h"
 
 
-word  PrintX,PrintY;
-word  WindowX,WindowY,WindowW,WindowH;
+int            PrintX,PrintY;
+int            WindowX,WindowY,WindowW,WindowH;
 
 CustomCursor_t CustomCursor;
 bool           usecustomcursor;
-
-
-#define ConfigVersion 1
 
 HighScore  Scores[MaxScores] =
 {
@@ -303,6 +300,23 @@ void US_CPrint (const char *string)
 	}
 
 	free (strstart);
+}
+
+
+/*
+===================
+=
+= US_ResetWindow
+=
+===================
+*/
+
+void US_ResetWindow (int heightofs)
+{
+    WindowX = 0;
+    WindowY = 0;
+    WindowW = screen.width;
+    WindowH = screen.height - heightofs;
 }
 
 

@@ -49,9 +49,9 @@ typedef struct
 
 extern  byte            rndtable[256];
 extern  bool            NoWait;
-extern  word            PrintX,PrintY;     // Current printing location in the window
-extern  word            WindowX,WindowY;   // Current location of window
-extern  word            WindowW,WindowH;   // Current size of window
+extern  int             PrintX,PrintY;     // Current printing location in the window
+extern  int             WindowX,WindowY;   // Current location of window
+extern  int             WindowW,WindowH;   // Current size of window
 
 extern  HighScore       Scores[MaxScores];
 
@@ -65,6 +65,7 @@ void    US_DrawWindow (int x, int y, int w, int h);
 void    US_CenterWindow (int w, int h);
 void    US_SaveWindow (WindowRec *win);
 void    US_RestoreWindow (WindowRec *win);
+void    US_ResetWindow (int heightofs);
 void    US_ClearWindow (void);
 void    US_PrintCentered (const char *string);
 void    US_CPrint (const char *string);
