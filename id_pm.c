@@ -13,6 +13,54 @@ word *pageLengths;
 byte *PMPageData;
 byte **PMPages;
 
+enum shadfiletypes
+{
+    sd_NONE,
+    sd_NO_SHADOWS,
+    sd_SHADOWS,
+};
+
+char pagefilename[13] = {"VSWAP."};
+int  FileUsed = sd_NONE;
+
+#if DUAL_SWAP_FILES
+char altpagefilename[13] = {"SVSWAP."};
+bool shadowsavail;
+#endif
+
+/*
+==================
+=
+= PM_OpenPageFile
+=
+==================
+*/
+
+FILE *PM_OpenPageFile (void)
+{
+    FILE *file;
+    char pagefilename[13];
+#if DUAL_SWAP_FILES
+    if (!(gamestate.flags & GS_DRAW_FLOOR) && shadowsavail)
+    {
+        snprintf (pagefilename,sizeof(pagefilename),"svswap.%s",extension);
+        FileUsed = sd_SHADOWS;
+    }
+    else
+#endif
+    {
+        snprintf (pagefilename,sizeof(pagefilename),"vswap.%s",extension);
+        FileUsed = sd_NO_SHADOWS;
+    }
+
+    file = fopen(pagefilename,"rb");
+
+    if (!file)
+        CA_CannotOpen (pagefilename);
+
+    return file;
+}
+
 
 /*
 ==================
@@ -31,14 +79,8 @@ void PM_Startup (void)
     uint32_t pagesize;
     int32_t  filesize,datasize;
     FILE     *file;
-    char     fname[13];
 
-    snprintf (fname,sizeof(fname),"vswap.%s",extension);
-
-    file = fopen(fname,"rb");
-
-    if (!file)
-        CA_CannotOpen(fname);
+    file = PM_OpenPageFile();
 
     //
     // read in header variables
@@ -66,7 +108,7 @@ void PM_Startup (void)
     datasize = filesize - pageOffsets[0];
 
     if (datasize < 0)
-        Quit ("PM_Startup: The page file \"%s\" is too large!",fname);
+        Quit ("PM_Startup: The page file is too large!");
 
     pageOffsets[ChunksInFile] = filesize;
 
