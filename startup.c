@@ -15,6 +15,64 @@ int   param_samplerate = 44100;
 int   param_audiobuffer = 2048;
 int   lastmusic;
 
+
+void Message (const char *string)
+{
+    int        i;
+    int        x,y,w,h,mw;
+    int        len;
+    fontstruct *font;
+
+    w = mw = 0;
+    fontnumber = 1;
+
+    font = (fontstruct *)grsegs[STARTFONT + fontnumber];
+
+    h = font->height;
+    len = strlen(string);
+
+    for (i = 0; i < len; i++)
+    {
+        if (string[i] == '\n')
+        {
+            if (w > mw)
+                mw = w;
+
+            w = 0;
+            h += font->height;
+        }
+        else
+            w += font->width[(byte)string[i]];
+    }
+
+    if (w + 10 > mw)
+        mw = w + 10;
+
+    x = 160 - (mw / 2);
+    y = (WindowH / 2) - (h / 2);
+
+    //
+    // bump down and to the right for shadow
+    //
+    PrintX = x + 1;
+    PrintY = y + 1;
+    WindowX = PrintX;
+
+    BevelBox (WindowX - 6,PrintY - 6,mw + 10,h + 10,BORDER_HI_COLOR,BORDER_MED_COLOR,BORDER_LO_COLOR);
+
+    SetFontColor (BORDER_LO_COLOR,BORDER_MED_COLOR);
+    US_Print (string);
+
+    WindowX = PrintX = x;
+    PrintY = y;
+
+    SetFontColor (BORDER_TEXT_COLOR,BORDER_MED_COLOR);
+    US_Print (string);
+
+    VW_UpdateScreen (screen.buffer);
+}
+
+
 unsigned Random (unsigned Max)
 {
     return Max;

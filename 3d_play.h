@@ -199,8 +199,6 @@ extern  bool        demorecord,demoplayback;
 extern  int8_t      *demoptr,*lastdemoptr;
 extern  int8_t      *demobuffer;
 
-extern  const char  *Computing;
-
 
 void    InitObjList (void);
 objtype *GetNewObj (void);

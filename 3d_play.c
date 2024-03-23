@@ -9,7 +9,7 @@
 //
 // list of songs for each level
 //
-int songs[] =
+int songs[MAPS_PER_EPISODE] =
 {
     MAJMIN_MUS,              // 0
     STICKS_MUS,              // 1
@@ -38,7 +38,6 @@ int songs[] =
 };
 
 int             lastmusicchunk;
-int             lastmusicoffset;
 int             musicnum;
 
 bool            madenoise;         // true when shooting or screaming
@@ -91,7 +90,6 @@ int             buttonscan[NUMBUTTONS] = {sc_Control,sc_Alt,sc_RShift,sc_Space,s
 int             buttonmouse[4] = {bt_attack,bt_strafe,bt_use,bt_nobutton};
 int             buttonjoy[4] = {bt_attack,bt_strafe,bt_use,bt_run};
 bool            buttonheld[NUMBUTTONS];
-bool            pollMouseUsed;
 
 bool            demorecord,demoplayback;
 int8_t          *demoptr,*lastdemoptr;
@@ -116,7 +114,6 @@ const char      *PAUSED_MSG = "^ST1^CEGame Paused\r^CEPress any key to resume.^X
 void    SpaceEntryExit (bool entry);
 void    FinishPaletteShifts (void);
 void    ShowQuickInstructions (void);
-void    CleanDrawPlayBorder (void);
 void    PopupAutoMap (void);
 
 
@@ -266,8 +263,6 @@ void PollMouseMove (void)
 
     controlx += (mousexmove * 10) / (13 - mouseadjustment);
     controly += (mouseymove * 20) / (13 - mouseadjustment);
-
-    pollMouseUsed = (mousexmove || mouseymove);
 #endif
 }
 
@@ -466,12 +461,15 @@ void PollControls (void)
 
 void CheckKeys (void)
 {
+    bool        oneeighty = false;
 #ifdef NOTYET
-    bool        oneeighty = false,oldloadedgame;
+    bool        oldloadedgame;
+#endif
     int         i;
     int         lastoffs,oldmusicnum;
+#ifdef NOTYET
     ScanCode    scan;
-    unsigned    temp;
+#endif
     static bool Plus_KeyReleased;
     static bool Minus_KeyReleased;
     static bool I_KeyReleased;
@@ -479,33 +477,28 @@ void CheckKeys (void)
 
     if ((screen.flags & SC_FADED) || demoplayback)  // don't do anything with a faded screen
         return;
-
+#ifdef NOTYET
     scan = LastScan;
-
+#endif
 #if IN_DEVELOPMENT
 #ifdef ACTIVATE_TERMINAL
     if (Keyboard[sc_9] && Keyboard[sc_0])
         ActivateTerminal (true);
 #endif
 #endif
-
     //
-    // SECRET CHEAT CODE: 'JAM'
+    // secret cheat code: 'JAM'
     //
 #if GAME_VERSION != SHAREWARE_VERSION
     if (Keyboard[sc_J] || Keyboard[sc_A] || Keyboard[sc_M])
     {
         if (jam_buff[sizeof(jam_buff_cmp) - 1] != LastScan)
         {
-            //
-            // TODO: overlapping memory; use memmove!
-            //
-            memcpy (jam_buff,jam_buff + 1,sizeof(jam_buff_cmp) - 1);
+            memmove (jam_buff,jam_buff + 1,sizeof(jam_buff_cmp) - 1);
             jam_buff[sizeof(jam_buff_cmp) - 1] = LastScan;
         }
     }
 #endif
-
     CheckMusicToggle ();
 
     if (gamestate.rpower)
@@ -573,6 +566,7 @@ void CheckKeys (void)
 
                 //
                 // TODO: eww x2
+                //
                 memcpy ((char *)&SoundOn[55],"ON. ",4);
             }
 
@@ -619,16 +613,14 @@ void CheckKeys (void)
             ForceUpdateStatusBar ();
 
             SD_StopDigitized ();
-#ifdef NOTYET
-            ClearSplitVWB ();
-            VW_ScreenToScreen (displayofs,bufferofs,80,160);
+            US_ResetWindow (STATUSLINES);
 
-            Message("\n NOW you're jammin'!! \n");
-#endif
+            Message ("\n NOW you're jammin'!! \n");
+
             IN_ClearKeysDown ();
             IN_Ack ();
 
-            CleanDrawPlayBorder ();
+            DrawPlayBorder ();
         }
         else
 #endif
@@ -709,7 +701,7 @@ void CheckKeys (void)
     if (TestAutoMapper)
         PopupAutoMap ();
 #endif
-
+#ifdef NOTYET
     switch (scan)
     {
         case sc_F7:       // end game
@@ -717,18 +709,19 @@ void CheckKeys (void)
             FinishPaletteShifts ();
             SD_StopDigitized ();
             US_ControlPanel (scan);
-            CleanDrawPlayBorder ();
+            DrawPlayBorder ();
             return;
 
         case sc_F2:       // save mission
         case sc_F8:       // quick save
-        SD_StopDigitized ();
-        FinishPaletteShifts ();
-        if (!CheckDiskSpace(DISK_SPACE_NEEDED,CANT_SAVE_GAME_TXT,cds_id_print))
-        {
-            CleanDrawPlayBorder ();
-            break;
-        }
+            SD_StopDigitized ();
+            FinishPaletteShifts ();
+
+            if (!CheckDiskSpace(DISK_SPACE_NEEDED,CANT_SAVE_GAME_TXT,cds_id_print))
+            {
+                DrawPlayBorder ();
+                break;
+            }
 
         case sc_F1:         // help
         case sc_F3:         // load mission
@@ -738,11 +731,13 @@ void CheckKeys (void)
         case sc_F9:         // quick load
         case sc_Escape:     // main menu
             refreshscreen = true;
+
             if (scan < sc_F8)
                 VW_FadeOut ();
+
             StopMusic ();
             SD_StopDigitized ();
-            ClearSplitVWB ();
+            US_ResetWindow (STATUSLINES);
             US_ControlPanel (scan);
 
             if (refresh_screen)
@@ -769,23 +764,22 @@ void CheckKeys (void)
                 DrawPlayScreen (false);
             }
             else if (!refreshscreen)
-                CleanDrawPlayBorder ();
+                DrawPlayBorder ();
 
             if (!sqActive)
                 StartMusic ();
 
             return;
     }
-
+#endif
     if (Keyboard[sc_Tab])
         PopupAutoMap ();
 
     if (Keyboard[sc_Tilde])
     {
-        Keyboard[sc_Tilde] = 0;
+        Keyboard[sc_Tilde] = false;
         TryDropPlasmaDetonator ();
     }
-
 
     if ((DebugOk || (gamestate.flags & GS_MUSIC_TEST)) && Keyboard[sc_BackSpace])
     {
@@ -810,9 +804,7 @@ void CheckKeys (void)
 
             if (oldmusicnum != musicnum)
             {
-                SD_StpDigitized ();
-                // TODO: CA_UnacheAudioChunk?
-                //MM_FreePtr ((void *)&audiosegs[STARTMUSIC + oldmusicnum]);
+                SD_StopDigitized ();
                 StartMusic ();
                 DrawScore ();
             }
@@ -822,9 +814,10 @@ void CheckKeys (void)
         {
             fontnumber = 4;
             SetFontColor (0,15);
-
+#ifdef NOTYET
             if (DebugKeys())
-                CleanDrawPlayBorder ();
+#endif
+                DrawPlayBorder ();
 
             IN_CenterMouse ();
 
@@ -860,24 +853,18 @@ void CheckKeys (void)
 
     if (Keyboard[sc_F])
     {
-        ThreeDRefresh ();
-        ThreeDRefresh ();  //TODO: not sure why once, but twice?
-
         gamestate.flags ^= GS_DRAW_FLOOR;
-
         Keyboard[sc_F] = false;
 #if DUAL_SWAP_FILES
         ChangeSwapFiles (true);
 #endif
     }
 #endif
-
     if (Keyboard[sc_L])
     {
         Keyboard[sc_L] = false;
         gamestate.flags ^= GS_LIGHTING;
     }
-#endif
 }
 
 
@@ -912,6 +899,7 @@ void CheckMusicToggle (void)
                 SD_SetMusicMode (smm_Off);
                 //
                 // TODO: eww x3
+                //
                 memcpy ((char *)&MusicOn[58],"OFF.",4);
             }
             else
@@ -932,9 +920,6 @@ void CheckMusicToggle (void)
         M_KeyReleased = true;
 }
 
-
-const char *computing = "Computing...";
-
 #if DUAL_SWAP_FILES
 /*
 =====================
@@ -952,9 +937,7 @@ void ChangeSwapFiles (bool display)
 
     if (display)
     {
-        WindowX = WindowY = 0;
-        WindowW = 320;
-        WindowH = 200;
+        US_ResetWindow (0);
         Message (computing);
     }
 
@@ -964,8 +947,9 @@ void ChangeSwapFiles (bool display)
     if (display)
     {
         IN_UserInput (50);
-        CleanDrawPlayBorder ();
         IN_ClearKeysDown ();
+
+        DrawPlayBorder ();
     }
 }
 #endif
@@ -983,34 +967,16 @@ void PopupAutoMap (void)
     #define BASE_X 64
     #define BASE_Y 44
 
-    ThreeDRefresh ();
-    ThreeDRefresh ();  // TODO: why once, why twice?
-
     SD_StopSound ();
     SD_StopDigitized ();
     VW_DrawPic (BASE_X,BASE_Y,AUTOMAPPIC);
 
     ShowStats (BASE_X + 101,BASE_Y + 22,ss_quick,&gamestuff.level[gamestate.mapon].stats);
 
-    while (Keyboard[sc_Tilde])
-    {
-        IN_WaitAndProcessEvents ();
-        //CalcTics ();    // TODO: this shouldn't be necessary now, but test it
-    }
-
-    //
-    // TODO: again don't think we need CalcTics here, but test it
-    //
-#if 1
     IN_Ack ();
-#else
-    IN_StartAck ();
-
-    while (!IN_CheckAck())
-        CalcTics ();
-#endif
-    CleanDrawPlayBorder ();
     IN_ClearKeysDown ();
+
+    DrawPlayBorder ();
 }
 
 
@@ -1778,9 +1744,6 @@ void ShowQuickInstructions (void)
     if (demoplayback || gamestate.mapon || (gamestate.flags & GS_QUICKRUN))
         return;
 
-    ThreeDRefresh ();
-    ThreeDRefresh ();  // TODO: why once, why twice
-
     SD_StopDigitized ();
 
     WindowX = 0;
@@ -1797,27 +1760,6 @@ void ShowQuickInstructions (void)
     IN_Ack ();
     IN_ClearKeysDown ();
 
-    CleanDrawPlayBorder ();
+    DrawPlayBorder ();
 #endif
-}
-
-
-/*
-===================
-=
-= CleanDrawPlayBorder
-=
-= TODO: this is probably because of the old 3 pages of VGA memory thing
-= Just call DrawPlayBorder now
-=
-===================
-*/
-
-void CleanDrawPlayBorder (void)
-{
-    DrawPlayBorder ();
-    ThreeDRefresh ();
-    DrawPlayBorder ();
-    ThreeDRefresh ();
-    DrawPlayBorder ();
 }

@@ -1,4 +1,7 @@
 // 3D_MSGS.C
+//
+// TODO: most of these can/should be const char *, but some change
+//
 
 #include "3d_def.h"
 
@@ -85,6 +88,8 @@ char noeat_msg1[] = "\r\r    CAN'T EAT NOW,"
 //
 //---------------------------------------------------------------------------
 
+
+const char *computing = "Computing...";
 
 char NoAdLibCard[] =    "^FC57\r       MUSIC:\r"
                         "^FCA6  YOU DON'T HAVE AN\r"

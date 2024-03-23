@@ -250,7 +250,6 @@ void    CheckPinballBonus (int32_t points);
 byte    LevelCompleted (void);
 
 void    DrawWeapon (void);
-void    GiveWeapon (int weapon);
 void    GiveAmmo (int ammo);
 void    DrawGAmmoNum (void);
 void    DrawMAmmoNum (void);

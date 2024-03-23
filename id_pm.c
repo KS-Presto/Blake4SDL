@@ -20,11 +20,9 @@ enum shadfiletypes
     sd_SHADOWS,
 };
 
-char pagefilename[13] = {"VSWAP."};
 int  FileUsed = sd_NONE;
 
 #if DUAL_SWAP_FILES
-char altpagefilename[13] = {"SVSWAP."};
 bool shadowsavail;
 #endif
 

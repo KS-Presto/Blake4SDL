@@ -1602,6 +1602,8 @@ extern  char  ExtraMan[];
 extern  char  OneMillion[];
 extern  char  TenMillion[];
 
+extern  const char  *computing;
+
 extern  char  NoAdLibCard[];
 extern  char  MusicOn[];
 extern  char  MusicOff[];
@@ -1656,8 +1658,10 @@ unsigned Random (unsigned Max);
 extern   bool  EscPressed;
 extern   int   pickquick;
 
+
 void     DrawInstructions (int Type);
-void     CacheMessage (unsigned MessageNum);
+void     CacheMessage (int messagenum);
+void     Message (const char *string);
 void     TerminateStr (const char *pos);
 uint32_t CacheCompData (unsigned ItemNum, void **dest_loc);
 bool     CheckForSpecialCode (unsigned ItemNum);

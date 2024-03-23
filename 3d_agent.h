@@ -86,6 +86,7 @@ void     DrawKeys (void);
 void     DrawScore (void);
 void     InitInfoArea (void);
 void     ForceUpdateStatusBar (void);
+void     RedrawStatusAreas (void);
 bool     DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MessageType);
 void     UpdateInfoAreaClock (void);
 void     UpdateInfoArea (void);
@@ -114,6 +115,7 @@ void     TerminalPrint (const char *msg, bool FastPrint);
 void     FloorCheat (unsigned RadarFlags);
 bool     Interrogate (objtype *obj);
 
+void     GiveWeapon (int weapon);
 void     HealSelf (int points);
 void     GiveKey (int key);
 void     TakeKey (int key);
