@@ -30,10 +30,6 @@
 #define PERC_W          13
 #define PERC_H          5
 
-//
-// max score displayable
-//
-#define MAX_DISPLAY_SCORE       (9999999L)
 #define SCORE_ROLL_WAIT         (60 * 10)   // tics
 
 //

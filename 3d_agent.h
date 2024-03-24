@@ -4,6 +4,9 @@
 #define _3D_AGENT_H_
 
 
+#define MAX_DISPLAY_SCORE       9999999L
+
+
 extern  scientist_t InfHintList;
 extern  scientist_t NiceSciList;
 extern  scientist_t MeanSciList;

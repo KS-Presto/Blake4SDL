@@ -58,6 +58,34 @@ void *safe_malloc (size_t size, const char *file, uint32_t line)
 /*
 ===================
 =
+= Random
+=
+===================
+*/
+
+int Random (int max)
+{
+    int value;
+
+    if (max)
+    {
+        if (max > 255)
+            value = (US_RndT() << 8) + US_RndT();
+        else
+            value = US_RndT();
+
+        value %= max;
+    }
+    else
+        value = 0;
+
+    return value;
+}
+
+
+/*
+===================
+=
 = Error
 =
 ===================

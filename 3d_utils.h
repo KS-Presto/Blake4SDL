@@ -12,6 +12,8 @@ fixed    FixedDiv (fixed a, fixed b);
 
 void     *safe_malloc (size_t size, const char *file, uint32_t line);
 
+int      Random (int max);
+
 void     Error (const char *string);
 void     Help (const char *string);
 

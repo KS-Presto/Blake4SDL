@@ -1640,13 +1640,13 @@ bool      ReuseMsg (mCacheInfo *ci, int count, int structsize);
 =============================================================================
 */
 
-extern  char BreifingText[];
+extern  char BreifingText[13];
 
-void     UpdateScreenPic (void);
+
 void     DisplayPrepingMsg (const char *text);
 bool     Breifing (int BreifingType, int episode);
 void     ShPrint (const char *text, int shadowcolor, bool singlechar);
-unsigned Random (unsigned Max);
+void     DrawLevelTransition (void);
 
 
 /*
@@ -1657,17 +1657,42 @@ unsigned Random (unsigned Max);
 =============================================================================
 */
 
+#define HIGHLIGHT_BOX_COLOR         0x52
+#define HIGHLIGHT_TEXT_COLOR        0x59
+#define HIGHLIGHT_DISABLED_COLOR    0x56
+#define HIGHLIGHT_DEACTIAVED_COLOR  0x55
+
+#define ENABLED_TEXT_COLOR          0x56
+#define DISABLED_TEXT_COLOR         0x53
+#define DEACTIAVED_TEXT_COLOR       0x52
+
+#define INSTRUCTIONS_TEXT_COLOR     0x53
+
+#define TERM_BACK_COLOR             0x02
+#define TERM_SHADOW_COLOR           0x01
+
+#define SCREEN_X                    32
+#define SCREEN_Y                    28
+#define SCREEN_W                    244
+#define SCREEN_H                    132
+
+#define ROSTER_MUS                  HISCORE_MUS
+
+
 extern   bool  EscPressed;
 extern   int   pickquick;
 
 extern   int   mouseadjustment;
 
 
-void     DrawInstructions (int Type);
+void     DrawMenuTitle (const char *title);
+void     DrawInstructions (int type);
 void     CacheMessage (int messagenum);
 void     Message (const char *string);
 void     TerminateString (char *pos);
 uint32_t CacheCompData (unsigned ItemNum, void **dest_loc);
 bool     CheckForSpecialCode (unsigned ItemNum);
+void     ClearMenuScreen (void);
+void     ShadowPrint (const char *string, int x, int y);
 
 #endif

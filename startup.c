@@ -19,6 +19,79 @@ int   param_joystickhat = -1;
 int   lastmusic;
 
 
+void DrawInstructions (int type)
+{
+    const char *instr[MAX_INSTRUCTIONS] =
+    {
+        "UP/DN SELECTS - ENTER CHOOSES - ESC EXITS",
+        "PRESS ANY KEY TO CONTINUE",
+        "ENTER YOUR NAME AND PRESS ENTER",
+        "RT/LF ARROW SELECTS - ENTER CHOOSES",
+    };
+
+    fontnumber = 2;
+
+    WindowX = 48;
+    WindowY = 164;
+    WindowW = 236;
+    WindowH = 8;
+
+    VW_Bar (WindowX,WindowY - 1,WindowW,WindowH,TERM_BACK_COLOR);
+
+    SetFontColor (TERM_SHADOW_COLOR,TERM_BACK_COLOR);
+    US_PrintCentered (instr[type]);
+
+    WindowX--;
+    WindowY--;
+
+    SetFontColor (INSTRUCTIONS_TEXT_COLOR,TERM_BACK_COLOR);
+    US_PrintCentered (instr[type]);
+}
+
+
+void DrawMenuTitle (const char *title)
+{
+    fontnumber = 3;
+
+    PrintX = WindowX = 32;
+    PrintY = WindowY = 32;
+    WindowW = 244;
+    WindowH = 20;
+
+    SetFontColor (TERM_SHADOW_COLOR,TERM_BACK_COLOR);
+    US_PrintCentered (title);
+
+    WindowX--;
+    WindowY--;
+
+    SetFontColor (ENABLED_TEXT_COLOR,TERM_BACK_COLOR);
+    US_PrintCentered (title);
+}
+
+void ShadowPrint (const char *string, int x, int y)
+{
+    int oldbc,oldfc;
+
+    oldfc = fontcolor;
+    oldbc = backcolor;
+
+    PrintX = x + 1;
+    PrintY = y + 1;
+    SetFontColor (TERM_SHADOW_COLOR,TERM_BACK_COLOR);
+    US_Print (string);
+
+    PrintX = x;
+    PrintY = y;
+    SetFontColor (oldfc,oldbc);
+    US_Print (string);
+}
+
+
+void ClearMenuScreen(void)
+{
+	VW_Bar (SCREEN_X,SCREEN_Y,SCREEN_W,SCREEN_H,TERM_BACK_COLOR);
+}
+
 void Message (const char *string)
 {
     int        i;
@@ -97,12 +170,6 @@ void CacheMessage (int messagenum)
     TerminateString (string);
 
     Message (string);
-}
-
-
-unsigned Random (unsigned Max)
-{
-    return Max;
 }
 
 

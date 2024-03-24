@@ -852,52 +852,6 @@ void Warped (void)
 
 
 /*
-===================
-=
-= ShPrint
-=
-===================
-*/
-
-void ShPrint (const char *text, int shadowcolor, bool singlechar)
-{
-    size_t len;
-    int    oldcolor,oldx,oldy;
-    char   *str,buf[2] = {'\0','\0'};
-
-    oldcolor = fontcolor;
-    oldx = px;
-    oldy = py;
-
-    if (singlechar)
-    {
-        str = buf;
-        buf[0] = *text;
-    }
-    else
-    {
-        len = strlen(text) + 1;
-        str = SafeMalloc(len);
-
-        snprintf (str,len,text);
-    }
-
-    fontcolor = shadowcolor;
-    px++;
-    py++;
-    VW_DrawString (str);
-
-    fontcolor = oldcolor;
-    px = oldx;
-    py = oldy;
-    VW_DrawString (str);
-
-    if (!singlechar)
-        free (str);
-}
-
-
-/*
 ==========================
 =
 = ShadowPrintLocationText
@@ -1132,69 +1086,6 @@ void RotateView (int destangle, int speed)
 }
 
 
-const char *prep_msg = "^ST1^CEGet Ready, Blake!\r^XX";
-
-
-void DisplayPrepingMsg (const char *text)
-{
-    fontnumber = 1;
-
-    BMAmsg (text);
-
-//
-// set thermometer boundaries
-//
-    WindowX = 36;
-    WindowY = 188;
-    WindowW = 260;
-    WindowH = 32;
-
-    VW_Bar (WindowX,WindowY - 7,WindowW - 10,2,BORDER_LO_COLOR);
-    VW_Bar (WindowX,WindowY - 7,WindowW - 11,1,BORDER_TEXT_COLOR - 15);
-    VW_Bar (WindowX,WindowY,WindowW - 10,2,BORDER_LO_COLOR);
-    VW_Bar (WindowX,WindowY,WindowW - 11,1,BORDER_TEXT_COLOR - 15);
-
-    if (screen.flags & SC_FADED)
-        VW_FadeIn ();
-    else
-        VW_UpdateScreen (screen.buffer);
-}
-
-
-void PreloadUpdate (int current, int total)
-{
-    int w = WindowW - 10;
-
-    if (current > total)
-        current = total;
-
-    w = ((int32_t)w * current) / total;
-
-    if (w)
-        VW_Bar (WindowX,WindowY,w - 1,1,BORDER_TEXT_COLOR);
-
-    VW_UpdateScreen (screen.buffer);
-}
-
-
-void PreloadGraphics (void)
-{
-    WindowY = 188;
-
-    if (!(gamestate.flags & GS_QUICKRUN))
-        VW_FadeIn ();
-
-    PreloadUpdate (10,10);
-    IN_UserInput (70);
-
-    if (playstate != ex_transported)
-        VW_FadeOut ();
-
-    DrawPlayBorder ();
-    VW_UpdateScreen (screen.buffer);
-}
-
-
 /*
 ==========================
 =
@@ -1257,7 +1148,7 @@ void GameLoop (void)
 
         LoadPlanes (126,126);
 #ifdef NOTYET
-        PreloadGraphics ();
+        DrawLevelTransition ();
 #endif
         if (playstate == ex_transported)
             DrawWarpIn ();
