@@ -194,6 +194,7 @@ void VW_FillPalette (int red, int green, int blue)
         palette[i].r = red;
         palette[i].g = green;
         palette[i].b = blue;
+        palette[i].a = SDL_ALPHA_OPAQUE;
     }
 
     VW_SetPalette (palette);
@@ -242,7 +243,7 @@ void VW_GetPalette (SDL_Color *palette)
 
 void VW_FadePaletteOut (int start, int end, int red, int green, int blue, int steps)
 {
-    int       i,j,orig,delta;
+    int       i,j,delta;
     SDL_Color *origptr,*newptr;
 
     if (screen.flags & SC_FADED)
@@ -265,15 +266,12 @@ void VW_FadePaletteOut (int start, int end, int red, int green, int blue, int st
 
         for (j = start; j <= end; j++)
         {
-           orig = origptr->r;
-           delta = red - orig;
-           newptr->r = orig + ((delta * i) / steps);
-           orig = origptr->g;
-           delta = green - orig;
-           newptr->g = orig + ((delta * i) / steps);
-           orig = origptr->b;
-           delta = blue - orig;
-           newptr->b = orig + ((delta * i) / steps);
+           delta = red - origptr->r;
+           newptr->r = origptr->r + ((delta * i) / steps);
+           delta = green - origptr->g;
+           newptr->g = origptr->g + ((delta * i) / steps);
+           delta = blue - origptr->b;
+           newptr->b = origptr->b + ((delta * i) / steps);
            newptr->a = SDL_ALPHA_OPAQUE;
            origptr++;
            newptr++;
@@ -302,7 +300,7 @@ void VW_FadePaletteOut (int start, int end, int red, int green, int blue, int st
 
 void VW_FadePaletteIn (int start, int end, int steps)
 {
-    int       i,j,orig,delta;
+    int       i,j,delta;
     SDL_Color *origptr,*newptr;
 
     if (!(screen.flags & SC_FADED))
@@ -321,17 +319,13 @@ void VW_FadePaletteIn (int start, int end, int steps)
 
         for (j = start; j <= end; j++)
         {
-            orig = origptr->r;
-            delta = gamepal[j].r - orig;
-            newptr->r = orig + ((delta * i) / steps);
-            orig = origptr->g;
-            delta = gamepal[j].g - orig;
-            newptr->g = orig + ((delta * i) / steps);
-            orig = origptr->b;
-            delta = gamepal[j].b - orig;
-            newptr->b = orig + ((delta * i) / steps);
+            delta = gamepal[j].r - origptr->r;
+            newptr->r = origptr->r + ((delta * i) / steps);
+            delta = gamepal[j].g - origptr->g;
+            newptr->g = origptr->g + ((delta * i) / steps);
+            delta = gamepal[j].b - origptr->b;
+            newptr->b = origptr->b + ((delta * i) / steps);
             newptr->a = SDL_ALPHA_OPAQUE;
-
             origptr++;
             newptr++;
         }
@@ -950,7 +944,7 @@ bool VW_FizzleFade (int x1, int y1, int width, int height, int frames, bool abor
                 {
                     pal = &curpal[color];
 
-                    fullcolor = SDL_MapRGB(format,pal->r,pal->g,pal->b);
+                    fullcolor = SDL_MapRGBA(format,pal->r,pal->g,pal->b,SDL_ALPHA_OPAQUE);
 
                     memcpy (&dest[(py * screen.surface->pitch) + (px * bpp)],&fullcolor,bpp);
                 }
