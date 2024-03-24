@@ -1416,8 +1416,8 @@ void InitPaletteShifts (void)
             workptr->g = baseptr->g + ((delta * i) / REDSTEPS);
             delta = -baseptr->b;
             workptr->b = baseptr->b + ((delta * i) / REDSTEPS);
-            workptr++;
             baseptr++;
+            workptr++;
         }
     }
 
@@ -1434,6 +1434,8 @@ void InitPaletteShifts (void)
             workptr->g = baseptr->g + ((delta * i) / WHITESTEPS);
             delta = -baseptr->b;
             workptr->b = baseptr->b + ((delta * i) / WHITESTEPS);
+            baseptr++;
+            workptr++;
         }
     }
 }
@@ -1706,7 +1708,6 @@ void PlayLoop (void)
 
 void ShowQuickInstructions (void)
 {
-#ifdef NOTYET   // TODO: need the menu Message() function for this
     ShowQuickMsg = false;
 
     if (demoplayback || gamestate.mapon || (gamestate.flags & GS_QUICKRUN))
@@ -1729,5 +1730,4 @@ void ShowQuickInstructions (void)
     IN_ClearKeysDown ();
 
     DrawPlayBorder ();
-#endif
 }

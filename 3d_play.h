@@ -207,6 +207,9 @@ void    PollControls (void);
 int     StopMusic (void);
 void    StartMusic (void);
 void    ContinueMusic (int offs);
+void    InitPaletteShifts (void);
+void    StartBonusFlash (void);
+void    StartDamageFlash (int damage);
 void    PlayLoop (void);
 
 void    ChangeSwapFiles (bool display);

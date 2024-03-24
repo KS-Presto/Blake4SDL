@@ -148,6 +148,7 @@ void Init3DRenderer (void)
 
     SetupWalls ();
     BuildTables ();
+    InitPaletteShifts ();
     SetViewSize (viewsize);
 
     lightsource = colormap;    // TODO: should this be offset?

@@ -1666,7 +1666,7 @@ extern   int   mouseadjustment;
 void     DrawInstructions (int Type);
 void     CacheMessage (int messagenum);
 void     Message (const char *string);
-void     TerminateStr (const char *pos);
+void     TerminateString (char *pos);
 uint32_t CacheCompData (unsigned ItemNum, void **dest_loc);
 bool     CheckForSpecialCode (unsigned ItemNum);
 

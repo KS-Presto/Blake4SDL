@@ -649,9 +649,9 @@ void TakeDamage (int points, objtype *attacker)
         if (attacker)
             attacker->flags |= FL_FREEZE;
     }
-#ifdef NOTYET
+
     StartDamageFlash (points);
-#endif
+
     DrawHealth ();
 }
 
@@ -2276,9 +2276,9 @@ void GetBonus (statobj_t *check)
     }
 
     DISPLAY_TIMED_MSG (BonusMsg[check->itemnumber - 1],MP_BONUS,MT_BONUS);
-#ifdef NOTYET
+
     StartBonusFlash ();
-#endif
+
     check->shapenum = shapenum;   // remove from list if shapenum == -1
     check->itemnumber = bo_nothing;
 }
