@@ -386,6 +386,7 @@ void VW_SetPaletteIntensity (int start, int end, SDL_Color *palette, int intensi
             blue = 0;
 
         cmap->b = blue;
+        cmap->a = SDL_ALPHA_OPAQUE;
 
         palette++;
         cmap++;
