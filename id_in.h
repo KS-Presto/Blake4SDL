@@ -154,7 +154,7 @@ void        IN_ReadControl (ControlInfo *info);
 void        IN_StartAck (void);
 bool        IN_CheckAck (void);
 void        IN_Ack (void);
-bool        IN_UserInput (longword delay);
+bool        IN_UserInput (uint32_t delay);
 ScanCode    IN_WaitForKey (void);
 byte        *IN_GetScanName (ScanCode scan);
 uint32_t    IN_GetMouseButtons (void);

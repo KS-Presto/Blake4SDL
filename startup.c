@@ -76,6 +76,30 @@ void Message (const char *string)
 }
 
 
+void TerminateString (char *pos)
+{
+    pos = strstr(pos,"^XX");
+
+#if IN_DEVELOPMENT
+    if (!pos)
+        Quit ("A cached message was NOT terminated with \"^XX\"!");
+#endif
+    *pos = '\0';
+}
+
+
+void CacheMessage (int messagenum)
+{
+    char *string;
+
+    string = (char *)grsegs[messagenum];
+
+    TerminateString (string);
+
+    Message (string);
+}
+
+
 unsigned Random (unsigned Max)
 {
     return Max;
