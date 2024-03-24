@@ -13,7 +13,6 @@ uint32_t     *ylookup;
 int          px,py;
 int          fontcolor,backcolor;
 int          fontnumber;
-bool         allcaps;
 
 SDL_Color    palette1[256],palette2[256];
 SDL_Color    curpal[256];
@@ -22,8 +21,6 @@ SDL_Color    gamepal[256] =
     #include "blakepal.inc"
 };
 
-
-unsigned     bordercolor;
 
 //
 // fizzle fade stuff
@@ -146,7 +143,7 @@ void VW_SetupVideo (void)
     if (!screen.surface)
         Quit ("Unable to create %dx%dx%d surface: %s\n",w,h,screen.bits,SDL_GetError());
 
-    screen.texture = SDL_CreateTextureFromSurface(screen.renderer,screen.surface);
+    screen.texture = SDL_CreateTexture(screen.renderer,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STATIC,w,h);
 
     if (!screen.texture)
         Quit ("Unable to create texture: %s\n",SDL_GetError());
