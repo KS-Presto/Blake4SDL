@@ -28,6 +28,8 @@ extern  int             fizzlex,fizzley;
 extern  unsigned        screenofs;
 extern  int             mapwidth,mapheight;
 
+extern  int             LS_current,LS_total;
+
 extern  char            demoname[13];
 
 
@@ -41,7 +43,7 @@ void    DrawPlayScreen (bool InitInfoMsg);
 void    SetupFizzlein (int x, int y, int width, int height);
 void    DrawTopInfo (int type);
 void    SetViewSize (int size);
-void    NewViewSize (int width);
+void    ShowViewSize (int size);
 void    FizzleOut (void);
 void    GameLoop (void);
 
@@ -51,7 +53,7 @@ void    Warped (void);
 void    RotateView (int destangle, int speed);
 void    DrawWarpIn (void);
 void    BMAmsg (const char *msg);
-void    CacheBMAmsg (unsigned MsgNum);
+void    CacheBMAmsg (int msgnum);
 void    BevelBox (int xl, int yl, int w, int h, int hi, int med, int lo);
 
 void    AddTotalPoints (unsigned points);

@@ -763,6 +763,30 @@ void BMAmsg (const char *msg)
 /*
 ===================
 =
+= CacheBMAmsg
+=
+= Caches in a message number and displays it using BMAmsg
+=
+===================
+*/
+
+void CacheBMAmsg (int msgnum)
+{
+    const char *xx = "^XX";
+    char       *string,*pos;
+
+    string = (char *)grsegs[msgnum];
+
+    pos = strstr(string,xx);
+    *(pos + strlen(xx)) = '\0';
+
+    BMAmsg (string);
+}
+
+
+/*
+===================
+=
 = SetupFizzlein
 =
 ===================
@@ -960,6 +984,8 @@ void SetViewSize (int size)
 {
     int width,height;
 
+    viewsize = size;
+
     width = ((size << 4) * screen.width) / 320;
     height = (((size << 4) * HEIGHTRATIO) * screen.height) / 200;
 
@@ -983,6 +1009,35 @@ void SetViewSize (int size)
 // calculate trace angles and projection constants
 //
     CalcProjection (FOCALLENGTH);
+}
+
+
+/*
+==========================
+=
+= ShowViewSize
+=
+==========================
+*/
+
+void ShowViewSize (int size)
+{
+    int oldwidth,oldheight;
+
+    oldwidth = viewwidth;
+    oldheight = viewheight;
+
+    viewwidth = ((size << 4) * screen.width) / 320;
+    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / 200;
+    centerx = viewwidth / 2;
+
+    VW_Bar (0,TOP_STRIP_HEIGHT,320,200 - STATUSLINES - TOP_STRIP_HEIGHT,BORDER_MED_COLOR);
+
+    DrawPlayBorder ();
+
+    viewheight = oldheight;
+    viewwidth = oldwidth;
+    centerx = viewwidth / 2;
 }
 
 
