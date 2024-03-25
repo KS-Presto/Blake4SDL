@@ -677,13 +677,6 @@ void CheckKeys (void)
         case sc_F8:       // quick save
             SD_StopDigitized ();
             FinishPaletteShifts ();
-#ifdef NOTYET
-            if (!CheckDiskSpace(DISK_SPACE_NEEDED,CANT_SAVE_GAME_TXT,cds_id_print))
-            {
-                DrawPlayBorder ();
-                break;
-            }
-#endif
         case sc_F1:         // help
         case sc_F3:         // load mission
         case sc_F4:         // sound menu
