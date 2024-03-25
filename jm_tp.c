@@ -1625,9 +1625,8 @@ void TP_PrintPageNumber (void)
 int TP_DrawShape (int x, int y, int shapenum, int shapetype)
 {
     int  width;
-#ifdef NOTYET
     byte *addr;
-#endif
+
     //
     // mask 'x coordinate' when displaying certain shapes
     //
@@ -1649,13 +1648,15 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
     //
     switch (shapetype)
     {
-#ifdef NOTYET
         case pis_scwall:
             TP_CacheIn (ct_scaled,0);
             addr = PM_GetPage(shapenum);
-            bufferofs += (y - 30) * SCREENWIDTH;
+            vbuf = VW_LockSurface(screen.buffer);
+
+            if (!vbuf)
+                Quit ("Unable to lock surface: %s\n",SDL_GetError());
+
             postx = x;
-            postwidth = 1;
             postsource = addr;
 
             for (x = 0; x < TEXTURESIZE; x++, postx++, postsource += TEXTURESIZE)
@@ -1664,16 +1665,25 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
                 ScalePost ();
             }
 
-            bufferofs -= (y - 30) * SCREENWIDTH;
+            VW_UnlockSurface (screen.buffer);
+            vbuf = NULL;
             break;
-#endif
+
         case pis_scaled:
             TP_CacheIn (ct_scaled,0);
 
             if (flags & fl_clearscback)
                 VW_Bar (x,y,64,64,bgcolor);
 
+            vbuf = VW_LockSurface(screen.buffer);
+
+            if (!vbuf)
+                Quit ("Unable to lock surface: %s\n",SDL_GetError());
+
             MegaSimpleScaleShape (x + 32,y + 32,64,shapenum,NO_SHADING);
+
+            VW_UnlockSurface (screen.buffer);
+            vbuf = NULL;
             break;
 
 #if NUMPICS
@@ -1881,12 +1891,10 @@ void TP_PurgeAllGfx (void)
 
 void TP_CachePage (char *script)
 {
+#if 0
     int  code;
     bool end_of_page = false;
     int  numanims = 0;
-
-    if (pi->flags & TPF_CACHE_NO_GFX)
-        return;
 
     while (!end_of_page)
     {
@@ -1926,6 +1934,10 @@ void TP_CachePage (char *script)
                 break;
         }
     }
+#endif
+
+    if (pi->flags & TPF_CACHE_NO_GFX)
+        return;
 
     TP_CacheIn (ct_marks,0);
 }
