@@ -103,6 +103,8 @@ void jsprintf (const char *msg, ...);
 #define MAX(a,b)           (((a) > (b)) ? (a) : (b))
 #define MIN(a,b)           (((a) < (b)) ? (a) : (b))
 
+#define lengthof(x)        (sizeof((x)) / sizeof(*(x)))
+
 #define FMAPWIDTH          ((fixed)mapwidth << TILESHIFT)
 #define FMAPHEIGHT         ((fixed)mapheight << TILESHIFT)
 
@@ -1244,19 +1246,12 @@ typedef struct
 #include "3d_agent.h"
 #include "3d_draw.h"
 #include "3d_game.h"
+#include "3d_menu.h"
 #include "3d_plane.h"
 #include "3d_play.h"
 #include "3d_scale.h"
 #include "3d_state.h"
 #include "3d_utils.h"
-
-
-//
-// temp definitions
-//
-extern  int     currentsong;
-
-int     StartCPMusic (int song);
 
 
 /*
@@ -1624,6 +1619,7 @@ extern  char  pd_floornotlocked[];
 
 extern  char  int_xx[];
 
+
 void      InitMsgCache (mCacheList *mList, int listsize, int infosize);
 void      FreeMsgCache (mCacheList *mList, int listsize);
 void      CacheMsg (mCacheInfo *ci, int segnum, int msgnum);
@@ -1647,52 +1643,6 @@ void     DisplayPrepingMsg (const char *text);
 bool     Breifing (int BreifingType, int episode);
 void     ShPrint (const char *text, int shadowcolor, bool singlechar);
 void     DrawLevelTransition (void);
-
-
-/*
-=============================================================================
-
-                        3D_MENU DEFINITIONS
-
-=============================================================================
-*/
-
-#define HIGHLIGHT_BOX_COLOR         0x52
-#define HIGHLIGHT_TEXT_COLOR        0x59
-#define HIGHLIGHT_DISABLED_COLOR    0x56
-#define HIGHLIGHT_DEACTIAVED_COLOR  0x55
-
-#define ENABLED_TEXT_COLOR          0x56
-#define DISABLED_TEXT_COLOR         0x53
-#define DEACTIAVED_TEXT_COLOR       0x52
-
-#define INSTRUCTIONS_TEXT_COLOR     0x53
-
-#define TERM_BACK_COLOR             0x02
-#define TERM_SHADOW_COLOR           0x01
-
-#define SCREEN_X                    32
-#define SCREEN_Y                    28
-#define SCREEN_W                    244
-#define SCREEN_H                    132
-
-#define ROSTER_MUS                  HISCORE_MUS
-
-
-extern   bool  EscPressed;
-extern   int   pickquick;
-
-extern   int   mouseadjustment;
-
-
-void     DrawMenuTitle (const char *title);
-void     DrawInstructions (int type);
-void     CacheMessage (int messagenum);
-void     Message (const char *string);
-void     TerminateString (char *pos);
-uint32_t CacheCompData (unsigned ItemNum, void **dest_loc);
-bool     CheckForSpecialCode (unsigned ItemNum);
-void     ClearMenuScreen (void);
-void     ShadowPrint (const char *string, int x, int y);
+void     DrawHighScores (void);
 
 #endif

@@ -113,8 +113,6 @@ typedef struct
 #include "jm_debug.h"
 
 #include "movie.h"
-
-#include "3d_menu.h"
 #endif
 #define Quit(s, ...)    Terminate(__func__,(s),##__VA_ARGS__)
 

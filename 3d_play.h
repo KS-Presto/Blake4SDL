@@ -193,6 +193,7 @@ extern  bool        buttonheld[NUMBUTTONS];
 //
 extern  int         controlx,controly;          // range from -100 to 100
 extern  bool        buttonstate[NUMBUTTONS];
+extern  bool        refreshscreen;
 
 extern  bool        demorecord,demoplayback;
 extern  int8_t      *demoptr,*lastdemoptr;

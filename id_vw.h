@@ -3,6 +3,10 @@
 #ifndef _ID_VW_H_
 #define _ID_VW_H_
 
+
+#define WHITE               15      // graphics mode independant colors
+#define BLACK               0
+
 #define VW_WaitVBL(v)       SDL_Delay ((v) << 3)
 #define VL_ClearScreen(c)   SDL_FillRect (screen.buffer,NULL,(c))
 #define VW_FadeIn()         VW_FadePaletteIn (0,255,30)

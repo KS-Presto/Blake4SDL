@@ -98,18 +98,16 @@ int             buttonjoy[32] =
 
 bool            buttonheld[NUMBUTTONS];
 
-bool            demorecord,demoplayback;
-int8_t          *demoptr,*lastdemoptr;
-int8_t          *demobuffer;
-
 //
 // curent user input
 //
 int             controlx,controly;          // range from -100 to 100 per tic
 bool            buttonstate[NUMBUTTONS];
-
-
 bool            refreshscreen;
+
+bool            demorecord,demoplayback;
+int8_t          *demoptr,*lastdemoptr;
+int8_t          *demobuffer;
 #if (GAME_VERSION != SHAREWARE_VERSION) || GEORGE_CHEAT
 byte            jam_buff_cmp[] = {sc_J,sc_A,sc_M};
 byte            jam_buff[sizeof(jam_buff_cmp)];
@@ -430,14 +428,10 @@ void PollControls (void)
 void CheckKeys (void)
 {
     bool        oneeighty = false;
-#ifdef NOTYET
     bool        oldloadedgame;
-#endif
     int         i;
     int         lastoffs,oldmusicnum;
-#ifdef NOTYET
     ScanCode    scan;
-#endif
     static bool Plus_KeyReleased;
     static bool Minus_KeyReleased;
     static bool I_KeyReleased;
@@ -445,9 +439,9 @@ void CheckKeys (void)
 
     if ((screen.flags & SC_FADED) || demoplayback)  // don't do anything with a faded screen
         return;
-#ifdef NOTYET
+
     scan = LastScan;
-#endif
+
 #if IN_DEVELOPMENT
 #ifdef ACTIVATE_TERMINAL
     if (Keyboard[sc_9] && Keyboard[sc_0])
@@ -669,14 +663,13 @@ void CheckKeys (void)
     if (TestAutoMapper)
         PopupAutoMap ();
 #endif
-#ifdef NOTYET
     switch (scan)
     {
         case sc_F7:       // end game
         case sc_F10:      // quit
             FinishPaletteShifts ();
             SD_StopDigitized ();
-            US_ControlPanel (scan);
+            ControlPanel (scan);
             DrawPlayBorder ();
             return;
 
@@ -684,13 +677,13 @@ void CheckKeys (void)
         case sc_F8:       // quick save
             SD_StopDigitized ();
             FinishPaletteShifts ();
-
+#ifdef NOTYET
             if (!CheckDiskSpace(DISK_SPACE_NEEDED,CANT_SAVE_GAME_TXT,cds_id_print))
             {
                 DrawPlayBorder ();
                 break;
             }
-
+#endif
         case sc_F1:         // help
         case sc_F3:         // load mission
         case sc_F4:         // sound menu
@@ -706,9 +699,9 @@ void CheckKeys (void)
             StopMusic ();
             SD_StopDigitized ();
             US_ResetWindow (STATUSLINES);
-            US_ControlPanel (scan);
+            ControlPanel (scan);
 
-            if (refresh_screen)
+            if (refreshscreen)
             {
                 oldloadedgame = loadedgame;
 
@@ -727,7 +720,7 @@ void CheckKeys (void)
 
             if (loadedgame)
             {
-                PreloadGraphics ();
+                DrawLevelTransition ();
                 loadedgame = false;
                 DrawPlayScreen (false);
             }
@@ -739,7 +732,7 @@ void CheckKeys (void)
 
             return;
     }
-#endif
+
     if (Keyboard[sc_Tab])
         PopupAutoMap ();
 
