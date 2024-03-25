@@ -588,23 +588,23 @@ void IN_ReadControl (ControlInfo *info)
         totalmousex += mousex;
         totalmousey += mousey;
 
-        if (totalmousey < -SENSITIVE)
+        if (totalmousex  < -SENSITIVE)
         {
             mx = -1;
             mouseactive = true;
         }
-        else if (totalmousey > SENSITIVE)
+        else if (totalmousex  > SENSITIVE)
         {
             mx = 1;
             mouseactive = true;
         }
 
-        if (totalmousex  < -SENSITIVE)
+        if (totalmousey < -SENSITIVE)
         {
             my = -1;
             mouseactive = true;
         }
-        else if (totalmousex  > SENSITIVE)
+        else if (totalmousey > SENSITIVE)
         {
             my = 1;
             mouseactive = true;
