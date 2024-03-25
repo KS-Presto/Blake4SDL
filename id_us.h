@@ -16,6 +16,7 @@
 #define MaxScores    10
 
 #define MaxGameName  32
+#define	MaxSaveGames 10
 
 #define MaxString    128    // maximum input string size
 
