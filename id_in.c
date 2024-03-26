@@ -325,28 +325,6 @@ static void IN_HandleEvent (SDL_Event *event)
 
                     IN_SetWindowGrab (screen.window);
                 }
-                else if (Keyboard[sc_Minus])
-                {
-                    viewsize--;
-
-                    if (viewsize < 6)
-                        viewsize = 6;
-
-                    SetViewSize (viewsize);
-                    DrawPlayScreen (false);
-                }
-                else if (Keyboard[sc_Equal])
-                {
-                    viewsize++;
-
-                    if (viewsize > 20)
-                        viewsize = 20;
-
-                    SetViewSize (viewsize);
-                    DrawPlayScreen (false);
-                }
-                else if (Keyboard[sc_Escape])
-                    playstate = ex_abort;
             }
             break;
 
@@ -421,9 +399,20 @@ void IN_WaitAndProcessEvents (void)
 
 void IN_Startup (void)
 {
+    int numjoysticks;
+
     IN_ClearKeysDown ();
 
-    if (param_joystickindex >= 0 && param_joystickindex < SDL_NumJoysticks())
+    numjoysticks = SDL_NumJoysticks();
+
+    if (param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numjoysticks))
+    {
+        if (!numjoysticks)
+            Quit ("No joysticks are available to SDL!");
+        else
+            Quit ("The joystick index must be between -1 and %d!",numjoysticks - 1);
+    }
+    else if (param_joystickindex >= 0 && param_joystickindex < numjoysticks)
     {
         Joystick = SDL_JoystickOpen(param_joystickindex);
 
