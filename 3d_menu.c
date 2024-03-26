@@ -3,6 +3,9 @@
 #include "3d_def.h"
 
 
+#define CHECK_FOR_EPISODES
+
+
 #define INSTRUCTIONS_Y_POS      164
 #define DESCRIPTIONS_Y_POS      134
 
@@ -278,6 +281,18 @@ static const char *ScanNames[] =
 };
 
 
+//
+// TODO: these "special keys" refer to hardcoded
+// keys such as those in CheckKeys, and you're prevented
+// from assigning them as your controls, but it's a horrible
+// idea, especially since it prevents using the popular WASD
+// control scheme
+//
+// Not to worry, it WILL be changed! I think the easiest way
+// would be to add another menu screen for "special" keys, so
+// you can assign them to whatever keys you want, provided they
+// don't conflict with the main controls
+//
 static ScanCode specialkeys[] =
 {
     sc_Tilde,
@@ -426,7 +441,7 @@ void ControlPanel (ScanCode scan)
     //
     // F-keys from within game
     //
-    if (scan)
+    if (scan && scan != sc_Escape)
     {
         switch (scan)
         {
@@ -4029,4 +4044,55 @@ void ExitGame (void)
     SD_StopSound ();
 
     Quit (NULL);
+}
+
+
+/*
+===================
+=
+= CheckForEpisodes
+=
+= Check for version/extension
+=
+===================
+*/
+
+void CheckForEpisodes (void)
+{
+    struct stat statbuf;
+#ifdef NOTYET
+    int    i;
+#endif
+#if (GAME_VERSION != SHAREWARE_VERSION)
+    if (stat("*.VSI",&statbuf))
+        snprintf (extension,sizeof(extension),"VSI");
+#else
+    if (stat("*.FSW",&statbuf))
+        snprintf (extension,sizeof(extension),"FSW");
+#endif
+    else
+        Quit ("No Fire Strike data files found!");
+#if 0
+    //
+    // TODO: we just snprintf the extension onto the filename when opening
+    //
+    for (i = 0; i < mv_NUM_MOVIES; i++)
+        strcat (Movies[i].FName,extension);
+
+#ifdef ACTIVATE_TERMINAL
+    strcat (term_com_name,extension);
+    strcat (term_msg_name,extension);
+#endif
+    strcat (configname,extension);
+    strcat (savefilename,extension);
+    strcat (audioname,extension);
+    strcat (demoname,extension);
+#endif
+#if DUAL_SWAP_FILES
+    char altpagefilename[13];
+
+    snprintf (altpagefilename,sizeof(altpagefilename),"SVSWAP.%s",extension);
+
+    ShadowsAvail = stat(altpagefilename,&statbuf);
+#endif
 }
