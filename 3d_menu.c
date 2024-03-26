@@ -1546,12 +1546,11 @@ void DrawLSAction (int which)
 
 int CP_LoadGame (int quick)
 {
-#ifdef NOTYET
     FILE *file;
     int  which,exit = 0;
     char name[13];
 
-    snprintf (name,sizeof(name),savefilename);
+    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
 
     //
     // quickload?
@@ -1639,9 +1638,6 @@ int CP_LoadGame (int quick)
         refreshscreen = false;
 
     return exit;
-#else
-    return 0;
-#endif
 }
 
 
@@ -1747,14 +1743,12 @@ void PrintLSEntry (int w,int color)
 
 int CP_SaveGame (int quick)
 {
-#ifdef NOTYET
     FILE           *file;
     int            which,exit = 0;
-    unsigned       nwritten;
     char           name[13],input[GAME_DESCRIPTION_LEN + 1];
     CustomCursor_t TermCursor = {'@',0,HIGHLIGHT_TEXT_COLOR,2};
 
-    snprintf (name,sizeof(name),savefilename);
+    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
 
     usecustomcursor = true;
     CustomCursor = TermCursor;
@@ -1777,7 +1771,7 @@ int CP_SaveGame (int quick)
             file = fopen(tempPath,"wb");
 
             if (!file)
-                CA_CannotOpen (file);
+                CA_CannotOpen (tempPath);
 
             SaveTheGame (file,SaveGameNames[which]);
 
@@ -1869,9 +1863,6 @@ int CP_SaveGame (int quick)
     usecustomcursor = false;
 
     return exit;
-#else
-    return 0;
-#endif
 }
 
 
