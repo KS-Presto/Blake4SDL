@@ -132,10 +132,10 @@ void IO_CopyFile (FILE *sourcefile, FILE *destfile, int32_t numbytes)
 
     src = SafeMalloc(fsize);
 
-    if (fread(src,fsize,1,sourcefile))
+    if (!fread(src,fsize,1,sourcefile))
         Quit ("Error reading source file: %s",strerror(errno));
 
-    if (fwrite(src,fsize,1,destfile))
+    if (!fwrite(src,fsize,1,destfile))
         Quit ("Error writing destination file: %s",strerror(errno));
 
     free (src);
