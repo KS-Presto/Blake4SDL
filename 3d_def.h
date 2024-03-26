@@ -15,6 +15,8 @@
 //#define TRACK_ENEMY_COUNT
 #define OBJ_RESERV
 
+#define _VERSION_           "V1.01"
+
 #define GOLD_MORPH_LEVEL      19   // level which Dr. GoldFire Morphs
 
 #define VERSION_TEXT_COLOR    (0x82)
@@ -1271,16 +1273,15 @@ typedef struct
 extern  char      tempPath[MAX_DEST_PATH_LEN + 15];
 
 extern  levelinfo default_level[MAPS_PER_EPISODE];
-extern  int       view_xl,view_xh,view_yl,view_yh;
 extern  int       starting_level,debug_value,starting_episode,starting_difficulty;
 
 extern  int       lastmap_tilex,lastmap_tiley;
 extern  char      str[256],error[256];
+extern  char      configname[13];
 
 extern  int       mouseadjustment;
 
-extern  char      configname[13];
-
+extern  bool      ForceLoadDefault;
 extern  bool      ShowQuickMsg;
 
 extern  byte      colormap[16896];
@@ -1291,20 +1292,18 @@ extern  int       param_joystickindex;
 extern  int       param_joystickhat;
 
 
-void     LoadFonts (void);
 void     ClearNClose (void);
 void     CycleColors (void);
 void     LoadAccessCodes (void);
 void     AlignPlayerInElevator (void);
 void     HelpScreens (void);
 void     OrderingInfo (void);
-unsigned scan_atoi (const char *s);
+int      scan_atoi (char *s);
 void     AlignPlayerOnTransporter (void);
 
-unsigned UseFunc (char *first, char *next);  // TODO: oh boy, huge pointers
-bool     DoMovie (int movie, void *palette);    // TODO: SDL_Color?
-bool     CheckDiskSpace (int32_t needed, const char *text, int io_type);
-bool     SaveTheGame (int handle, const char *description);
+bool     DoMovie (int movie, SDL_Color *palette);
+bool     SaveTheGame (FILE *file, const char *description);
+bool     LoadTheGame (FILE *file);
 int32_t  ChecksumFile (const char *file, int32_t checksum);
 void     BadChecksum (void);
 void     InvalidLevels (void);
@@ -1313,6 +1312,7 @@ void     UnauthorizedLevels (void);
 void     ShowChecksums (void);
 void     fprint (const char *text);
 
+void     InitPlaytemp (void);
 void     InitDigiMap (void);
 
 void     CleanUpDoors_N_Actors (void);

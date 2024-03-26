@@ -1,151 +1,103 @@
 // 3D_MAIN.C
 
-#include "3D_DEF.H"
-#pragma hdrstop
-#include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <io.h>
-#include <mem.h>
-#include <fcntl.h>
-#include <io.h>
-#include <dos.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <ctype.h>
+#include "3d_def.h"
 
-#include "jm_io.h"
+#ifdef NOTYET
 #include "jm_cio.h"
 #include "jm_lzh.h"
-#include "jm_error.h"
+#endif
 
 /*
 =============================================================================
 
-											BLAKE STONE
-						 (C)opyright 1993, JAM Productions, Inc.
+                        BLAKE STONE
+            (C)opyright 1993, JAM Productions, Inc.
 
-						 3D engine licensed by ID Software, Inc.
-					Shareware distribution by Apogee Software, Inc.
-
-=============================================================================
-*/
-
-/*
-=============================================================================
-
-						 LOCAL CONSTANTS
+            3D engine licensed by ID Software, Inc.
+        Shareware distribution by Apogee Software, Inc.
 
 =============================================================================
 */
 
-#define SKIP_TITLE_AND_CREDITS		(false)
+
+#define SKIP_TITLE_AND_CREDITS  false
+#define SKIP_CHECKSUMS          true
+#define SHOW_CHECKSUM           false
+
+#if GAME_VERSION == SHAREWARE_VERSION
+
+#define AUDIOT_CHECKSUM     0xfff87142
+#define MAPTEMP_CHECKSUM    0x000370c9
+#define VGAGRAPH_CHECKSUM   0xffffde44
+#define DIZFILE_CHECKSUM    0x00000879
+
+#elif GAME_VERSION == MISSIONS_1_THR_3
+
+#define AUDIOT_CHECKSUM     0xfff87142
+#define MAPTEMP_CHECKSUM    0x00084f1f
+#define VGAGRAPH_CHECKSUM   0xffffde44
+#define DIZFILE_CHECKSUM    0x00000879
+
+#else
+
+#define AUDIOT_CHECKSUM     0xfff912c9
+#define MAPTEMP_CHECKSUM    0x00107739
+#define VGAGRAPH_CHECKSUM   0xffff6c9a
+#define DIZFILE_CHECKSUM    0x00000879
+
+#endif
+
+#define MAX_DEST_PATH_LEN       30
+#define LZH_WORK_BUFFER_SIZE    8192
 
 
-#define FOCALLENGTH     (0x5700l)               // in global coordinates
-#define VIEWGLOBAL      0x10000                 // globals visable flush to wall
+void    *lzh_work_buffer;
+int32_t checksum;
 
-#define VIEWWIDTH       256                     // size of view window
-#define VIEWHEIGHT      144
+int     starting_episode,starting_level,starting_difficulty;
+int     debug_value;
 
-
-#define MAX_DEST_PATH_LEN	30
-
-/*
-=============================================================================
-
-						 GLOBAL VARIABLES
-
-=============================================================================
-*/
-
-extern int pickquick;
-
-
-void DrawCreditsPage(void);
-void unfreed_main(void);
-void ShowPromo(void);
-
-char far * far MainStrs[] = {
-										"q","nowait","l","e",
-										"version","system",
-										"dval","tics","mem","powerball","music","d",
-										"radar",BETA_CODE,
-										nil
-};
-
-short starting_episode,starting_level,starting_difficulty;
-
-char destPath[MAX_DEST_PATH_LEN+1];
-char tempPath[MAX_DEST_PATH_LEN+15];
+char    destPath[MAX_DEST_PATH_LEN + 1];
+char    tempPath[MAX_DEST_PATH_LEN + 15];
 
 #if BETA_TEST
-char far bc_buffer[]=BETA_CODE;
+char    bc_buffer[] = BETA_CODE;
 #endif
+char    str[256],error[256];
+char    configname[13] = "CONFIG.";
 
-void InitPlaytemp(void);
+int     mouseadjustment;
 
-
-char QuitMsg[] = {"Unit: $%02x Error: $%02x"};
-
-#ifdef CEILING_FLOOR_COLORS
-unsigned TopColor,BottomColor;
-#endif
-
-boolean         nospr;
-boolean         IsA386;
-
-int dirangle[9] = {0,ANGLES/8,2*ANGLES/8,3*ANGLES/8,4*ANGLES/8,5*ANGLES/8,6*ANGLES/8,7*ANGLES/8,ANGLES};
-
-//
-// proejection variables
-//
-fixed           focallength;
-unsigned        screenofs;
-int             viewwidth;
-int             viewheight;
-int             centerx;
-int             shootdelta;                     // pixels away from centerx a target can be
-fixed           scale,maxslope;
-long            heightnumerator;
-int                     minheightdiv;
-
-
-boolean         startgame,loadedgame;
-int             mouseadjustment;
-
-char	configname[13]="CONFIG.";
-
-short view_xl,view_xh,view_yl,view_yh;
+bool    ForceLoadDefault;
+bool    ShowQuickMsg;
 
 #if IN_DEVELOPMENT
-unsigned	democount=0,jim=0;
+int     democount,jim;
 #endif
+int     param_samplerate = 44100;
+int     param_audiobuffer = 2048;
+int     param_joystickindex;
+int     param_joystickhat = -1;
 
-/*
-=============================================================================
+//
+// TODO: Aliens of Gold, huh?
+//
+const char *SavegameInfoText =  "\n\r"
+                                "\n\r"
+                                "-------------------------------------\n\r"
+                                "    Blake Stone: Aliens Of Gold\n\r"
+                                "Copyright 1993, JAM Productions, Inc.\n\r"
+                                "\n\r"
+                                "SAVEGAME file is from version: " _VERSION_"\n\r"
+                                " Compile Date :" __DATE__" : " __TIME__"\n\r"
+                                "-------------------------------------\n\r"
+                                "\x1a";
 
-						 LOCAL VARIABLES
+void    DrawCreditsPage (void);
+void    ShowPromo (void);
 
-=============================================================================
-*/
+bool    LevelInPlaytemp (int levelnum);
 
-#if 0
-
-unsigned mspeed;
-
-void CalcSpeedRating()
-{
-	short loop;
-
-	for (loop=0; loop<10; loop++)
-	{
-		ThreeDRefresh();
-		mspeed += tics;
-	}
-}
-
-#endif
 
 /*
 ====================
@@ -155,1053 +107,1386 @@ void CalcSpeedRating()
 ====================
 */
 
-void WriteConfig(void)
+void WriteConfig (void)
 {
-	int                     file;
+    FILE *file;
+    char fname[13];
 
-	MakeDestPath(configname);
-	file = open(tempPath,O_CREAT | O_BINARY | O_WRONLY,
-				S_IREAD | S_IWRITE | S_IFREG);
+    snprintf (fname,sizeof(fname),"%s%s",configname,extension);
 
-	if (file != -1)
-	{
-		write(file,Scores,sizeof(HighScore) * MaxScores);
+    file = fopen(fname,"wb");
 
-		write(file,&SoundMode,sizeof(SoundMode));
-		write(file,&MusicMode,sizeof(MusicMode));
-		write(file,&DigiMode,sizeof(DigiMode));
+    if (file)
+    {
+        fwrite (Scores,sizeof(Scores),1,file);
 
-		write(file,&mouseenabled,sizeof(mouseenabled));
-		write(file,&joystickenabled,sizeof(joystickenabled));
-		write(file,&joypadenabled,sizeof(joypadenabled));
-		write(file,&joystickprogressive,sizeof(joystickprogressive));
-		write(file,&joystickport,sizeof(joystickport));
+        fwrite (&SoundMode,sizeof(SoundMode),1,file);
+        fwrite (&MusicMode,sizeof(MusicMode),1,file);
+        fwrite (&DigiMode,sizeof(DigiMode),1,file);
 
-		write(file,&dirscan,sizeof(dirscan));
-		write(file,&buttonscan,sizeof(buttonscan));
-		write(file,&buttonmouse,sizeof(buttonmouse));
-		write(file,&buttonjoy,sizeof(buttonjoy));
+        fwrite (&mouseenabled,sizeof(mouseenabled),1,file);
+        fwrite (&joystickenabled,sizeof(joystickenabled),1,file);
 
-		write(file,&viewsize,sizeof(viewsize));
-		write(file,&mouseadjustment,sizeof(mouseadjustment));
+        fwrite (&dirscan,sizeof(dirscan),1,file);
+        fwrite (&buttonscan,sizeof(buttonscan),1,file);
+        fwrite (&buttonmouse,sizeof(buttonmouse),1,file);
+        fwrite (&buttonjoy,sizeof(buttonjoy),1,file);
 
-		write(file,&gamestate.flags,sizeof(gamestate.flags));		
+        fwrite (&viewsize,sizeof(viewsize),1,file);
+        fwrite (&mouseadjustment,sizeof(mouseadjustment),1,file);
 
-		close(file);
-	}
+        fwrite (&gamestate.flags,sizeof(gamestate.flags),1,file);
+
+        fclose (file);
+    }
 }
 
 
-//===========================================================================
+/*
+====================
+=
+= ReadConfig
+=
+====================
+*/
+
+void ReadConfig (void)
+{
+    FILE     *file;
+    char     fname[13];
+    int      sd,sm,sds;
+    bool     configfound = false;
+    unsigned flags = gamestate.flags;
+
+    snprintf (fname,sizeof(fname),"%s%s",configname,extension);
+
+    file = fopen(fname,"rb");
+
+    if (file)
+    {
+        //
+        // valid config file
+        //
+        fread (Scores,sizeof(Scores),1,file);
+
+        fread (&sd,sizeof(sd),1,file);
+        fread (&sm,sizeof(sm),1,file);
+        fread (&sds,sizeof(sds),1,file);
+
+        fread (&mouseenabled,sizeof(mouseenabled),1,file);
+        fread (&joystickenabled,sizeof(joystickenabled),1,file);
+
+        fread (&dirscan,sizeof(dirscan),1,file);
+        fread (&buttonscan,sizeof(buttonscan),1,file);
+        fread (&buttonmouse,sizeof(buttonmouse),1,file);
+        fread (&buttonjoy,sizeof(buttonjoy),1,file);
+
+        fread (&viewsize,sizeof(viewsize),1,file);
+        fread (&mouseadjustment,sizeof(mouseadjustment),1,file);
+
+        fread (&flags,sizeof(flags),1,file);    // use temp so we don't destroy pre-sets
+
+        flags &= GS_HEARTB_SOUND | GS_ATTACK_INFOAREA | GS_LIGHTING | GS_DRAW_CEILING | GS_DRAW_FLOOR;
+
+        gamestate.flags |= flags;               // must "OR", some flags are already set
+
+        fclose (file);
+
+        if (sd == sdm_AdLib && (!AdLibPresent || !SoundBlasterPresent))
+        {
+            sd = sdm_PC;
+            sd = smm_Off;
+        }
+
+        if (sds == sds_SoundBlaster && !SoundBlasterPresent)
+            sds = sds_Off;
+
+        if (!MousePresent)
+            mouseenabled = false;
+        if (!JoystickPresent)
+            joystickenabled = false;
+
+        MainMenu[6].active = AT_ENABLED;
+        MainItems.curpos = 0;
+
+        configfound = true;
+    }
+
+    if (!configfound || !viewsize)
+    {
+        //
+        // no config file, so select by hardware
+        //
+        if (SoundBlasterPresent || AdLibPresent)
+        {
+            sd = sdm_AdLib;
+            sm = smm_AdLib;
+        }
+        else
+        {
+            sd = sdm_PC;
+            sm = smm_Off;
+        }
+
+        if (SoundBlasterPresent)
+            sds = sds_SoundBlaster;
+        else
+            sds = sds_Off;
+
+        if (MousePresent)
+            mouseenabled = true;
+
+        if (JoystickPresent)
+            joystickenabled = true;
+
+        viewsize = 17;
+        mouseadjustment = 5;
+        gamestate.flags |= GS_HEARTB_SOUND | GS_ATTACK_INFOAREA;
+
+#ifdef CEILING_FLOOR_COLORS
+        gamestate.flags |= GS_DRAW_CEILING | GS_DRAW_FLOOR | GS_LIGHTING;
+#else
+        gamestate.flags |= GS_LIGHTING;
+#endif
+    }
+
+    SD_SetMusicMode (sm);
+    SD_SetSoundMode (sd);
+    SD_SetDigiDevice (sds);
+}
+
+
+/*
+============================================================================
+
+               'LOAD/SAVE game' and 'LOAD/SAVE level' code
+
+============================================================================
+*/
+
+
+/*
+====================
+=
+= InitPlaytemp
+=
+====================
+*/
+
+void InitPlaytemp (void)
+{
+    FILE *file;
+
+    MakeDestPath (PLAYTEMP_FILE);
+
+    file = fopen(tempPath,"wb");
+
+    if (!file)
+        CA_CannotOpen (tempPath);
+
+    fclose (file);
+}
+
+
+/*
+====================
+=
+= DoChecksum
+=
+====================
+*/
+
+int32_t DoChecksum (void *source, uint32_t size, int32_t checksum)
+{
+    uint32_t i;
+    byte     *src;
+
+    src = source;
+
+    for (i = 0; i < size - 1; i++)
+        checksum += src[i] ^ src[i + 1];
+
+    return checksum;
+}
+
+
+/*
+====================
+=
+= FindChunk
+=
+====================
+*/
+
+int32_t FindChunk (FILE *file, const char *chunk)
+{
+    int32_t chunklen;
+    char    fchunk[5] = {0,0,0,0,0};
+
+    while (1)
+    {
+        //
+        // read chunk id
+        //
+        if (fread(fchunk,1,sizeof(fchunk) - 1,file) != sizeof(fchunk) - 1)
+            break;
+
+        fread (&chunklen,sizeof(chunklen),1,file);
+
+        //
+        // look for chunk (sub-check!)
+        //
+        if (strstr(fchunk,chunk))
+            return chunklen;      // chunk found!
+
+        fseek (file,chunklen,SEEK_CUR);
+    }
+
+    fseek (file,0,SEEK_END);      // make sure we're at the end
+
+    return 0;
+}
+
+
+/*
+====================
+=
+= NextChunk
+=
+====================
+*/
+
+int32_t NextChunk (FILE *file)
+{
+    int32_t chunklen;
+    char    fchunk[5] = {0,0,0,0,0};
+
+    //
+    // read chunk id
+    //
+    if (fread(fchunk,1,sizeof(fchunk) - 1,file) != sizeof(fchunk) - 1)
+    {
+        fseek (file,0,SEEK_END);    // make sure we're at the end
+
+        return 0;
+    }
+
+    fread (&chunklen,sizeof(chunklen),1,file);
+
+    return chunklen;
+}
+
+
+/*
+====================
+=
+= DeleteChunk
+=
+====================
+*/
+
+int32_t DeleteChunk (FILE *sourcefile, const char *chunk)
+{
+    int32_t filesize,cksize,offset,bmove;
+    FILE    *destfile;
+
+    filesize = CA_GetFileLength(sourcefile);
+
+    cksize = FindChunk(sourcefile,chunk);
+
+    if (cksize)
+    {
+        //
+        // skip over the header
+        //
+        offset = ftell(sourcefile) - 8;
+        bmove = filesize - (offset + 8 + cksize);       // figure bytes to move
+
+        if (bmove)
+        {
+            //
+            // move data: FROM --> the start of NEXT chunk through the end of file
+            //              TO --> the start of THIS chunk
+            //
+            // (ie: erase THIS chunk and re-write it at the end of the file!)
+            //
+            fseek (sourcefile,cksize,SEEK_CUR);         // seek source to NEXT chunk
+
+            MakeDestPath (PLAYTEMP_FILE);
+
+            destfile = fopen(tempPath,"rb+");
+
+            if (!destfile)
+                CA_CannotOpen (tempPath);
+
+            fseek (destfile,offset,SEEK_SET);           // seek dest to THIS chunk
+
+            IO_CopyFile (sourcefile,destfile,bmove);
+
+            fclose (destfile);
+
+            fseek (sourcefile,offset + bmove,SEEK_SET); // go to end of data moved
+        }
+        else
+            fseek (sourcefile,offset,SEEK_SET);
+    }
+
+    return cksize;
+}
+
+
+/*
+====================
+=
+= ReadInfo
+=
+====================
+*/
+
+void ReadInfo (bool decompress, void *dest, uint32_t size, FILE *file)
+{
+#ifdef NOTYET
+    uint32_t dsize,csize;
+
+    PreloadUpdate (LS_current++,LS_total);
+#endif
+#ifdef NOTYET
+    if (decompress)
+    {
+        if (!fread(&csize,sizeof(csize),1,file))
+            Quit ("Error reading file: %s",strerror(errno));
+
+        if (!fread(lzh_work_buffer,csize,1,file))
+            Quit ("Error reading file: %s",strerror(errno));
+
+        checksum = DoChecksum(lzh_work_buffer,csize,checksum);
+        dsize = LZH_Decompress(lzh_work_buffer,dest,size,csize,SRC_MEM | DEST_MEM);
+
+        if (dsize != size)
+            Quit ("Bad decompression during game load!");
+    }
+    else
+#endif
+    {
+        if (!fread(dest,size,1,file))
+            Quit ("Error reading file: %s",strerror(errno));
+
+        checksum = DoChecksum(dest,size,checksum);
+    }
+}
+
+
+/*
+====================
+=
+= WriteInfo
+=
+====================
+*/
+
+uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
+{
+    uint32_t csize;
+#ifdef NOTYET
+    PreloadUpdate (LS_current++,LS_total);
+#endif
+#ifdef NOTYET
+    if (compress)
+    {
+        csize = LZH_Compress(src,lzh_work_buffer,size,SRC_MEM | DEST_MEM);
+
+        if (csize > LZH_WORK_BUFFER_SIZE)
+            Quit ("Save game compression buffer too small!");
+
+        if (!fwrite(&csize,sizeof(csize),1,file)
+            Quit ("Error writing file: %s",strerror(errno));
+
+        if (!fwrite(lzh_work_buffer,csize,1,file))
+            Quit ("Error writing file: %s",strerror(errno));
+
+        checksum = DoChecksum(lzh_work_buffer,csize,checksum);
+        csize += sizeof(csize);
+    }
+    else
+#endif
+    {
+        if (!fwrite(src,size,1,file))
+            Quit ("Error writing file: %s",strerror(errno));
+
+        checksum = DoChecksum(src,size,checksum);
+        csize = size;
+    }
+
+    return csize;
+}
+
+
+/*
+====================
+=
+= LoadLevel
+=
+====================
+*/
+
+void LoadLevel (int levelnum)
+{
+    bool      oldloaded = loadedgame;
+    int32_t   oldchecksum;
+    objtype   *newobj,*obj;
+    FILE      *file;
+    int       mod;
+    int       oldwx,oldwy,oldww,oldwh;
+    int       oldpx,oldpy;
+    unsigned  count;
+    byte      *temp,*ptr;
+    char      chunk[5];
+
+    WindowY = 181;
+    gamestuff.level[levelnum].locked = false;
+
+    mod = levelnum % 6;
+    normalshadediv = nsd_table[mod];
+    shademax = sm_table[mod];
+    normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
+
+    //
+    // open PLAYTEMP file
+    //
+    MakeDestPath (PLAYTEMP_FILE);
+
+    file = fopen(tempPath,"rb");
+
+    //
+    // if level exists in PLAYTEMP file, use it; otherwise, load it from scratch!
+    //
+    snprintf (chunk,sizeof(chunk),"LV%02x",levelnum);
+
+    if (!file || !FindChunk(file,chunk) || ForceLoadDefault)
+    {
+        fclose (file);
+#ifdef NOTYET
+        PreloadUpdate (LS_current + ((LS_total - LS_current) >> 1),LS_total);
+#endif
+        SetupGameLevel ();
+
+        gamestate.flags |= GS_VIRGIN_LEVEL;
+        gamestate.turn_around = 0;
+#ifdef NOTYET
+        PreloadUpdate (1,1);
+#endif
+        ForceLoadDefault = false;
+
+        return;
+    }
+
+    gamestate.flags &= ~GS_VIRGIN_LEVEL;
+
+    //
+    // setup for LZH decompression
+    //
+#ifdef NOTYET
+    LZH_Startup ();
+    lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
+#endif
+    //
+    // read all sorts of stuff
+    //
+    checksum = 0;
+
+    loadedgame = true;
+    SetupGameLevel ();
+    loadedgame = oldloaded;
+
+    ReadInfo (true,tilemap,sizeof(tilemap),file);
+    ReadInfo (true,actorat,sizeof(actorat),file);
+    ReadInfo (true,areaconnect,sizeof(areaconnect),file);
+    ReadInfo (true,areabyplayer,sizeof(areabyplayer),file);
+
+    //
+    // restore save game actors
+    //
+    ReadInfo (false,&count,sizeof(count),file);
+
+    temp = SafeMalloc(count * sizeof(*obj));
+    ReadInfo (true,temp,count * sizeof(*obj),file);
+
+    ptr = temp;
+
+    InitObjList ();       // start with player actor
+
+    memcpy (player,ptr,sizeof(*obj) - (sizeof(player->next) + sizeof(player->prev)));  // don't copy over links!
+    ptr += sizeof(*obj);
+
+    while (--count)
+    {
+        newobj = GetNewObj();
+        memcpy (newobj,ptr,sizeof(*obj) - (sizeof(newobj->next) + sizeof(newobj->prev)));  // don't copy over links!
+
+        actorat[newobj->tilex][newobj->tiley] = newobj;  // TODO: what if it's a non-blocking actor
+#if LOOK_FOR_DEAD_GUYS
+        if (newobj->flags & FL_DEADGUY)
+            deadguys[numdeadguys++] = newobj;
+#endif
+        ptr += sizeof(*obj);
+    }
+
+    free (temp);
+
+#ifdef NOTYET
+    //
+    //  re-establish links to barrier switches
+    //
+    for (obj = player->next; obj; obj = obj->next)
+    {
+        switch (obj->obclass)
+        {
+            case arc_barrierobj:
+            case post_barrierobj:
+            case vspike_barrierobj:
+            case vpost_barrierobj:
+                obj->temp2 = ScanBarrierTable(obj->tilex,obj->tiley);
+                break;
+        }
+    }
+
+    ConnectBarriers ();
+#endif
+    //
+    // read all sorts of stuff
+    //
+    ReadInfo (false,&laststatobj,sizeof(laststatobj),file);
+    ReadInfo (true,statobjlist,sizeof(statobjlist),file);
+    ReadInfo (true,doorobjlist,sizeof(doorobjlist),file);
+    ReadInfo (false,&pwallstate,sizeof(pwallstate),file);
+    ReadInfo (false,&pwallx,sizeof(pwallx),file);
+    ReadInfo (false,&pwally,sizeof(pwally),file);
+    ReadInfo (false,&pwalldir,sizeof(pwalldir),file);
+    ReadInfo (false,&pwallpos,sizeof(pwallpos),file);
+    ReadInfo (false,&pwalldist,sizeof(pwalldist),file);
+    ReadInfo (true,TravelTable,sizeof(TravelTable),file);
+    ReadInfo (true,&ConHintList,sizeof(ConHintList),file);
+#ifdef NOTYET
+    ReadInfo (true,eaList,sizeof(eaList),file);
+    ReadInfo (true,&GoldsternInfo,sizeof(GoldsternInfo),file);
+    ReadInfo (true,&GoldieList,sizeof(GoldieList),file);
+#endif
+    ReadInfo (false,gamestate.barrier_table,sizeof(gamestate.barrier_table),file);
+    ReadInfo (false,&gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators),file);
+
+    //
+    // read and evaluate checksum
+    //
+#ifdef NOTYET
+    PreloadUpdate (LS_current++,LS_total);
+#endif
+    if (!fread(&oldchecksum,sizeof(oldchecksum),1,file))
+        Quit ("Error reading file: %s",strerror(errno));
+
+    if (oldchecksum != checksum)
+    {
+        oldwx = WindowX;
+        oldwy = WindowY;
+        oldww = WindowW;
+        oldwh = WindowH,
+        oldpx = px;
+        oldpy = py;
+
+        WindowX = 0;
+        WindowY = 16;
+        WindowW = 320;
+        WindowH = 168;
+
+        CacheMessage (BADINFO_TEXT);
+
+        WindowX = oldwx;
+        WindowY = oldwy;
+        WindowW = oldww;
+        WindowH = oldwh;
+        px = oldpx;
+        py = oldpy;
+
+        IN_ClearKeysDown ();
+        IN_Ack ();
+
+        gamestate.score = 0;
+        gamestate.nextextra = EXTRAPOINTS;
+        gamestate.lives = 1;
+
+        gamestate.weapon = gamestate.chosenweapon = wp_autocharge;
+        gamestate.weapons = 1 << wp_autocharge;
+
+        gamestate.ammo = 8;
+    }
+
+    fclose (file);
+
+    //
+    // clean-up LZH compression
+    //
+#ifdef NOTYET
+    free (lzh_work_buffer);
+    LZH_Shutdown ();
+#endif
+    SetViewSize (viewsize);
+
+    //
+    // check for strange door and actor combos
+    //
+    CleanUpDoors_N_Actors ();
+}
+
+
+/*
+====================
+=
+= SaveLevel
+=
+====================
+*/
+
+void SaveLevel (int levelnum)
+{
+    objtype  *obj;
+    FILE     *file;
+    int      oldmapon;
+    int32_t  offset,cksize;
+    char     chunk[5];
+    unsigned count;
+    unsigned gflags = gamestate.flags;
+    byte     *temp,*ptr;
+
+    WindowY = 181;
+
+    //
+    // make sure floor stats are saved
+    //
+    oldmapon = gamestate.mapon;
+    gamestate.mapon = gamestate.lastmapon;
+
+    ShowStats (0,0,ss_justcalc,&gamestuff.level[gamestate.mapon].stats);
+
+    gamestate.mapon = oldmapon;
+    gamestate.flags &= ~GS_VIRGIN_LEVEL;
+
+    //
+    // open PLAYTEMP file
+    //
+    MakeDestPath (PLAYTEMP_FILE);
+
+    file = fopen(tempPath,"wb+");
+
+    if (!file)
+        CA_CannotOpen (tempPath);
+
+    //
+    // remove level chunk from file
+    //
+    snprintf (chunk,sizeof(chunk),"LV%02x",levelnum);
+    DeleteChunk (file,chunk);
+
+    //
+    // setup LZH compression
+    //
+#ifdef NOTYET
+    LZH_Startup ();
+    lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
+#endif
+    //
+    // write level chunk id
+    //
+    if (!fwrite(chunk,sizeof(chunk - 1),1,file))
+        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+
+    fseek (file,sizeof(chunk) - 1,SEEK_CUR);    // leave space for chunk size
+
+    //
+    // write all sorts of info
+    //
+    checksum = cksize = 0;
+
+    cksize += WriteInfo(true,tilemap,sizeof(tilemap),file);
+    cksize += WriteInfo(true,actorat,sizeof(actorat),file);
+    cksize += WriteInfo(true,areaconnect,sizeof(areaconnect),file);
+    cksize += WriteInfo(true,areabyplayer,sizeof(areabyplayer),file);
+
+    //
+    // write actor list
+    //
+    temp = SafeMalloc(sizeof(objlist));
+    ptr = temp;
+
+    count = 0;
+
+    for (obj = player; obj; obj = obj->next)
+    {
+        memcpy (ptr,obj,sizeof(*obj));
+
+        count++;
+        ptr += sizeof(*obj);
+    }
+
+    cksize += WriteInfo(false,&count,sizeof(count),file);
+    cksize += WriteInfo(true,temp,count * sizeof(*obj),file);
+
+    free (temp);
+
+    //
+    // write all sorts of info
+    //
+    cksize += WriteInfo(false,&laststatobj,sizeof(laststatobj),file);
+    cksize += WriteInfo(true,statobjlist,sizeof(statobjlist),file);
+    cksize += WriteInfo(true,doorobjlist,sizeof(doorobjlist),file);
+    cksize += WriteInfo(false,&pwallstate,sizeof(pwallstate),file);
+    cksize += WriteInfo(false,&pwallx,sizeof(pwallx),file);
+    cksize += WriteInfo(false,&pwally,sizeof(pwally),file);
+    cksize += WriteInfo(false,&pwalldir,sizeof(pwalldir),file);
+    cksize += WriteInfo(false,&pwallpos,sizeof(pwallpos),file);
+    cksize += WriteInfo(false,&pwalldist,sizeof(pwalldist),file);
+    cksize += WriteInfo(true,TravelTable,sizeof(TravelTable),file);
+    cksize += WriteInfo(true,&ConHintList,sizeof(ConHintList),file);
+#ifdef NOTYET
+    cksize += WriteInfo(true,eaList,sizeof(eaList),file);
+    cksize += WriteInfo(true,&GoldsternInfo,sizeof(GoldsternInfo),file);
+    cksize += WriteInfo(true,&GoldieList,sizeof(GoldieList),file);
+#endif
+    cksize += WriteInfo(false,gamestate.barrier_table,sizeof(gamestate.barrier_table),file);
+    cksize += WriteInfo(false,&gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators),file);
+
+    //
+    // write checksum
+    //
+    cksize += WriteInfo(false,&checksum,sizeof(checksum),file);
+
+    //
+    // write chunk size & set file size
+    //
+    offset = ftell(file);
+
+    fseek (file,-(cksize + sizeof(cksize)),SEEK_CUR);
+
+    if (!fwrite(&cksize,sizeof(cksize),1,file))
+        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+
+    if (ftruncate(fileno(file),offset) == -1)
+        Quit ("Error truncating file %s: %s",tempPath,strerror(errno));
+
+    fclose (file);
+
+    //
+    // clean-up LZH compression
+    //
+#ifdef NOTYET
+    free (lzh_work_buffer);
+    LZH_Shutdown ();
+#endif
+    SetViewSize (viewsize);
+
+    gamestate.flags = gflags;
+}
+
+
+/*
+====================
+=
+= LoadTheGame
+=
+====================
+*/
+
+bool LoadTheGame (FILE *file)
+{
+    FILE       *tempfile;
+#ifdef NOTYET
+    bool       oldversion;
+    int        oldwx,oldwy,oldww,oldwh;
+    int        oldpx,oldpy;
+    size_t     len;
+    char       *infospace;
+#endif
+    int32_t    cksize,headersize;
+    byte       *temp;
+    const char *vers = "VERS",*head = "HEAD";
+
+    //
+    // read in VERSion chunk
+    //
+    if (!FindChunk(file,vers))
+        return false;
+
+    //
+    // TODO: don't bother with the version check for now
+    //
+#ifndef NOTYET
+    fseek (file,strlen(SavegameInfoText) + 1,SEEK_CUR);
+#else
+    len = strlen(SavegameInfoText) + 1;
+    infospace = SafeMalloc(len);
+
+    if (!fread(infospace,len,1,file))
+        Quit ("Error reading file: %s, %d",strerror(errno),ftell(file));
+
+    infospace[len - 1] = '\0';
+
+    oldversion = memcmp(infospace,SavegameInfoText,len);
+
+    free (infospace);
+
+    if (oldversion)
+    {
+        //
+        // old version of game
+        //
+        oldwx = WindowX;
+        oldwy = WindowY;
+        oldww = WindowW;
+        oldwh = WindowH;
+        oldpx = px;
+        oldpy = py;
+
+        WindowX = 0;
+        WindowY = 16;
+        WindowW = 320;
+        WindowH = 168;
+
+        CacheMessage (BADSAVEGAME_TEXT);
+        SD_PlaySound (NOWAYSND);
+
+        WindowX = oldwx;
+        WindowY = oldwy;
+        WindowW = oldww;
+        WindowH = oldwh;
+        px = oldpx;
+        py = oldpy;
+
+        IN_ClearKeysDown ();
+        IN_Ack ();
+
+        VW_FadeOut ();
+
+        return false;
+    }
+#endif
+    //
+    // read in HEAD chunk
+    //
+    if (FindChunk(file,head))
+    {
+        //
+        // setup LZH decompression
+        //
+#ifdef NOTYET
+        LZH_Startup ();
+        lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
+#endif
+        ReadInfo (true,&gamestate,sizeof(gamestate),file);
+        ReadInfo (true,&gamestuff,sizeof(gamestuff),file);
+
+        //
+        // clean-up LZH decompression
+        //
+#ifdef NOTYET
+        free (lzh_work_buffer);
+        LZH_Shutdown ();
+#endif
+    }
+    else
+        return false;
+
+    //
+    // reinitialize page manager
+    //
+#if DUAL_SWAP_FILES
+    PM_Shutdown ();
+    PM_Startup ();
+#endif
+    //
+    // start music for the starting level in this loaded game
+    //
+    FreeMusic ();
+    StartMusic ();
+
+    //
+    // copy all remaining chunks to PLAYTEMP file
+    //
+    MakeDestPath (PLAYTEMP_FILE);
+
+    tempfile = fopen(tempPath,"wb");
+
+    if (!tempfile)
+        return false;
+
+    headersize = strlen(head) + sizeof(int32_t);    // chunk ID and LENGTH
+
+    for (cksize = NextChunk(file); cksize; cksize = NextChunk(file))
+    {
+        cksize += headersize;                   // include header
+
+        fseek (file,-headersize,SEEK_CUR);      // seek to start of chunk
+
+        temp = SafeMalloc(cksize);
+
+        //
+        // read chunk from SAVEGAME file
+        //
+        if (!fread(temp,cksize,1,file))
+            Quit ("Error reading file: %s",strerror(errno));
+
+        //
+        // write chunk to PLAYTEMP file
+        //
+        if (!fwrite(temp,cksize,1,tempfile))
+            Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+
+        free (temp);
+    }
+
+    fclose (tempfile);
+
+    SetViewSize (viewsize);
+
+    //
+    // load current level
+    //
+    LoadLevel (0xff);
+    ShowQuickMsg = false;
+
+    return true;
+}
+
+
+/*
+====================
+=
+= SaveTheGame
+=
+====================
+*/
+
+bool SaveTheGame (FILE *file, const char *description)
+{
+    struct stat statbuf;
+    uint32_t    cksize;
+    FILE        *tempfile;
+    const char  *vers = "VERS",*desc = "DESC",*head = "HEAD";
+
+    //
+    // save current level into PLAYTEMP
+    //
+    SaveLevel (0xff);
+
+    //
+    // write VERSion chunk
+    //
+    cksize = strlen(SavegameInfoText) + 1;
+
+    if (!fwrite(vers,strlen(vers),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    if (!fwrite(&cksize,sizeof(cksize),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    if (!fwrite(SavegameInfoText,cksize,1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    //
+    // write DESC chunk
+    //
+    cksize = strlen(description) + 1;
+
+    if (!fwrite(desc,strlen(desc),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    if (!fwrite(&cksize,sizeof(cksize),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    if (!fwrite(description,cksize,1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    //
+    // write HEAD chunk
+    //
+    cksize = 0;
+
+    if (!fwrite(head,strlen(head),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    fseek (file,sizeof(cksize),SEEK_CUR);   // leave space for chunk size
+
+    //
+    // setup LZH compression
+    //
+#ifdef NOTYET
+    LZH_Startup ();
+    lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
+#endif
+    cksize += WriteInfo(true,&gamestate,sizeof(gamestate),file);
+    cksize += WriteInfo(true,&gamestuff,sizeof(gamestuff),file);
+
+    //
+    // clean-up LZH compression
+    //
+#ifdef NOTYET
+    free (lzh_work_buffer);
+    LZH_Shutdown ();
+#endif
+    //
+    // write chunk size
+    //
+    fseek (file,-(cksize + sizeof(cksize)),SEEK_CUR);
+
+    if (!fwrite(&cksize,sizeof(cksize),1,file))
+        Quit ("Error writing file: %s",strerror(errno));
+
+    //
+    // append PLAYTEMP file to savegame file
+    //
+    fseek (file,cksize,SEEK_CUR);
+
+    MakeDestPath (PLAYTEMP_FILE);
+
+    //
+    // TODO: might need access()
+    //
+    if (stat(tempPath,&statbuf))
+        return false;
+
+    tempfile = fopen(tempPath,"rb");
+
+    if (!tempfile)
+        return false;
+
+    IO_CopyFile (tempfile,file,-1);
+
+    fclose (tempfile);
+
+    SetViewSize (viewsize);
+
+    return true;
+}
+
+
+/*
+====================
+=
+= LevelInPlaytemp
+=
+====================
+*/
+
+bool LevelInPlaytemp (int levelnum)
+{
+    FILE *file;
+    char chunk[5];
+    bool retval;
+
+    MakeDestPath(PLAYTEMP_FILE);
+
+    file = fopen(tempPath,"rb");
+
+    //
+    // see if level exists in PLAYTEMP file
+    //
+    snprintf (chunk,sizeof(chunk),"LV%02x",levelnum);
+
+    retval = FindChunk(file,chunk) != 0;
+
+    fclose (file);
+
+    return retval;
+}
+
+
+/*
+====================
+=
+= CleanUpDoors_N_Actors
+=
+====================
+*/
+
+void CleanUpDoors_N_Actors (void)
+{
+    int      x,y;
+    objtype  *check;
+    unsigned tile,doornum;
+
+    for (y = 0; y < mapheight; y++)
+    {
+        for (x = 0; x < mapwidth; x++)
+        {
+            tile = tilemap[x][y];
+
+            if (tile & 0x80)
+            {
+                //
+                // found a door
+                //
+                check = actorat[x][y];
+
+                if (ISPOINTER(check) && check < &objlist[MAXACTORS])  // TODO: buffer overflow
+                {
+                    //
+                    // found an actor
+                    //
+                    doornum = tile & 0x3f;
+
+                    if ((check->flags & (FL_SOLID | FL_DEADGUY)) == (FL_SOLID | FL_DEADGUY))
+                        check->flags &= ~(FL_SHOOTABLE | FL_SOLID | FL_FAKE_STATIC);
+
+                    //
+                    // make sure door is open
+                    //
+                    doorobjlist[doornum].ticcount = 0;
+                    doorobjlist[doornum].action = dr_open;
+                    doorobjlist[doornum].position = TILEGLOBAL - 1;
+                }
+            }
+        }
+    }
+}
+
+
+/*
+====================
+=
+= ClearNClose
+=
+= Called when changing levels via standard elevator
+=
+= This code doesn't CLEAR the elevator door as originally
+= planned because actors were coded to stay out of the
+= elevator doorway
+=
+====================
+*/
+
+void ClearNClose (void)
+{
+    int x,y,tx,ty,px,py;
+    int doornum;
+
+    tx = ty = 0;
+    px = player->x >> TILESHIFT;
+    py = player->y >> TILESHIFT;
+
+    //
+    // locate the door
+    //
+    for (x = -1; x < 2 && !tx; x += 2)
+    {
+        for (y = -1; y < 2; y += 2)
+        {
+            if (tilemap[px + x][py + y] & 0x80)
+            {
+                tx = px + x;
+                ty = py + y;
+                break;
+            }
+        }
+    }
+
+    if (tx)
+    {
+        //
+        // close the door & make it solid
+        //
+        doornum = tilemap[tx][ty] & 0x3f;
+
+        doorobjlist[doornum].action = dr_closed;
+        doorobjlist[doornum].position = 0;
+
+        actorat[tx][ty] = (objtype *)(doornum | 0x80);
+    }
+}
+
+
+/*
+====================
+=
+= CycleColors
+=
+====================
+*/
+
+void CycleColors (void)
+{
+#ifdef NOTYET
+    #define NUM_RANGES     5
+    #define CRNG_LOW       0xf0
+    #define CRNG_HIGH      0xfe
+    #define CRNG_SIZE      (CRNG_HIGH - CRNG_LOW + 1)
+
+    static CycleInfo crange[NUM_RANGES] =
+    {
+        {7,0,0xf0,0xf1},
+        {15,0,0xf2,0xf3},
+        {30,0,0xf4,0xf5},
+        {10,0,0xf6,0xf9},
+        {12,0,0xfa,0xfe},
+    };
+
+    int       i;
+    CycleInfo *c;
+    byte      cbuffer[CRNG_SIZE][3],temp[3];
+    int       first,last,numregs;
+    bool      changes = false;
+
+    for (i = 0; i < NUM_RANGES; i++)
+    {
+        c = &crange[i];
+
+        if (tics >= c->delay_count)
+        {
+            if (!changes)
+            {
+                VW_GetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+
+                changes = true;
+            }
+
+            first = c->firstreg - CRNG_LOW;
+            numregs = c->lastreg - c->firstreg;    // is one less than in range
+            last = first + numregs;
+
+            memcpy (temp,cbuffer[last],sizeof(temp));
+            memmove (cbuffer[first + 1],cbuffer[first],numregs * 3);
+            memcpy (cbuffer[first],temp,sizeof(temp));
+
+            c->delay_count = c->init_delay;
+        }
+        else
+            c->delay_count -= tics;
+    }
+
+    if (changes)
+        VW_SetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+    else
+        VW_WaitVBL (1);
+#endif
+}
+
 
 /*
 =====================
 =
-= NewGame
+= InitDigiMap
 =
-= Set up new game to start from the beginning
+= Using Wolf4SDL's mapping
 =
 =====================
 */
 
-boolean ShowQuickMsg;
-void NewGame (int difficulty,int episode)
+//
+// channel mapping:
+//  -1: any non reserved channel
+//   0: player weapons
+//   1: boss weapons
+//
+struct digimapstruct
 {
-	unsigned oldf=gamestate.flags,loop;
+    int soundname;
+    int chunk;
+    int channel;
+} digimap[] =
+{
+    {ATKIONCANNONSND,       0,  0},
+    {ATKCHARGEDSND,         1,  0},
+    {ATKBURSTRIFLESND,      2,  0},
+    {ATKGRENADESND,        46,  0},
 
-	InitPlaytemp();
-	playstate = ex_stillplaying;
+    {OPENDOORSND,           3, -1},
+    {CLOSEDOORSND,          4, -1},
+    {HTECHDOOROPENSND,      5, -1},
+    {HTECHDOORCLOSESND,     6, -1},
 
-	ShowQuickMsg=true;
-	_fmemset (&gamestuff,0,sizeof(gamestuff));
-	memset (&gamestate,0,sizeof(gamestate));
+    {INFORMANTDEATHSND,     7, -1},
+    {SCIENTISTHALTSND,     19, -1},
+    {SCIENTISTDEATHSND,    20, -1},
 
-	memset(&gamestate.barrier_table,0xff,sizeof(gamestate.barrier_table));
-	memset(&gamestate.old_barrier_table,0xff,sizeof(gamestate.old_barrier_table));
-	gamestate.flags = oldf & ~(GS_KILL_INF_WARN);
-//	LoadAccessCodes();
+    {GOLDSTERNHALTSND,      8, -1},
+    {GOLDSTERNLAUGHSND,    24, -1},
 
-	gamestate.difficulty = difficulty;
+    {HALTSND,               9, -1},     // Rent-A-Cop 1st sighting
+    {RENTDEATH1SND,        10, -1},     // Rent-A-Cop Death
+
+    {EXPLODE1SND,          11, -1},
+
+    {GGUARDHALTSND,        12, -1},
+    {GGUARDDEATHSND,       17, -1},
+
+    {PROHALTSND,           16, -1},
+    {PROGUARDDEATHSND,     13, -1},
+
+    {BLUEBOYDEATHSND,      18, -1},
+    {BLUEBOYHALTSND,       51, -1},
+
+    {SWATHALTSND,          22, -1},
+    {SWATDIESND,           47, -1},
+
+    {SCANHALTSND,          15, -1},
+    {SCANDEATHSND,         23, -1},
+
+    {PODHATCHSND,          26, -1},
+    {PODHALTSND,           50, -1},
+    {PODDEATHSND,          49, -1},
+
+    {ELECTSHOTSND,         27, -1},
+
+    {DOGBOYHALTSND,        14, -1},
+    {DOGBOYDEATHSND,       21, -1},
+    {ELECARCDAMAGESND,     25, -1},
+    {ELECAPPEARSND,        28, -1},
+    {ELECDIESND,           29, -1},
+
+    {INFORMDEATH2SND,      39, -1},     // Informant Death #2
+    {RENTDEATH2SND,        34, -1},     // Rent-A-Cop Death #2
+    {PRODEATH2SND,         42, -1},     // PRO Death #2
+    {SWATDEATH2SND,        48, -1},     // SWAT Death #2
+    {SCIDEATH2SND,         53, -1},     // Gen. Sci Death #2
+
+    {LIQUIDDIESND,         30, -1},
+
+    {GURNEYSND,            31, -1},
+    {GURNEYDEATHSND,       41, -1},
+
+    {WARPINSND,            32, -1},
+    {WARPOUTSND,           33, -1},
+
+    {EXPLODE2SND,          35, -1},
+
+    {LCANHALTSND,          36, -1},
+    {LCANDEATHSND,         37, -1},
+
+    //{RENTDEATH3SND,        38, -1},     // Rent-A-Cop Death #3
+    {INFORMDEATH3SND,      40, -1},     // Informant Death #3
+    //{PRODEATH3SND,         43, -1},     // PRO Death #3
+    //{SWATDEATH3SND,        52, -1},     // Swat Guard #3
+    {SCIDEATH3SND,         54, -1},     // Gen. Sci Death #3
+
+    {LCANBREAKSND,         44, -1},
+    {SCANBREAKSND,         45, -1},
+    {CLAWATTACKSND,        56, -1},
+    {SPITATTACKSND,        55, -1},
+    {PUNCHATTACKSND,       57, -1},
+
+    {LASTSOUND}
+};
 
 
-//
-// The following are set to 0 by the memset() to gamestate - Good catch! :JR
-//
-//	gamestate.rzoom
-//	gamestate.rpower
-//	gamestate.old_door_bombs
-// gamestate.plasma_detonators
-//
+void InitDigiMap (void)
+{
+    struct digimapstruct *map;
 
-	gamestate.weapons	 = 1<<wp_autocharge;			// |1<<wp_plasma_detonators;
-	gamestate.weapon = gamestate.chosenweapon = wp_autocharge;
-	gamestate.old_weapons[0] = gamestate.weapons;
-	gamestate.old_weapons[1] = gamestate.weapon;
-	gamestate.old_weapons[2] = gamestate.chosenweapon;
+    for (map = &digimap[0]; map->soundname != LASTSOUND; map++)
+    {
+        DigiMap[map->soundname] = map->chunk;
+        DigiChannel[map->chunk] = map->channel;
 
-	gamestate.health = 100;
-	gamestate.old_ammo = gamestate.ammo = STARTAMMO;
-//	gamestate.dollars = START_DOLLARS;
-//	gamestate.cents   = START_CENTS;
-	gamestate.lives = 3;
-	gamestate.nextextra = EXTRAPOINTS;
-	gamestate.episode=episode;
-	gamestate.flags |= (GS_CLIP_WALLS|GS_ATTACK_INFOAREA);	//|GS_DRAW_CEILING|GS_DRAW_FLOOR);
-
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
-	if (gamestate.flags & GS_STARTLEVEL)
-	{
-		gamestate.mapon = starting_level;
-		gamestate.difficulty = starting_difficulty;
-		gamestate.episode = starting_episode;
-	}
-	else
-#endif
-		gamestate.mapon = 0;
-
-	gamestate.key_floor = gamestate.mapon+1;
-	startgame = true;
-
-	for (loop=0; loop<MAPS_WITH_STATS; loop++)
-	{
-		gamestuff.old_levelinfo[loop].stats.overall_floor=100;
-		if (loop)
-			gamestuff.old_levelinfo[loop].locked=true;
-	}
-
-//	normalshade_div = SHADE_DIV;
-//	shade_max = SHADE_MAX;
-	ExtraRadarFlags = InstantWin = InstantQuit = 0;
-
-	pickquick = 0;
+        SD_PrepareSound (map->chunk);
+    }
 }
 
-//===========================================================================
-
-//==========================================================================
-//
-//             'LOAD/SAVE game' and 'LOAD/SAVE level' code
-//
-//==========================================================================
-
-boolean LevelInPlaytemp(char levelnum);
-
-#define WriteIt(c,p,s)	cksize+=WriteInfo(c,(char far *)p,s,handle)
-#define ReadIt(d,p,s)	ReadInfo(d,(char far *)p,s,handle)
-
-#define LZH_WORK_BUFFER_SIZE	8192		
-
-memptr lzh_work_buffer;
-long checksum;
-
-//--------------------------------------------------------------------------
-// InitPlaytemp()
-//--------------------------------------------------------------------------
-void InitPlaytemp()
-{
-	int handle;
-	long size;
-
-	MakeDestPath(PLAYTEMP_FILE);
-	if ((handle=open(tempPath,O_CREAT|O_TRUNC|O_RDWR|O_BINARY,S_IREAD|S_IWRITE))==-1)
-		MAIN_ERROR(INITPLAYTEMP_OPEN_ERR);
-
-	close(handle);
-}
-
-//--------------------------------------------------------------------------
-// DoChecksum()
-//--------------------------------------------------------------------------
-long DoChecksum(byte far *source,unsigned size,long checksum)
-{
-	unsigned i;
-
-	for (i=0;i<size-1;i++)
-		checksum += source[i]^source[i+1];
-
-	return(checksum);
-}
-
-//--------------------------------------------------------------------------
-// FindChunk()
-//--------------------------------------------------------------------------
-long FindChunk(int file, char *chunk)
-{
-	long chunklen;
-	char fchunk[5]={0,0,0,0,0};
-
-	while (1)
-	{
-		if (read(file,fchunk,4)!=4)			// read chunk id
-			break;
-		read(file,&chunklen,4);					// read chunk length
-
-		if (strstr(fchunk,chunk))				// look for chunk (sub-check!)
-			return(chunklen);						// chunk found!
-
-		lseek(file,chunklen,SEEK_CUR);		// skip this chunk
-	}
-
-	lseek(file,0,SEEK_END);						// make sure we're at the end
-	return(0);
-}
-
-//--------------------------------------------------------------------------
-// NextChunk()
-//--------------------------------------------------------------------------
-long NextChunk(int file)
-{
-	long chunklen;
-	char fchunk[5]={0,0,0,0,0};
-
-	if (read(file,fchunk,4) != 4)			// read chunk id
-	{
-		lseek(file,0,SEEK_END);				// make sure we're at the end
-		return(0);
-	}
-
-	read(file,&chunklen,4);					// read chunk length
-	return(chunklen);
-}
-
-char LS_current=-1,LS_total=-1;
-
-//--------------------------------------------------------------------------
-// ReadInfo()
-//--------------------------------------------------------------------------
-void ReadInfo(boolean decompress,char far *dst, unsigned size, int file)
-{
-	unsigned csize,dsize;
-
-	PreloadUpdate(LS_current++,LS_total);
-
-	if (decompress)
-	{
-		IO_FarRead(file,(char far *)&csize,sizeof(csize));
-		IO_FarRead(file,lzh_work_buffer,csize);
-		checksum=DoChecksum(lzh_work_buffer,csize,checksum);
-		dsize=LZH_Decompress(lzh_work_buffer,dst,size,csize,SRC_MEM|DEST_MEM);
-		if (dsize != size)
-			MAIN_ERROR(READINFO_BAD_DECOMP);
-	}
-	else
-	{
-		IO_FarRead(file,dst,size);
-		checksum=DoChecksum(dst,size,checksum);
-	}
-}
-
-//--------------------------------------------------------------------------
-// WriteInfo()
-//--------------------------------------------------------------------------
-unsigned WriteInfo(boolean compress, char far *src, unsigned size, int file)
-{
-	unsigned csize;
-
-	PreloadUpdate(LS_current++,LS_total);
-
-	if (compress)
-	{
-		csize=LZH_Compress(src,lzh_work_buffer,size,SRC_MEM|DEST_MEM);
-		if (csize > LZH_WORK_BUFFER_SIZE)
-			MAIN_ERROR(WRITEINFO_BIGGER_BUF);
-		IO_FarWrite (file,(char far *)&csize,sizeof(csize));
-		IO_FarWrite (file,lzh_work_buffer,csize);
-		checksum=DoChecksum(lzh_work_buffer,csize,checksum);
-		csize += sizeof(csize);
-	}
-	else
-	{
-		IO_FarWrite (file,src,size);
-		checksum=DoChecksum(src,size,checksum);
-		csize=size;
-	}
-
-	return(csize);
-}
-
-
-
-//--------------------------------------------------------------------------
-// LoadLevel()
-//--------------------------------------------------------------------------
-boolean LoadLevel(short levelnum)
-{
-	extern boolean ShowQuickMsg;
-	extern boolean ForceLoadDefault;
-	extern unsigned destoff;
-
-	boolean oldloaded=loadedgame;
-	long oldchecksum;
-	objtype *ob;
-	statobj_t *statptr;
-	int handle,picnum;
-	memptr temp;
-	unsigned count;
-	char far *ptr;
-	char chunk[5]="LVxx";
-
-extern int nsd_table[];
-extern int sm_table[];
-
-char mod;
-
-	WindowY=181;
-	gamestuff.level[levelnum].locked=false;
-
-	mod = levelnum % 6;
-	normalshade_div = nsd_table[mod];
-	shade_max = sm_table[mod];
-	normalshade=(3*(maxscale>>2))/normalshade_div;
-
-// Open PLAYTEMP file
-//
-	MakeDestPath(PLAYTEMP_FILE);
-	handle=open(tempPath,O_RDONLY|O_BINARY);
-
-// If level exists in PLAYTEMP file, use it; otherwise, load it from scratch!
-//
-	sprintf(&chunk[2],"%02x",levelnum);
-	if ((handle==-1) || (!FindChunk(handle,chunk)) || ForceLoadDefault)
-	{
-		close(handle);
-
-		PreloadUpdate(LS_current+((LS_total-LS_current)>>1),LS_total);
-		SetupGameLevel();
-		gamestate.flags |= GS_VIRGIN_LEVEL;
-		gamestate.turn_around=0;
-
-		PreloadUpdate(1,1);
-		ForceLoadDefault=false;
-		goto overlay;
-	}
-
-	gamestate.flags &= ~GS_VIRGIN_LEVEL;
-
-// Setup for LZH decompression
-//
-	LZH_Startup();
-	MM_GetPtr(&lzh_work_buffer,LZH_WORK_BUFFER_SIZE);
-
-// Read all sorts of stuff...
-//
-	checksum = 0;
-
-	loadedgame=true;
-	SetupGameLevel();
-	loadedgame=oldloaded;
-
-	ReadIt(true, tilemap, sizeof(tilemap));
-	ReadIt(true, actorat, sizeof(actorat));
-	ReadIt(true, areaconnect, sizeof(areaconnect));
-	ReadIt(true, areabyplayer, sizeof(areabyplayer));
-
-// Restore 'save game' actors
-//
-	ReadIt(false, &count, sizeof(count));
-	MM_GetPtr(&temp,count*sizeof(*ob));
-	ReadIt(true, temp, count*sizeof(*ob));
-	ptr=temp;
-
-	InitActorList ();							// start with "player" actor
-	_fmemcpy(new,ptr,sizeof(*ob)-4);		// don't copy over links!
-	ptr += sizeof(*ob);						//
-
-	while (--count)
-	{
-		GetNewActor();
-		_fmemcpy(new,ptr,sizeof(*ob)-4);		// don't copy over links!
-		actorat[new->tilex][new->tiley]=new;
-#if LOOK_FOR_DEAD_GUYS
-		if (new->flags & FL_DEADGUY)
-			DeadGuys[NumDeadGuys++]=new;
-#endif
-		ptr += sizeof(*ob);
-	}
-	MM_FreePtr(&temp);
-
-
-   //
-	//  Re-Establish links to barrier switches
-	//
-
-#pragma warn -pia
-
-	ob = objlist;
-	do
-	{
-		switch (ob->obclass)
-		{
-			case arc_barrierobj:
-			case post_barrierobj:
-         case vspike_barrierobj:
-         case vpost_barrierobj:
-				ob->temp2 = ScanBarrierTable(ob->tilex,ob->tiley);
-			break;
-		}
-	} while (ob = ob->next);
-
-#pragma warn +pia
-
-	ConnectBarriers();
-
-// Read all sorts of stuff...
-//
-	ReadIt(false, &laststatobj, sizeof(laststatobj));
-	ReadIt(true, statobjlist, sizeof(statobjlist));
-	ReadIt(true, doorposition, sizeof(doorposition));
-	ReadIt(true, doorobjlist, sizeof(doorobjlist));
-	ReadIt(false, &pwallstate, sizeof(pwallstate));
-	ReadIt(false, &pwallx, sizeof(pwallx));
-	ReadIt(false, &pwally, sizeof(pwally));
-	ReadIt(false, &pwalldir, sizeof(pwalldir));
-	ReadIt(false, &pwallpos, sizeof(pwallpos));
-	ReadIt(false, &pwalldist, sizeof(pwalldist));
-	ReadIt(true, TravelTable, sizeof(TravelTable));
-	ReadIt(true, &ConHintList, sizeof(ConHintList));
-	ReadIt(true, eaList, sizeof(eaWallInfo)*MAXEAWALLS);
-	ReadIt(true, &GoldsternInfo, sizeof(GoldsternInfo));
-   ReadIt(true, &GoldieList,sizeof(GoldieList));			
-	ReadIt(false, gamestate.barrier_table,sizeof(gamestate.barrier_table));
-	ReadIt(false, &gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators));
-
-// Read and evaluate checksum
-//
-	PreloadUpdate(LS_current++,LS_total);
-	IO_FarRead (handle,(void far *)&oldchecksum,sizeof(oldchecksum));
-
-	if (oldchecksum != checksum)
-	{
-		int old_wx=WindowX,old_wy=WindowY,old_ww=WindowW,old_wh=WindowH,
-			 old_px=px,old_py=py;
-
-		WindowX=0; WindowY=16; WindowW=320; WindowH=168;
-		CacheMessage(BADINFO_TEXT);
-		WindowX=old_wx; WindowY=old_wy; WindowW=old_ww; WindowH=old_wh;
-		px=old_px; py=old_py;
-
-		IN_ClearKeysDown();
-		IN_Ack();
-
-		gamestate.score = 0;
-		gamestate.nextextra = EXTRAPOINTS;
-		gamestate.lives = 1;
-
-		gamestate.weapon = gamestate.chosenweapon = wp_autocharge;
-		gamestate.weapons = 1<<wp_autocharge;		// |1<<wp_plasma_detonators;
-
-		gamestate.ammo = 8;
-	}
-
-	close(handle);
-
-// Clean-up LZH compression
-//
-	MM_FreePtr(&lzh_work_buffer);
-	LZH_Shutdown();
-	NewViewSize(viewsize);
-
-// Check for Strange Door and Actor combos
-//
-	CleanUpDoors_N_Actors();
-
-
-overlay:;
-
-	return(true);
-}
-
-//--------------------------------------------------------------------------
-// SaveLevel()
-//--------------------------------------------------------------------------
-boolean SaveLevel(short levelnum)
-{
-	objtype *ob;
-	int handle;
-	struct ffblk finfo;
-	long offset,cksize;
-	char chunk[5]="LVxx";
-	unsigned gflags = gamestate.flags;
-	boolean rt_value=false;
-	memptr temp;
-	unsigned count;
-	char far *ptr;
-	char oldmapon;
-
-	WindowY=181;
-
-// Make sure floor stats are saved!
-//
-	oldmapon=gamestate.mapon;
-	gamestate.mapon=gamestate.lastmapon;
-	ShowStats(0,0,ss_justcalc,&gamestuff.level[gamestate.mapon].stats);
-	gamestate.mapon=oldmapon;
-
-// Yeah! We're no longer a virgin!
-//
-	gamestate.flags &= ~GS_VIRGIN_LEVEL;
-
-// Open PLAYTEMP file
-//
-	MakeDestPath(PLAYTEMP_FILE);
-	if ((handle=open(tempPath,O_CREAT|O_RDWR|O_BINARY,S_IREAD|S_IWRITE))==-1)
-		MAIN_ERROR(SAVELEVEL_DISKERR);
-
-// Remove level chunk from file
-//
-	sprintf(&chunk[2],"%02x",levelnum);
-	DeleteChunk(handle,chunk);
-
-// Setup LZH compression
-//
-	LZH_Startup();
-	MM_GetPtr(&lzh_work_buffer,LZH_WORK_BUFFER_SIZE);
-
-// Write level chunk id
-//
-	write(handle,chunk,4);
-	lseek(handle,4,SEEK_CUR);		// leave four bytes for chunk size
-
-// Write all sorts of info...
-//
-	checksum = cksize = 0;
-	WriteIt(true, tilemap, sizeof(tilemap));
-	WriteIt(true, actorat, sizeof(actorat));
-	WriteIt(true, areaconnect, sizeof(areaconnect));
-	WriteIt(true, areabyplayer, sizeof(areabyplayer));
-
-// Write actor list...
-//
-	MM_GetPtr(&temp,sizeof(objlist));
-	for (ob=player,count=0,ptr=temp; ob; ob=ob->next,count++,ptr+=sizeof(*ob))
-		_fmemcpy(ptr,ob,sizeof(*ob));
-	WriteIt(false, &count, sizeof(count));
-	WriteIt(true, temp, count*sizeof(*ob));
-	MM_FreePtr(&temp);
-
-// Write all sorts of info...
-//
-	WriteIt(false, &laststatobj, sizeof(laststatobj));
-	WriteIt(true, statobjlist, sizeof(statobjlist));
-	WriteIt(true, doorposition, sizeof(doorposition));
-	WriteIt(true, doorobjlist, sizeof(doorobjlist));
-	WriteIt(false, &pwallstate, sizeof(pwallstate));
-	WriteIt(false, &pwallx, sizeof(pwallx));
-	WriteIt(false, &pwally, sizeof(pwally));
-	WriteIt(false, &pwalldir, sizeof(pwalldir));
-	WriteIt(false, &pwallpos, sizeof(pwallpos));
-	WriteIt(false, &pwalldist, sizeof(pwalldist));
-	WriteIt(true, TravelTable, sizeof(TravelTable));
-	WriteIt(true, &ConHintList, sizeof(ConHintList));
-	WriteIt(true, eaList, sizeof(eaWallInfo)*MAXEAWALLS);
-	WriteIt(true, &GoldsternInfo, sizeof(GoldsternInfo));
-	WriteIt(true, &GoldieList,sizeof(GoldieList));
-	WriteIt(false, gamestate.barrier_table,sizeof(gamestate.barrier_table));
-	WriteIt(false, &gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators));
-
-// Write checksum and determine size of file
-//
-	WriteIt(false, &checksum, sizeof(checksum));
-	offset=tell(handle);
-
-// Write chunk size, set file size, and close file
-//
-	lseek(handle,-(cksize+4),SEEK_CUR);
-	write(handle,&cksize,4);
-
-	chsize(handle,offset);
-	close(handle);
-	rt_value=true;
-
-// Clean-up LZH compression
-//
-exit_func:;
-	MM_FreePtr(&lzh_work_buffer);
-	LZH_Shutdown();
-	NewViewSize(viewsize);
-	gamestate.flags = gflags;
-
-	return(rt_value);
-}
-
-#pragma warn -pia
-
-//--------------------------------------------------------------------------
-// DeleteChunk()
-//--------------------------------------------------------------------------
-long DeleteChunk(int handle, char *chunk)
-{
-	long filesize,cksize,offset,bmove;
-	int dhandle;
-
-	lseek(handle,0,SEEK_SET);
-	filesize=lseek(handle,0,SEEK_END);
-	lseek(handle,0,SEEK_SET);
-
-	if (cksize=FindChunk(handle,chunk))
-	{
-		offset=lseek(handle,0,SEEK_CUR)-8; 		// move back to CKID/SIZE
-		bmove=filesize-(offset+8+cksize);	 	// figure bytes to move
-
-		if (bmove)										// any data to move?
-		{
-		// Move data: FROM --> the start of NEXT chunk through the end of file.
-		//              TO --> the start of THIS chunk.
-		//
-		// (ie: erase THIS chunk and re-write it at the end of the file!)
-		//
-			lseek(handle,cksize,SEEK_CUR);			// seek source to NEXT chunk
-
-			MakeDestPath(PLAYTEMP_FILE);
-			if ((dhandle=open(tempPath,O_CREAT|O_RDWR|O_BINARY,S_IREAD|S_IWRITE))==-1)
-				MAIN_ERROR(SAVELEVEL_DISKERR);
-
-			lseek(dhandle,offset,SEEK_SET);  		// seek dest to THIS chunk
-			IO_CopyHandle(handle,dhandle,bmove);	// copy "bmove" bytes
-
-			close(dhandle);
-
-			lseek(handle,offset+bmove,SEEK_SET);	// go to end of data moved
-		}
-		else
-			lseek(handle,offset,SEEK_SET);
-	}
-
-	return(cksize);
-}
-
-#pragma warn +pia
-
-
-
-char far SavegameInfoText[]="\n\r"
-									 "\n\r"
-									 "-------------------------------------\n\r"
-									 "    Blake Stone: Aliens Of Gold\n\r"
-									 "Copyright 1993, JAM Productions, Inc.\n\r"
-									 "\n\r"
-									 "SAVEGAME file is from version: "__VERSION__"\n\r"
-									 " Compile Date :"__DATE__" : "__TIME__"\n\r"
-									 "-------------------------------------\n\r"
-									 "\x1a";
-
-
-//--------------------------------------------------------------------------
-// LoadTheGame()
-//--------------------------------------------------------------------------
-boolean LoadTheGame(int handle)
-{
-	extern int lastmenumusic;
-
-	int shandle;
-	long cksize;
-	memptr temp=NULL;
-	boolean rt_value=false;
-   char InfoSpace[400];
-   memptr tempspace;
-
-// Setup LZH decompression
-//
-	LZH_Startup();
-	MM_GetPtr(&lzh_work_buffer,LZH_WORK_BUFFER_SIZE);
-
-
-// Read in VERSion chunk
-//
-	if (!FindChunk(handle,"VERS"))
-		goto cleanup;
-
-	cksize = sizeof(SavegameInfoText);
-	read(handle, InfoSpace, cksize);
-	if (_fmemcmp(InfoSpace, SavegameInfoText, cksize))
-   {
-		// Old Version of game
-
-		int old_wx=WindowX,old_wy=WindowY,old_ww=WindowW,old_wh=WindowH,
-			 old_px=px,old_py=py;
-
-		WindowX=0; WindowY=16; WindowW=320; WindowH=168;
-		CacheMessage(BADSAVEGAME_TEXT);
-		SD_PlaySound (NOWAYSND);
-		WindowX=old_wx; WindowY=old_wy; WindowW=old_ww; WindowH=old_wh;
-		px=old_px; py=old_py;
-
-	  	IN_ClearKeysDown();
-	  	IN_Ack();
-
-      VW_FadeOut();
-      screenfaded = true;
-
-     	goto cleanup;
-	}
-
-// Read in HEAD chunk
-//
-	if (!FindChunk(handle,"HEAD"))
-		goto cleanup;
-
-	ReadIt(true, &gamestate, sizeof(gamestate));
-	ReadIt(true, &gamestuff, sizeof(gamestuff));
-
-// Reinitialize page manager
-//
-#if DUAL_SWAP_FILES
-	PM_Shutdown();
-	PM_Startup ();
-	PM_UnlockMainMem();
-#endif
-
-
-// Start music for the starting level in this loaded game.
-//
-
-	FreeMusic();
-	StartMusic(false);
-
-// Copy all remaining chunks to PLAYTEMP file
-//
-	MakeDestPath(PLAYTEMP_FILE);
-	if ((shandle=open(tempPath,O_CREAT|O_RDWR|O_TRUNC|O_BINARY,S_IREAD|S_IWRITE))==-1)
-		goto cleanup;
-
-#pragma warn -pia
-	while (cksize=NextChunk(handle))
-	{
-		cksize += 8;								// include chunk ID and LENGTH
-		lseek(handle,-8,SEEK_CUR);				// seek to start of chunk
-		MM_GetPtr(&temp,cksize);				// alloc temp buffer
-		IO_FarRead(handle,temp,cksize);		// read chunk from SAVEGAME file
-		IO_FarWrite(shandle,temp,cksize);	// write chunk to PLAYTEMP file
-		MM_FreePtr(&temp);						// free temp buffer
-	}
-#pragma warn +pia
-
-	close(shandle);
-	rt_value=true;
-
-// Clean-up LZH decompression
-//
-cleanup:;
-	MM_FreePtr(&lzh_work_buffer);
-	LZH_Shutdown();
-	NewViewSize(viewsize);
-
-// Load current level
-//
-	if (rt_value)
-	{
-		LoadLevel(0xff);
-		ShowQuickMsg=false;
-	}
-
-	return(rt_value);
-}
-
-
-//--------------------------------------------------------------------------
-// SaveTheGame()
-//--------------------------------------------------------------------------
-boolean SaveTheGame(int handle, char far *description)
-{
-	struct ffblk finfo;
-	unsigned long cksize,offset;
-	int shandle;
-	memptr temp;
-	char nbuff[GAME_DESCRIPTION_LEN+1];
-	boolean rt_value=false,exists;
-
-//
-// Save PLAYTEMP becuase we'll want to restore it to the way it was
-// before the save.
-//
-//	IO_CopyFile(PLAYTEMP_FILE,OLD_PLAYTEMP_FILE);
-//
-
-// Save current level -- saves it into PLAYTEMP.
-//
-	SaveLevel(0xff);
-
-// Setup LZH compression
-//
-	LZH_Startup();
-	MM_GetPtr(&lzh_work_buffer,LZH_WORK_BUFFER_SIZE);
-
-// Write VERSion chunk
-//
-	cksize=sizeof(SavegameInfoText);
-	write(handle,"VERS",4);
-	write(handle,&cksize,4);
-	IO_FarWrite(handle,SavegameInfoText,cksize);
-
-// Write DESC chunk
-//
-	_fmemcpy(nbuff,description,sizeof(nbuff));
-	cksize=strlen(nbuff)+1;
-	write(handle,"DESC",4);
-	write(handle,&cksize,4);
-	write(handle,nbuff,cksize);
-
-// Write HEAD chunk
-//
-	cksize=0;
-	write(handle,"HEAD",4);
-	lseek(handle,4,SEEK_CUR);		// leave four bytes for chunk size
-
-	WriteIt(true, &gamestate, sizeof(gamestate));
-	WriteIt(true, &gamestuff, sizeof(gamestuff));
-
-	lseek(handle,-(cksize+4),SEEK_CUR);
-	write(handle,&cksize,4);
-	lseek(handle,cksize,SEEK_CUR);
-
-// Append PLAYTEMP file to savegame file
-//
-	MakeDestPath(PLAYTEMP_FILE);
-	if (findfirst(tempPath,&finfo,0))
-		goto cleanup;
-
-	if ((shandle=open(tempPath,O_RDONLY|O_BINARY))==-1)
-		goto cleanup;
-
-	IO_CopyHandle(shandle,handle,-1);
-
-	close(shandle);
-	rt_value=true;
-
-// Clean-up LZH compression
-//
-cleanup:;
-	MM_FreePtr(&lzh_work_buffer);
-	LZH_Shutdown();
-	NewViewSize(viewsize);
-
-//
-// Return PLAYTEMP to original state!
-//
-//	remove(PLAYTEMP_FILE);
-//	rename(OLD_PLAYTEMP_FILE,PLAYTEMP_FILE);
-//
-
-	return(rt_value);
-}
-
-//--------------------------------------------------------------------------
-// LevelInPlaytemp()
-//--------------------------------------------------------------------------
-boolean LevelInPlaytemp(char levelnum)
-{
-	int handle;
-	char chunk[5]="LVxx";
-	boolean rt_value;
-
-// Open PLAYTEMP file
-//
-	MakeDestPath(PLAYTEMP_FILE);
-	handle=open(tempPath,O_RDONLY|O_BINARY);
-
-// See if level exists in PLAYTEMP file...
-//
-	sprintf(&chunk[2],"%02x",levelnum);
-	rt_value=FindChunk(handle,chunk);
-
-// Close PLAYTEMP file
-//
-	close(handle);
-
-	return(rt_value);
-}
-
-//--------------------------------------------------------------------------
-// CheckDiskSpace()
-//--------------------------------------------------------------------------
-boolean CheckDiskSpace(long needed,char far *text,cds_io_type io_type)
-{
-	struct ffblk finfo;
-	struct diskfree_t dfree;
-	long avail;
-
-// Figure amount of space free on hard disk and let the gamer know if
-// disk space is too low.
-//
-	if (_dos_getdiskfree(0,&dfree))
-		MAIN_ERROR(CHECKDISK_GDFREE);
-
-	avail = (long)dfree.avail_clusters *
-					  dfree.bytes_per_sector *
-					  dfree.sectors_per_cluster;
-
-	if (avail < needed)
-	{
-		unsigned old_DS=_DS;
-
-		switch (io_type)
-		{
-			case cds_dos_print:
-				_DS=FP_SEG(text);
-				printf("%s",text);
-				_DS=old_DS;
-				exit(0);
-			break;
-
-			case cds_menu_print:
-			case cds_id_print:
-				WindowX=0; WindowY=16; WindowW=320; WindowH=168;
-				SD_PlaySound (NOWAYSND);
-				Message(text);
-				IN_ClearKeysDown();
-				IN_Ack();
-				if (io_type==cds_menu_print)
-					MenuFadeOut();
-			break;
-		}
-
-		return(false);
-	}
-
-	return(true);
-}
-
-
-
-//--------------------------------------------------------------------------
-// CleanUpDoors_N_Actors()
-//--------------------------------------------------------------------------
-void CleanUpDoors_N_Actors(void)
-{
-	char x,y;
-   objtype *obj;
-   objtype **actor_ptr;
-   byte *tile_ptr;
-	unsigned door;
-
-   actor_ptr = (objtype **)actorat;
-	tile_ptr = (byte *)tilemap;
-
-   for (y=0;y<mapheight;y++)
-	   for (x=0;x<mapwidth;x++)
-      {
-      	if (*tile_ptr & 0x80)
-         {
-         	// Found a door
-            //
-
-            obj = *actor_ptr;
-            if ((obj >= objlist) && (obj < &objlist[MAXACTORS]))
-            {
-             	// Found an actor
-
-            	// Determine door number...
-
-	         	door = *tile_ptr & 0x3F;
-
-					if ((obj->flags & (FL_SOLID|FL_DEADGUY)) == (FL_SOLID|FL_DEADGUY))
-   	         	obj->flags &= ~(FL_SHOOTABLE | FL_SOLID | FL_FAKE_STATIC);
-
-					// Make sure door is open
-
-					doorobjlist[door].ticcount = 0;
-					doorobjlist[door].action = dr_open;
-					doorposition[door] = 0xffff;
-            }
-         }
-
-         tile_ptr++;
-      	actor_ptr++;
-      }
-}
-
-
-//--------------------------------------------------------------------------
-// ClearNClose() - Use when changing levels via standard elevator.
-//
-//               - This code doesn't CLEAR the elevator door as originally
-//                 planned because, actors were coded to stay out of the
-//                 elevator doorway.
-//
-//--------------------------------------------------------------------------
-void ClearNClose()
-{
-	char x,y,tx=0,ty=0,px=player->x>>TILESHIFT,py=player->y>>TILESHIFT;
-
-	// Locate the door.
-	//
-	for (x=-1; x<2 && !tx; x+=2)
-		for (y=-1; y<2; y+=2)
-			if (tilemap[px+x][py+y] & 0x80)
-			{
-				tx=px+x;
-				ty=py+y;
-				break;
-			}
-
-	// Close the door!
-	//
-	if (tx)
-	{
-		char doornum=tilemap[tx][ty]&63;
-
-		doorobjlist[doornum].action = dr_closed;		// this door is closed!
-		doorposition[doornum]=0;							// draw it closed!
-		(unsigned)actorat[tx][ty] = doornum | 0x80;	// make it solid!
-	}
-}
-
-//--------------------------------------------------------------------------
-// CycleColors()
-//--------------------------------------------------------------------------
-void CycleColors()
-{
-	#define NUM_RANGES 	5
-	#define CRNG_LOW		0xf0
-	#define CRNG_HIGH		0xfe
-	#define CRNG_SIZE		(CRNG_HIGH-CRNG_LOW+1)
-
-	static CycleInfo crng[NUM_RANGES] = {{7,0,0xf0,0xf1},
-													 {15,0,0xf2,0xf3},
-													 {30,0,0xf4,0xf5},
-													 {10,0,0xf6,0xf9},
-													 {12,0,0xfa,0xfe},
-													};
-
-	byte loop,cbuffer[CRNG_SIZE][3];
-	boolean changes=false;
-
-	for (loop=0; loop<NUM_RANGES; loop++)
-	{
-		CycleInfo *c=&crng[loop];
-
-		if (tics >= c->delay_count)
-		{
-			byte temp[3],first,last,numregs;
-
-			if (!changes)
-			{
-				VL_GetPalette(CRNG_LOW,CRNG_SIZE,(byte far *)cbuffer);
-				changes=true;
-			}
-
-			first = c->firstreg-CRNG_LOW;
-			numregs = c->lastreg-c->firstreg;	// is one less than in range
-			last = first+numregs;
-
-			memcpy(temp,cbuffer[last],3);
-			memmove(cbuffer[first+1],cbuffer[first],numregs*3);
-			memcpy(cbuffer[first],temp,3);
-
-			c->delay_count = c->init_delay;
-		}
-		else
-			c->delay_count -= tics;
-	}
-
-	if (changes)
-		VL_SetPalette(CRNG_LOW,CRNG_SIZE,(byte far *)cbuffer);
-	else
-		VW_WaitVBL(1);
-}
-
-
-//===========================================================================
 
 /*
 ==========================
@@ -1215,349 +1500,333 @@ void CycleColors()
 
 void ShutdownId (void)
 {
-	US_Shutdown ();
-	SD_Shutdown ();
-	PM_Shutdown ();
-	IN_Shutdown ();
-	VW_Shutdown ();
-	CA_Shutdown ();
-	MM_Shutdown ();
+    SD_Shutdown ();
+    PM_Shutdown ();
+    IN_Shutdown ();
+    VW_Shutdown ();
+    CA_Shutdown ();
 }
 
-
-//===========================================================================
-
-
-/*
-====================
-=
-= CalcProjection
-=
-= Uses focallength
-=
-====================
-*/
-
-void CalcProjection (long focal)
-{
-	int             i;
-	long            intang;
-	float   angle;
-	double  tang;
-	double  planedist;
-	double  globinhalf;
-	int             halfview;
-	double  halfangle,facedist;
-
-
-	focallength = focal;
-	facedist = focal+MINDIST;
-	halfview = viewwidth/2;                                 // half view in pixels
-
-//
-// calculate scale value for vertical height calculations
-// and sprite x calculations
-//
-	scale = halfview*facedist/(VIEWGLOBAL/2);
-
-//
-// divide heightnumerator by a posts distance to get the posts height for
-// the heightbuffer.  The pixel height is height>>2
-//
-	heightnumerator = (TILEGLOBAL*scale)>>6;
-	minheightdiv = heightnumerator/0x7fff +1;
-
-//
-// calculate the angle offset from view angle of each pixel's ray
-//
-
-	for (i=0;i<halfview;i++)
-	{
-	// start 1/2 pixel over, so viewangle bisects two middle pixels
-		tang = (long)i*VIEWGLOBAL/viewwidth/facedist;
-		angle = atan(tang);
-		intang = angle*radtoint;
-		pixelangle[halfview-1-i] = intang;
-		pixelangle[halfview+i] = -intang;
-	}
-
-//
-// if a point's abs(y/x) is greater than maxslope, the point is outside
-// the view area
-//
-	maxslope = finetangent[pixelangle[0]];
-	maxslope >>= 8;
-}
-
-
-
-//===========================================================================
-
-//--------------------------------------------------------------------------
-// DoMovie()
-//--------------------------------------------------------------------------
-boolean DoMovie(movie_t movie, memptr palette)
-{
-	boolean  ReturnVal;
-//	StopMusic();
-	SD_StopSound();
-
-	ClearMemory();
-	UnCacheLump(STARTFONT,STARTFONT+NUMFONT);
-	CA_LoadAllSounds();
-
-   if (palette)
-   	Movies[movie].palette = palette;
-   else
-   	Movies[movie].palette = (memptr)FP_SEG(&vgapal);
-
-	ReturnVal = MOVIE_Play(&Movies[movie]);
-
-	SD_StopSound();
-	ClearMemory();
-	LoadFonts();
-
-	return(ReturnVal);
-}
-
-//===========================================================================
-
-/*
-=================
-=
-= MS_CheckParm
-=
-=================
-*/
-
-boolean MS_CheckParm (char far *check)
-{
-	int             i;
-	char    *parm;
-
-	for (i = 1;i<_argc;i++)
-	{
-		parm = _argv[i];
-
-		while ( !isalpha(*parm) )       // skip - / \ etc.. in front of parm
-			if (!*parm++)
-				break;                          // hit end of string without an alphanum
-
-		if ( !_fstricmp(check,parm) )
-			return true;
-	}
-
-	return false;
-}
-
-//===========================================================================
-
-//--------------------------------------------------------------------------
-// LoadFonts()
-//--------------------------------------------------------------------------
-void LoadFonts(void)
-{
-	CA_CacheGrChunk(STARTFONT+4);
-	MM_SetLock (&grsegs[STARTFONT+4],true);
-
-	CA_CacheGrChunk(STARTFONT+2);
-	MM_SetLock (&grsegs[STARTFONT+2],true);
-}
-
-//===========================================================================
 
 /*
 ==========================
 =
-= SetViewSize
+= InitGame
+=
+= Load a few things right away
 =
 ==========================
 */
 
-boolean SetViewSize (unsigned width, unsigned height)
+void InitGame (void)
 {
-	viewwidth = width&~15;                  // must be divisable by 16
-	viewheight = height&~1;                 // must be even
-	centerx = viewwidth/2-1;
-	shootdelta = viewwidth/10;
-	screenofs = ((200-STATUSLINES-viewheight+TOP_STRIP_HEIGHT)/2*SCREENWIDTH+(320-viewwidth)/8);
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+        Quit ("Unable to init SDL: %s\n",SDL_GetError());
 
-//
-// calculate trace angles and projection constants
-//
-	CalcProjection (FOCALLENGTH);
-
-//
-// build all needed compiled scalers
-//
-	SetupScaling (viewwidth*1.5);
-
-	view_xl=0;
-	view_xh=view_xl+viewwidth-1;
-	view_yl=0;
-	view_yh=view_yl+viewheight-1;
-
-	return true;
-}
-
-
-void ShowViewSize (int width)
-{
-	int     oldwidth,oldheight;
-
-	oldwidth = viewwidth;
-	oldheight = viewheight;
-
-	viewwidth = width*16;
-	viewheight = width*16*HEIGHTRATIO;
-	VWB_Bar (0,TOP_STRIP_HEIGHT,320,200-STATUSLINES-TOP_STRIP_HEIGHT,BORDER_MED_COLOR);
-//	VWB_Bar (0,0,320,200-STATUSLINES,BORDER_MED_COLOR);
-	DrawPlayBorder ();
-
-	viewheight = oldheight;
-	viewwidth = oldwidth;
-}
-
-
-void NewViewSize (int width)
-{
-	CA_UpLevel ();
-	MM_SortMem ();
-	viewsize = width;
-	while (1)
-	{
-		if (SetViewSize (width*16,width*16*HEIGHTRATIO))
-			break;
-		width--;
-	};
-	CA_DownLevel ();
-}
-
-
-//===========================================================================
-
-/*
-==========================
-=
-= Quit
-=
-==========================
-*/
-
-
-void Quit (char *error,...)
-{
-	unsigned        finscreen;
-	memptr			diz;
-	char far *screen;
-	unsigned unit,err;
-	va_list ap;
-
-	va_start(ap,error);
-
-	MakeDestPath(PLAYTEMP_FILE);
-	remove(tempPath);
-	ClearMemory ();
-
-	if (!*error)
-	{
-#if GAME_VERSION != SHAREWARE_VERSION
-		if (gamestate.flags & GS_BAD_DIZ_FILE)
-		{
-			char far *end;
-
-			CA_CacheGrChunk(DIZ_ERR_TEXT);
-			diz = grsegs[DIZ_ERR_TEXT];
-			end=_fstrstr(diz,"^XX");
-			*end=0;
-		}
-		else
-		if (!IsA386)
-		{
-			CA_CacheGrChunk (NO386SCREEN);
-			screen = MK_FP(grsegs[NO386SCREEN],7);
-		}
-//		else
+#if IN_DEVELOPMENT || GEORGE_CHEAT || SHOW_CHECKSUM
+    if (MS_CheckParm("checksum"))
+    {
+        ShowChecksums ();
+        Quit (NULL);
+    }
 #endif
-
+    VW_Startup ();
+    CA_Startup ();
+    IN_Startup ();
+    PM_Startup ();
+    SD_Startup ();
+//
+// TODO: skip checks for now
+//
 #if 0
-		{
-			CA_CacheGrChunk (ORDERSCREEN);
-			screen = MK_FP(grsegs[ORDERSCREEN],0);
-		}
+    //
+    // any problems with this version of the game?
+    //
+#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+    if (!MS_CheckParm("nochex"))
 #endif
-	}
-	else
-	{
-		CA_CacheGrChunk (ERRORSCREEN);
-		screen = MK_FP(grsegs[ERRORSCREEN],7);
-	}
 
-	WriteConfig ();
-	ShutdownId ();
+#if !SKIP_CHECKSUMS
+        CheckValidity ("MAPTEMP.",MAPTEMP_CHECKSUM);
 
-	if (error && *error)
-	{
-		FILE *fp;
-
-		unit=va_arg(ap,unsigned);
-		err=va_arg(ap,unsigned);
-//		movedata ((unsigned)screen,7,0xb800,0,7*160);
-		_fmemcpy(MK_FP(0xB800,0), screen, 7*160);
-
-		textcolor(14);
-		textbackground(4);
-		gotoxy (10,4);
-		cprintf(error,unit,err);
-
-		gotoxy (65-strlen(__VERSION__),2);
-		cprintf(" Ver:%s ",__VERSION__);
-
-		gotoxy (1,8);
-
-		MakeDestPath("BS_VSI.ERR");
-		fp = fopen(tempPath,"wb");
-		fprintf(fp,"$%02x%02x",unit,err);
-		if (fp)
-			fclose(fp);
-
-		exit(1);
-	}
-
-#if 0
-	if (!error || !(*error))
-	{
-		unsigned far *clear = MK_FP(0xb800,23*80*2);
-		unsigned len = 0;
-
-		clrscr();
 #if GAME_VERSION != SHAREWARE_VERSION
-		if (gamestate.flags & GS_BAD_DIZ_FILE)
-			fprint(diz);
-		else
+    if (ChecksumFile("FILE_ID.DIZ",0) != DIZFILE_CHECKSUM)
+        gamestate.flags |= GS_BAD_DIZ_FILE;
 #endif
-		{
-//			movedata ((unsigned)screen,0,0xb800,0,4000);
-			_fmemcpy(MK_FP(0xB800,0),screen,4000);
-
-			// Far mem set (WORD)! - This is STUPID! Borland SUCKS!
-
-			while (len != 80*2)
-			{
-				*clear++ = 0x700;
-				len++;
-			}
-			gotoxy (1,24);
-		}
-	}
 #endif
+    if (CheckForSpecialCode(POWERBALLTEXT))
+#if IN_DEVELOPMENT
+        DebugOk = true;
+#else
+        PowerBall = true;
+#endif
+    if (CheckForSpecialCode(TICSTEXT))
+        gamestate.flags |= GS_TICS_FOR_SCORE;
 
-	va_end(ap);
-	exit(0);
+    if (CheckForSpecialCode(MUSICTEXT))
+        gamestate.flags |= GS_MUSIC_TEST;
+
+    if (CheckForSpecialCode(RADARTEXT))
+        gamestate.flags |= GS_SHOW_OVERHEAD;
+#endif
+#if IN_DEVELOPMENT
+    //
+    // clear monocrome
+    //
+    VW_ClearScreen (0);
+#endif
+    InitDigiMap ();
+
+    ReadConfig ();
+
+    Init3DRenderer ();
 }
 
 
-//===========================================================================
+/*
+==========================
+=
+= DoMovie
+=
+==========================
+*/
+
+bool DoMovie (int movie, SDL_Color *palette)
+{
+#ifdef NOTYET
+    bool retval;
+
+    //StopMusic ();
+    SD_StopSound ();
+
+    CA_LoadAllSounds ();
+
+    if (palette)
+        Movies[movie].palette = palette;
+    else
+        Movies[movie].palette = gamepal;
+
+    retval = MOVIE_Play(&Movies[movie]);
+
+    SD_StopSound ();
+
+    return retval;
+#else
+    return false;
+#endif
+}
+
+
+/*
+===================
+=
+= Terminates the program with the appropriate error message
+=
+===================
+*/
+
+void Terminate (const char *func, const char *string, ...)
+{
+    int     ret;
+    va_list vlist;
+
+    if (string)
+    {
+        va_start (vlist,string);
+
+        if (func)
+        {
+            snprintf (str,sizeof(str),"%s: %s",func,string);
+            vsnprintf (error,sizeof(error),str,vlist);
+        }
+        else
+            vsnprintf (error,sizeof(error),string,vlist);
+
+        va_end (vlist);
+    }
+    else
+        error[0] = '\0';
+
+    ret = *error != '\0';
+
+    //
+    // cleanup
+    //
+    MakeDestPath (PLAYTEMP_FILE);
+    remove (tempPath);
+
+    SD_StopDigitized ();
+
+    if (!ret)
+        WriteConfig ();
+
+    ShutdownId ();
+    Shutdown3DRenderer ();
+
+    //
+    // abnormal exit?
+    //
+    if (ret)
+        Error (error);
+
+    SDL_Quit ();
+    exit (ret);
+}
+
+
+/*
+=====================
+=
+= PreDemo
+=
+=====================
+*/
+
+void PreDemo (void)
+{
+    int       i;
+    SDL_Color palette[256];
+
+#if TECH_SUPPORT_VERSION
+    fontnumber = 4;
+    SetFontColor (0,15 * 3);
+    CenterWindow (26,7);
+    US_Print (EnterBetaCode);
+    VW_UpdateScreen (screen.buffer);
+    CA_LoadAllSounds ();
+    SD_PlaySound (INFORMDEATH2SND);  // Nooooo!
+    IN_UserInput (TickBase * 20);
+    SD_StopDigitized ();
+
+#elif BETA_TEST
+
+    bool param = false;
+    char buffer[15] = {0};
+
+    for (i = 1; i < argc; i++)
+    {
+        switch (US_CheckParm(argv[i],MainStrs))
+        {
+            case 13:
+                param = true;
+                break;
+        }
+    }
+
+    if (!param)
+    {
+        fontnumber = 4;
+        CenterWindow (26,7);
+        US_Print (EnterBetaCode);
+        VW_UpdateScreen (screen.buffer);
+        SetFontColor (0,15 * 3);
+        US_LineInput (24 * 8,92,buffer,buffer,true,14,100);
+
+        if (stricmp(buffer,bc_buffer))
+            Quit("Bad beta code!");
+    }
+#endif
+#if 0  // TODO: skip this for now
+#if GAME_VERSION == SHAREWARE_VERSION
+#if IN_DEVELOPMENT || GEORGE_CHEAT
+    if (!MS_CheckParm("nochex"))
+#endif
+    {
+#if  (!SKIP_CHECKSUMS)
+        CheckValidity("MAPTEMP.",MAPTEMP_CHECKSUM);
+#endif
+    }
+#elif (!SKIP_CHECKSUMS)
+    if (ChecksumFile("FILE_ID.DIZ",0) != DIZFILE_CHECKSUM)
+        gamestate.flags |= GS_BAD_DIZ_FILE;
+#endif
+#endif
+    if (!(gamestate.flags & GS_NOWAIT))
+    {
+        //
+        // Apogee presents
+        //
+        SD_StartMusic (STARTMUSIC + APOGFNFM_MUS);
+
+        VW_ConvertPalette (grsegs[APOGEEPALETTE],palette,lengthof(palette));
+        VW_FadePaletteOut (0,255,25,29,53,20);
+        VW_DrawPic (0,0,APOGEEPIC);
+        VW_FadePaletteIn (0,255,palette,30);
+
+        //
+        // wait for end of fanfare
+        //
+#ifdef NOTYET
+        if (MusicMode == smm_AdLib)
+        {
+            IN_StartAck ();
+
+            while (!sqPlayedOnce && !IN_CheckAck());
+        }
+        else
+#endif
+            IN_UserInput (TickBase * 6);
+
+        SD_MusicOff ();
+
+        CA_UncacheAudioChunk (STARTMUSIC + APOGFNFM_MUS);
+
+        //
+        // do a blue flash
+        //
+        VW_FadePaletteOut (0,255,25,29,53,20);
+        VW_ClearScreen (0);
+        VW_FadeIn ();
+
+        //
+        // JAM logo intro
+        //
+        SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
+#ifdef NOTYET
+        if (!DoMovie(mv_intro,0))
+            Quit ("JAM animation (IANIM.%s) does not exist!",extension);
+#endif
+        if (PowerBall)
+        {
+            for (i = 0; i < 60 && !DebugOk; i++)
+            {
+                VW_WaitVBL (1);
+
+                if (Keyboard[sc_LShift] && Keyboard[sc_RShift])
+                {
+                    CA_LoadAllSounds ();
+                    SD_MusicOff ();
+
+                    SD_PlaySound (SHOOTDOORSND);
+                    SD_WaitSoundDone ();
+
+                    SD_StopDigitized ();
+                    DebugOk = true;
+
+                    SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
+                }
+            }
+        }
+
+        //
+        // PC-13
+        //
+        VW_FadeOut ();
+        VW_ClearScreen (0x14);
+        VW_DrawPic (0,64,PC13PIC);
+        VW_FadeIn ();
+
+        IN_UserInput (TickBase * 2);
+
+        //
+        // do a red flash!
+        //
+        VW_FadePaletteOut (0,255,39,0,0,20);
+        VW_ClearScreen (0);
+        VW_FadeIn ();
+    }
+}
+
 
 /*
 =====================
@@ -1567,206 +1836,329 @@ void Quit (char *error,...)
 =====================
 */
 
-void    DemoLoop (void)
+void DemoLoop (void)
 {
-	int     i,level;
-	int 	LastDemo=0;
-	boolean breakit;
-	unsigned old_bufferofs;
+#if DEMOS_ENABLED
+    int       LastDemo = 0;
+#endif
+    bool      breakit;
+    SDL_Color titlepal[256];
 
-	while (1)
-	{
-		playstate = ex_title;
-		if (!screenfaded)
-			VW_FadeOut();
-		VL_SetPaletteIntensity(0,255,&vgapal,0);
+    while (1)
+    {
+        playstate = ex_title;
 
-		while (!(gamestate.flags & GS_NOWAIT))
-		{
-			extern boolean sqActive;
+        VW_FadeOut ();
 
-		// Start music when coming from menu...
-		//
-			if (!sqActive)
-			{
-			// Load and start music
-			//
-				CA_CacheAudioChunk(STARTMUSIC+TITLE_LOOP_MUSIC);
-				SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC+TITLE_LOOP_MUSIC]);
-			}
+        while (!(gamestate.flags & GS_NOWAIT))
+        {
+            //
+            // start music when coming from menu
+            //
+            if (!sqActive)
+                SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
 
-//
-// title page
-//
+            //
+            // title page
+            //
 #if !SKIP_TITLE_AND_CREDITS
-			breakit = false;
+            breakit = false;
 
-			CA_CacheScreen(TITLE1PIC);
-			CA_CacheGrChunk(TITLEPALETTE);
-			old_bufferofs = bufferofs;
-			bufferofs=displayofs;
-			VW_Bar(0,0,320,200,0);
-			bufferofs=old_bufferofs;
-			VL_SetPalette (0,256,grsegs[TITLEPALETTE]);
-			VL_SetPaletteIntensity(0,255,grsegs[TITLEPALETTE],0);
+            VW_ConvertPalette (grsegs[TITLEPALETTE],titlepal,lengthof(titlepal));
+            VW_DrawPic (0,0,TITLE1PIC);
 
-			fontnumber = 2;
-			PrintX = WindowX = 270;
-			PrintY = WindowY = 179;
-			WindowW = 29;
-			WindowH = 8;
-			VWB_Bar(WindowX,WindowY-1,WindowW,WindowH,VERSION_TEXT_BKCOLOR);
-			SETFONTCOLOR(VERSION_TEXT_COLOR, VERSION_TEXT_BKCOLOR);
-			US_Print(__VERSION__);
+            fontnumber = 2;
+            PrintX = WindowX = 270;
+            PrintY = WindowY = 179;
+            WindowW = 29;
+            WindowH = 8;
+            VW_Bar (WindowX,WindowY - 1,WindowW,WindowH,VERSION_TEXT_BKCOLOR);
+            SetFontColor (VERSION_TEXT_COLOR,VERSION_TEXT_BKCOLOR);
+            US_Print (_VERSION_);
 
-			VW_UpdateScreen();
-			VL_FadeIn(0,255,grsegs[TITLEPALETTE],30);
-			UNCACHEGRCHUNK(TITLEPALETTE);
-			if (IN_UserInput(TickBase*6))
-				breakit= true;
+            VW_FadePaletteIn (0,255,titlepal,30);
 
-		// Cache screen 2 with Warnings and Copyrights
+            if (IN_UserInput(TickBase * 6))
+                breakit = true;
 
-			CA_CacheScreen(TITLE2PIC);
-			fontnumber = 2;
-			PrintX = WindowX = 270;
-			PrintY = WindowY = 179;
-			WindowW = 29;
-			WindowH = 8;
-			VWB_Bar(WindowX,WindowY-1,WindowW,WindowH,VERSION_TEXT_BKCOLOR);
-			SETFONTCOLOR(VERSION_TEXT_COLOR, VERSION_TEXT_BKCOLOR);
-			US_Print(__VERSION__);
+            //
+            // draw title screen 2 with warnings and copyrights
+            //
+            // KS: Congrats! You made this screen almost as annoying as the ones in modern games! ^^+
+            //
+            VW_DrawPic (0,0,TITLE2PIC);
+            fontnumber = 2;
+            PrintX = WindowX = 270;
+            PrintY = WindowY = 179;
+            WindowW = 29;
+            WindowH = 8;
+            VW_Bar (WindowX,WindowY - 1,WindowW,WindowH,VERSION_TEXT_BKCOLOR);
+            SetFontColor (VERSION_TEXT_COLOR,VERSION_TEXT_BKCOLOR);
+            US_Print (_VERSION_);
 
-			// Fizzle whole screen incase of any last minute changes needed
-			// on title intro.
+            //
+            // fizzle whole screen incase of any last minute changes needed
+            // on title intro
+            //
+            // KS: change it to be abortable? heh heh
+            //
+            VW_FizzleFade (0,0,320,200,70,false);
 
-			FizzleFade(bufferofs,displayofs,320,200,70,false);
+            IN_UserInput (TickBase * 2);
 
-			IN_UserInput(TickBase*2);
-			if (breakit || IN_UserInput(TickBase*6))
-				break;
-			VW_FadeOut();
+            if (breakit || IN_UserInput(TickBase * 6))
+                break;
 
-//
-// credits page
-//
-			DrawCreditsPage();
-			VW_UpdateScreen();
-			VW_FadeIn();
-			if (IN_UserInput(TickBase*6))
-				break;
-			VW_FadeOut();
+            VW_FadeOut ();
 
+            //
+            // credits page
+            //
+            DrawCreditsPage ();
+
+            VW_FadeIn ();
+
+            if (IN_UserInput(TickBase * 6))
+                break;
+
+            VW_FadeOut ();
 #endif
 
-//
-// demo
-//
-
+            //
+            // demo
+            //
 #if DEMOS_ENABLED
 #if IN_DEVELOPMENT
-		if (!MS_CheckParm("recdemo"))
+            if (!MS_CheckParm("recdemo"))
 #endif
-			PlayDemo(LastDemo++%6);
+                PlayDemo (LastDemo++ % 6);
 
-			if (playstate == ex_abort)
-				break;
-			else
-			{
-			// Start music when coming from menu...
-			//
-				if (!sqActive)
-//				if (!SD_MusicPlaying())
-				{
-				// Load and start music
-				//
-					CA_CacheAudioChunk(STARTMUSIC+TITLE_LOOP_MUSIC);
-					SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC+TITLE_LOOP_MUSIC]);
-				}
-			}
+            if (playstate == ex_abort)
+                break;
+            else
+            {
+                //
+                // start music when coming from menu
+                //
+                if (!sqActive)    //if (!SD_MusicPlaying())
+                    SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
+            }
 #endif
-
-//
-// high scores
-//
+            //
+            // high scores
+            //
 #if !SKIP_TITLE_AND_CREDITS
-			CA_CacheScreen (BACKGROUND_SCREENPIC);
-			DrawHighScores ();
-			VW_UpdateScreen ();
-			VW_FadeIn ();
+            VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
+            DrawHighScores ();
 
-			if (IN_UserInput(TickBase*9))
-				break;
-			VW_FadeOut();
+            VW_FadeIn ();
+
+            if (IN_UserInput(TickBase * 9))
+                break;
+
+            VW_FadeOut ();
 #endif
-		}
+        }
 
+        CA_UncacheAudioChunk (STARTMUSIC + TITLE_LOOP_MUSIC);
 
-		if (audiosegs[STARTMUSIC+TITLE_LOOP_MUSIC])
-			MM_FreePtr((memptr *)&audiosegs[STARTMUSIC+TITLE_LOOP_MUSIC]);
-
-		if (!screenfaded)
-			VW_FadeOut();
+        VW_FadeOut ();
 
 #ifdef DEMOS_EXTERN
-		if (MS_CheckParm("recdemo"))
-			RecordDemo ();
-		else
+        if (MS_CheckParm("recdemo"))
+            RecordDemo ();
+        else
 #endif
-		{
+        {
 #if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
-			if (gamestate.flags & GS_QUICKRUN)
-			{
-				ReadGameNames();
-				CA_LoadAllSounds();
-				NewGame(2,gamestate.episode);
-				startgame = true;
-			}
-			else
-#endif													 
-				US_ControlPanel (0);
-		}
-		if (startgame || loadedgame)
-			GameLoop ();
-	}
+            if (gamestate.flags & GS_QUICKRUN)
+            {
+                ReadGameNames ();
+                CA_LoadAllSounds ();
+                NewGame (gd_medium,gamestate.episode);
+            }
+            else
+#endif
+                ControlPanel (sc_None);
+        }
+
+        if (startgame || loadedgame)
+            GameLoop ();
+    }
 }
 
-//-------------------------------------------------------------------------
-// DrawCreditsPage()
-//-------------------------------------------------------------------------
-void DrawCreditsPage()
+
+/*
+=====================
+=
+= DrawCreditsPage
+=
+=====================
+*/
+
+void DrawCreditsPage (void)
 {
-	PresenterInfo pi;
+    PresenterInfo pi;
 
-	CA_CacheScreen(BACKGROUND_SCREENPIC);
+    VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
-	memset(&pi,0,sizeof(pi));
-	pi.flags = TPF_CACHE_NO_GFX;
-	pi.xl=38;
-	pi.yl=28;
-	pi.xh=281;
-	pi.yh=170;
-	pi.bgcolor = 2;
-	pi.ltcolor = BORDER_HI_COLOR;
-	fontcolor = BORDER_TEXT_COLOR;
-	pi.shcolor = pi.dkcolor = 0;
-	pi.fontnumber=fontnumber;
+    memset (&pi,0,sizeof(pi));
+
+    pi.flags = TPF_CACHE_NO_GFX;
+    pi.xl = 38;
+    pi.yl = 28;
+    pi.xh = 281;
+    pi.yh = 170;
+    pi.bgcolor = 2;
+    pi.ltcolor = BORDER_HI_COLOR;
+    fontcolor = BORDER_TEXT_COLOR;
+    pi.shcolor = pi.dkcolor = 0;
+    pi.fontnumber = fontnumber;
 
 #ifdef ID_CACHE_CREDITS
-	TP_LoadScript(NULL,&pi,CREDITSTEXT);
+    TP_LoadScript (NULL,&pi,CREDITSTEXT);
 #else
-	TP_LoadScript("CREDITS.TXT",&pi,0);
+    TP_LoadScript ("CREDITS.TXT",&pi,0);
 #endif
-
-	TP_Presenter(&pi);
+    TP_Presenter (&pi);
 }
 
 
-//===========================================================================
+/*
+=====================
+=
+= CheckParameters
+=
+=====================
+*/
+
+//
+// Scans for a digit and converts it to an integer
+//
+int scan_atoi (char *s)
+{
+    while (*s && !isdigit(*s))
+        s++;
+
+    return atoi(s);
+}
+
+void CheckParameters (int argc, char *argv[])
+{
+    int  i;
+    char *arg;
+
+    for (i = 1; i < argc; i++)
+    {
+        arg = argv[i++];
+
+        if (!strcmp(arg,"q"))
+            gamestate.flags |= GS_QUICKRUN;
+        else if (!strcmp(arg,"nowait"))
+            gamestate.flags |= GS_NOWAIT;
+        else if (!strcmp(arg,"l"))
+        {
+            gamestate.flags |= GS_STARTLEVEL;
+            starting_level = scan_atoi(argv[i]);
+        }
+        else if (!strcmp(arg,"e"))
+        {
+            gamestate.flags |= GS_STARTLEVEL;
+            starting_episode = scan_atoi(argv[i]) - 1;
+        }
+        else if (!strcmp(arg,"version"))
+        {
+#ifdef NOTYET
+            fprint (cinfo_text);
+            printf ("\n     Version: %s\nCOMPILE DATE: %s\n\n",_VERSION_,__DATE__);
+            exit (0);
+#endif
+        }
+        else if (!strcmp(arg,"system"))
+        {
+#ifdef NOTYET
+            ShowSystem ();
+            exit (0);
+#endif
+        }
+        else if (!strcmp(arg,"dval"))
+        {
+#if IN_DEVELOPMENT
+#ifdef DEBUG_VALUE
+            debug_value = scan_atoi(argv[i]);
+#endif
+#endif
+        }
+        else if (!strcmp(arg,"tics"))
+            gamestate.flags |= GS_TICS_FOR_SCORE;
+        //else if (!strcmp(arg,"mem"))
+            //gamestate.flags |= GS_MEM_FOR_SCORE;
+        else if (!strcmp(arg,"powerball"))
+            PowerBall = 1;
+        else if (!strcmp(arg,"music"))
+            gamestate.flags |= GS_MUSIC_TEST;
+        else if (!strcmp(arg,"d"))
+        {
+            gamestate.flags |= GS_STARTLEVEL;
+            starting_difficulty = scan_atoi(argv[i]) - 1;
+        }
+        else if (!strcmp(arg,"radar"))
+            gamestate.flags |= GS_SHOW_OVERHEAD;
+    }
+}
 
 
-extern void JM_FREE_START();
-extern void JM_FREE_END();
+/*
+==========================
+=
+= InitDestPath
+=
+==========================
+*/
+
+void InitDestPath (void)
+{
+    struct stat statbuf;
+    int    len;
+    char   *str;
+
+    str = getenv("APOGEECD");
+
+    if (str)
+    {
+        len = strlen(str);
+
+        if (len > MAX_DEST_PATH_LEN)
+            Quit ("APOGEECD path too long!");
+
+        snprintf (destPath,sizeof(destPath),str);
+
+        if (str[len - 1] == '\\')
+            str[len - 1] = '\0';
+
+        if (stat(str,&statbuf))
+            Quit ("APOGEECD directory not found!");
+
+        snprintf (destPath,sizeof(destPath),"%s\\",str);
+    }
+    else
+        *destPath = '\0';
+}
+
+
+/*
+==========================
+=
+= MakeDestPath
+=
+==========================
+*/
+
+void MakeDestPath (const char *file)
+{
+    snprintf (tempPath,sizeof(tempPath),file);
+}
+
 
 /*
 ==========================
@@ -1776,130 +2168,28 @@ extern void JM_FREE_END();
 ==========================
 */
 
-//char    *nosprtxt[] = {"nospr",nil};
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
-short starting_episode=0,starting_level=0,starting_difficulty=2;
-#endif
-short debug_value=0;
-
-void main (void)
+int main (int argc, char *argv[])
 {
 #if IN_DEVELOPMENT
-	MakeDestPath(ERROR_LOG);
-	remove(tempPath);
+    MakeDestPath (ERROR_LOG);
+    remove (tempPath);
 #endif
+    MakeDestPath (PLAYTEMP_FILE);
+    remove (tempPath);
 
-	MakeDestPath(PLAYTEMP_FILE);
-	remove(tempPath);
+    InitDestPath ();
 
-	freed_main();
+    CheckForEpisodes ();
 
-#if FREE_FUNCTIONS
-	UseFunc((char huge *)JM_FREE_START,(char huge *)JM_FREE_END);
-	UseFunc((char huge *)JM_FREE_DATA_START,(char huge *)JM_FREE_DATA_END);
-#endif
+    CheckParameters (argc,argv);
 
-	DemoLoop();
+    InitGame ();
 
-	Quit(NULL);
+    PreDemo ();
+
+    DemoLoop ();
+
+    Quit (NULL);
+
+    return 0;
 }
-
-#if FREE_FUNCTIONS
-
-//-------------------------------------------------------------------------
-// UseFunc()
-//-------------------------------------------------------------------------
-unsigned UseFunc(char huge *first, char huge *next)
-{
-	unsigned start,end;
-	unsigned pars;
-
-	first += 15;
-	next++;
-	next--;
-
-	start = FP_SEG(first);
-	end = FP_SEG(next);
-	if (!FP_OFF(next))
-		end--;
-	pars = end - start - 1;
-	_fmemset(MK_FP(start,0),0,pars*16);
-	MML_UseSpace(start,pars);
-
-	return(pars);
-}
-
-#endif
-
-
-//-------------------------------------------------------------------------
-// fprint()
-//-------------------------------------------------------------------------
-void fprint(char far *text)
-{
-	while (*text)
-		printf("%c",*text++);
-}
-
-
-//-------------------------------------------------------------------------
-// InitDestPath()
-//-------------------------------------------------------------------------
-void InitDestPath(void)
-{
-	char *ptr;
-
-#pragma warn -pia
-	if (ptr=getenv("APOGEECD"))
-	{
-		struct ffblk ffblk;
-		short len;
-
-		len = _fstrlen(ptr);
-		if (len > MAX_DEST_PATH_LEN)
-		{
-			printf("\nAPOGEECD path too long.\n");
-			exit(0);
-		}
-
-		_fstrcpy(destPath,ptr);
-		if (destPath[len-1] == '\\')
-			destPath[len-1]=0;
-
-		if (findfirst(destPath,&ffblk,FA_DIREC) == -1)
-		{
-			printf("\nAPOGEECD directory not found.\n");
-			exit(0);
-		}
-
-		_fstrcat(destPath,"\\");
-	}
-	else
-		_fstrcpy(destPath,"");
-#pragma warn +pia
-}
-
-//-------------------------------------------------------------------------
-// MakeDestPath()
-//-------------------------------------------------------------------------
-void MakeDestPath(char far *file)
-{
-	_fstrcpy(tempPath,destPath);
-	_fstrcat(tempPath,file);
-}
-
-#if IN_DEVELOPMENT
-
-//-------------------------------------------------------------------------
-// ShowMemory()
-//-------------------------------------------------------------------------
-void ShowMemory(void)
-{
-	long psize,size;
-
-	size = MM_TotalFree();
-	psize = MM_LargestAvail();
-	mprintf("Mem free: %ld   %ld\n",size,psize);
-}
-
-#endif
