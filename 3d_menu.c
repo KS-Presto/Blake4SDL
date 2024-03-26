@@ -1918,6 +1918,7 @@ int CP_Control (int blank)
         switch (which)
         {
             case MOUSEENABLE:
+                mouseenabled ^= true;
                 IN_CenterMouse ();
                 DrawCtlScreen ();
                 CusItems.curpos = -1;
