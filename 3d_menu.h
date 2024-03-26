@@ -42,7 +42,7 @@
 #define STRIPE          0x2c
 
 #define MenuFadeOut()   VW_FadePaletteOut (0,255,40,44,44,10)
-#define MenuFadeIn()    VW_FadePaletteIn (0,255,10)
+#define MenuFadeIn()    VW_FadePaletteIn (0,255,gamepal,10)
 
 #define READCOLOR       0x4a
 #define READHCOLOR      0x47
@@ -194,6 +194,7 @@ extern  char        SaveGameNames[MaxSaveGames][GAME_DESCRIPTION_LEN + 1],savefi
 extern  CP_itemtype MainMenu[],NewEMenu[];
 extern  CP_iteminfo MainItems;
 
+extern  int         lastmenumusic;
 extern  bool        EscPressed;
 extern  int         pickquick;
 
@@ -278,4 +279,5 @@ void     CheckForEpisodes (void);
 void     HelpPresenter (char *fname, bool continuekeys, int idcache, bool startmusic);
 void     ShadowPrint (const char *string, int x, int y);
 
+void     FreeMusic (void);
 #endif
