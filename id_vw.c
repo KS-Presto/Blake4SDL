@@ -179,6 +179,30 @@ void VW_SetupVideo (void)
 /*
 =================
 =
+= VW_ConvertPalette
+=
+= Converts a VGA palette to an SDL_Color one
+=
+=================
+*/
+
+void VW_ConvertPalette (byte *srcpal, SDL_Color *destpal, int numcolors)
+{
+    int i;
+
+    for (i = 0; i < numcolors; i++)
+    {
+        destpal[i].r = (*srcpal++ * 255) / 63;
+        destpal[i].g = (*srcpal++ * 255) / 63;
+        destpal[i].b = (*srcpal++ * 255) / 63;
+        destpal[i].a = SDL_ALPHA_OPAQUE;
+    }
+}
+
+
+/*
+=================
+=
 = VW_FillPalette
 =
 =================
@@ -298,7 +322,7 @@ void VW_FadePaletteOut (int start, int end, int red, int green, int blue, int st
 =================
 */
 
-void VW_FadePaletteIn (int start, int end, int steps)
+void VW_FadePaletteIn (int start, int end, SDL_Color *palette, int steps)
 {
     int       i,j,delta;
     SDL_Color *origptr,*newptr;
@@ -319,11 +343,11 @@ void VW_FadePaletteIn (int start, int end, int steps)
 
         for (j = start; j <= end; j++)
         {
-            delta = gamepal[j].r - origptr->r;
+            delta = palette[j].r - origptr->r;
             newptr->r = origptr->r + ((delta * i) / steps);
-            delta = gamepal[j].g - origptr->g;
+            delta = palette[j].g - origptr->g;
             newptr->g = origptr->g + ((delta * i) / steps);
-            delta = gamepal[j].b - origptr->b;
+            delta = palette[j].b - origptr->b;
             newptr->b = origptr->b + ((delta * i) / steps);
             newptr->a = SDL_ALPHA_OPAQUE;
             origptr++;
@@ -341,59 +365,6 @@ void VW_FadePaletteIn (int start, int end, int steps)
     VW_UpdateScreen (screen.buffer);
 
     screen.flags &= ~SC_FADED;
-}
-
-
-/*
-=================
-=
-= VW_SetPaletteIntensity
-=
-= TODO: this might not be correct
-=
-=================
-*/
-
-void VW_SetPaletteIntensity (int start, int end, SDL_Color *palette, int intensity)
-{
-    int       i;
-    int       red,green,blue;
-    SDL_Color *cmap;
-
-    cmap = &palette1[start];
-
-    intensity = 63 - intensity;
-
-    for (i = start; i <= end; i++)
-    {
-        red = palette->r - intensity;
-
-        if (red < 0)
-            red = 0;
-
-        cmap->r = red;
-
-        green = palette->g - intensity;
-
-        if (green < 0)
-            green = 0;
-
-        cmap->g = green;
-
-        blue = palette->b - intensity;
-
-        if (blue < 0)
-            blue = 0;
-
-        cmap->b = blue;
-        cmap->a = SDL_ALPHA_OPAQUE;
-
-        palette++;
-        cmap++;
-    }
-
-    VW_SetPalette (palette1);
-    VW_UpdateScreen (screen.buffer);
 }
 
 

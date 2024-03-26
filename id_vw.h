@@ -8,9 +8,9 @@
 #define BLACK               0
 
 #define VW_WaitVBL(v)       SDL_Delay ((v) << 3)
-#define VL_ClearScreen(c)   SDL_FillRect (screen.buffer,NULL,(c))
-#define VW_FadeIn()         VW_FadePaletteIn (0,255,30)
+#define VW_ClearScreen(c)   SDL_FillRect (screen.buffer,NULL,(c))
 #define VW_FadeOut()        VW_FadePaletteOut (0,255,0,0,0,30)
+#define VW_FadeIn()         VW_FadePaletteIn (0,255,gamepal,30)
 #define VW_Hlin(x1,x2,y,c)  VW_Bar ((x1),(y),(x2) - (x1) + 1,1,(c))
 #define VW_Vlin(y1,y2,x,c)  VW_Bar ((x),(y1),1,(y2) - (y1) + 1,(c))
 
@@ -72,9 +72,10 @@ void    VW_Startup (void);
 void    VW_Shutdown (void);
 void    VW_SetupVideo (void);
 void    VW_InitRndMask (void);
+void    VW_ConvertPalette (byte *srcpal, SDL_Color *destpal, int numcolors);
 void    VW_SetPalette (SDL_Color *palette);
 void    VW_FadePaletteOut (int start, int end, int red, int green, int blue, int steps);
-void    VW_FadePaletteIn (int start, int end, int steps);
+void    VW_FadePaletteIn (int start, int end, SDL_Color *palette, int steps);
 void    VW_UpdateScreen (SDL_Surface *surface);
 void    *VW_LockSurface (SDL_Surface *surface);
 void    VW_UnlockSurface (SDL_Surface *surface);
