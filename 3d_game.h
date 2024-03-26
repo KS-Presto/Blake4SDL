@@ -21,6 +21,8 @@ extern  eaWallInfo      eaList[];
 extern  int             NumEAWalls,NumEASpawned;
 extern  bool            startgame,ingame,loadedgame;
 extern  gametype        gamestate;
+
+extern  unsigned        TopColor,BottomColor;
 extern  int             viewsize;
 extern  int             viewscreenx,viewscreeny;
 extern  int             fizzlewidth,fizzleheight;

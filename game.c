@@ -174,35 +174,66 @@ void UpdateSoundLoc (void)
 =
 = Set up new game to start from the beginning
 =
-= TODO: just basic stuff for now
-=
 =====================
 */
 
 void NewGame (int difficulty, int episode)
 {
-	memset (&gamestate,0,sizeof(gamestate));
+    int      i;
+    unsigned oldflags = gamestate.flags;
 
-	gamestate.difficulty = difficulty;
+    InitPlaytemp ();
+    playstate = ex_stillplaying;
 
-	gamestate.weapons = (1 << wp_autocharge) | (1 << wp_pistol);
-	gamestate.weapon = gamestate.chosenweapon = wp_autocharge;
-	gamestate.old_weapons[0] = gamestate.weapons;
-	gamestate.old_weapons[1] = gamestate.weapon;
-	gamestate.old_weapons[2] = gamestate.chosenweapon;
+    ShowQuickMsg = true;
 
-	gamestate.health = 100;
-	gamestate.old_ammo = gamestate.ammo = STARTAMMO;
-	gamestate.lives = 3;
-	gamestate.nextextra = EXTRAPOINTS;
-	gamestate.episode = episode;
-	gamestate.flags |= (GS_CLIP_WALLS | GS_ATTACK_INFOAREA);
-	gamestate.flags |= GS_LIGHTING;
-	gamestate.key_floor = gamestate.mapon + 1;
+    memset (&gamestuff,0,sizeof(gamestuff));
+    memset (&gamestate,0,sizeof(gamestate));
+    memset (&gamestate.barrier_table,0xff,sizeof(gamestate.barrier_table));
+    memset (&gamestate.old_barrier_table,0xff,sizeof(gamestate.old_barrier_table));
 
-	//startgame = true;
+    gamestate.flags = oldflags & ~(GS_KILL_INF_WARN);
 
-	ExtraRadarFlags = 0;
+    gamestate.difficulty = difficulty;
+
+    gamestate.weapons  = 1 << wp_autocharge;
+    gamestate.weapon = gamestate.chosenweapon = wp_autocharge;
+    gamestate.old_weapons[0] = gamestate.weapons;
+    gamestate.old_weapons[1] = gamestate.weapon;
+    gamestate.old_weapons[2] = gamestate.chosenweapon;
+
+    gamestate.health = 100;
+    gamestate.old_ammo = gamestate.ammo = STARTAMMO;
+    gamestate.lives = 3;
+    gamestate.nextextra = EXTRAPOINTS;
+    gamestate.episode = episode;
+    gamestate.flags |= (GS_CLIP_WALLS | GS_ATTACK_INFOAREA);
+
+#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+    if (gamestate.flags & GS_STARTLEVEL)
+    {
+        gamestate.mapon = starting_level;
+        gamestate.difficulty = starting_difficulty;
+        gamestate.episode = starting_episode;
+    }
+    else
+#endif
+        gamestate.mapon = 0;
+
+    gamestate.key_floor = gamestate.mapon + 1;
+    startgame = true;
+
+    for (i = 0; i < MAPS_WITH_STATS; i++)
+    {
+        gamestuff.old_levelinfo[i].stats.overall_floor = 100;
+
+        if (i)
+            gamestuff.old_levelinfo[i].locked = true;
+    }
+
+    ExtraRadarFlags = InstantWin = InstantQuit = 0;
+
+    pickquick = 0;
 }
 
 
