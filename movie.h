@@ -1,77 +1,48 @@
+// MOVIE.H
+
 #ifndef _MOVIE_H_
 #define _MOVIE_H_
 
 
-#include "JM_VL.H"
+enum movietype
+{
+    mv_intro,
+    mv_final,
 
-//==========================================================================
-//
-//  UNIT:  MOVIE.H
-//
-//==========================================================================
+    mv_NUM_MOVIES,
+};
 
 
 typedef struct
 {
-	unsigned code;
-   long block_num;
-   long recsize;
-}anim_frame;
+    uint16_t code;
+    int32_t  blocknum;
+    int32_t  recsize;
+} anim_frame;
 
 
 typedef struct
 {
-	unsigned short opt;
-   unsigned short offset;
-   unsigned short length;
+    uint16_t command;
+    uint16_t offset;
+    uint16_t length;
 } anim_chunk;
 
 
-//-------------------------------------------------------------------------
-//   MovieStuff Anim Stucture...
-//
-//
-//  fname 			-- File Name of the Anim to be played..
-//	 rep				-- Number of repetitions to play the anim
-//	 ticdelay		-- Tic wait between frames
-//  maxmembuffer 	-- Maximum ammount to use as a ram buffer
-//  start_line 	-- Starting line of screen to copy to other pages
-//  end_line   	-- Ending line  "   "   "   "   "   "   "   "
-//
 typedef struct
 {
-	char FName[13];
-	char rep;
-	char ticdelay;
-
-   unsigned long MaxMemBuffer;
-
-	short start_line;
-	short end_line;
-   memptr palette;
-
+    char      fname[13];
+    int8_t    ticdelay;
+    SDL_Color *palette;
 } MovieStuff_t;
 
 
+extern  MovieStuff_t Movies[mv_NUM_MOVIES];
 
-//=========================================================================
-//
-//											EXTERNS
-//
-//=========================================================================
 
-extern memptr displaybuffer;
-extern MovieStuff_t Movies[];
-
-//===========================================================================
-//
-//								     Prototypes
-//
-//===========================================================================
-
-void MOVIE_ShowFrame (char huge *inpic);
-boolean MOVIE_Play(MovieStuff_t *MovieStuff);
-void SetupMovie(MovieStuff_t *MovieStuff);
-void ShutdownMovie(void);
+void    MOVIE_ShowFrame (byte *inpic);
+bool    MOVIE_Play (MovieStuff_t *MovieStuff);
+void    SetupMovie (MovieStuff_t *MovieStuff);
+void    ShutdownMovie (void);
 
 #endif

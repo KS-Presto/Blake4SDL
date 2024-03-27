@@ -678,15 +678,6 @@ typedef struct
 } atkinf_t;
 
 
-enum movietype   // NOTE - This enum list is ORDERED!
-{
-    mv_intro,
-    mv_final,
-
-    mv_NUM_MOVIES,
-};
-
-
 enum controldirtypes
 {
     di_north,

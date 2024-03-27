@@ -112,9 +112,9 @@ typedef struct
 #include "jm_tp.h"
 #ifdef NOTYET
 #include "jm_debug.h"
-
-#include "movie.h"
 #endif
+#include "movie.h"
+
 #define Quit(s, ...)    Terminate(__func__,(s),##__VA_ARGS__)
 
 #endif
