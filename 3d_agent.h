@@ -70,6 +70,8 @@ extern  int         MsgTicsRemain;
 extern  bool        useBounceOffset;
 extern  fixed       bounceOffset;
 
+extern  statetype   s_player;
+
 
 void     GunAttack (objtype *obj);
 

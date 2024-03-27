@@ -529,15 +529,23 @@ uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
 ====================
 */
 
+statetype s_save_temp;
+
 void LoadLevel (int levelnum)
 {
     bool      oldloaded = loadedgame;
-    int32_t   oldchecksum;
-    objtype   *newobj,*obj;
+    int32_t   oldchecksum,size;
+    objtype   *newobj;
+#ifdef NOTYET
+    objtype   *obj;
+#endif
     FILE      *file;
+    int       x,y;
     int       mod;
     int       oldwx,oldwy,oldww,oldwh;
     int       oldpx,oldpy;
+    word      actornum,laststatobjnum;
+    word      *maptable;
     unsigned  count;
     byte      *temp,*ptr;
     char      chunk[5];
@@ -599,7 +607,27 @@ void LoadLevel (int levelnum)
     loadedgame = oldloaded;
 
     ReadInfo (true,tilemap,sizeof(tilemap),file);
-    ReadInfo (true,actorat,sizeof(actorat),file);
+
+    size = (mapwidth * mapheight) * sizeof(*maptable);
+    maptable = SafeMalloc(size);
+
+    ReadInfo (true,maptable,size,file);
+
+    for (y = 0; y < mapheight; y++)
+    {
+        for (x = 0; x < mapwidth; x++)
+        {
+            actornum = maptable[(y << MAPSHIFT) + x];
+
+            if (actornum & 0x8000)
+                actorat[x][y] = &objlist[actornum & 0x7fff];
+            else
+                actorat[x][y] = (objtype *)(uintptr_t)actornum;
+        }
+    }
+
+    free (maptable);
+
     ReadInfo (true,areaconnect,sizeof(areaconnect),file);
     ReadInfo (true,areabyplayer,sizeof(areabyplayer),file);
 
@@ -608,27 +636,35 @@ void LoadLevel (int levelnum)
     //
     ReadInfo (false,&count,sizeof(count),file);
 
-    temp = SafeMalloc(count * sizeof(*obj));
-    ReadInfo (true,temp,count * sizeof(*obj),file);
-
+    temp = SafeMalloc(count * sizeof(*newobj));
     ptr = temp;
 
-    InitObjList ();       // start with player actor
+    ReadInfo (true,ptr,count * sizeof(*newobj),file);
 
-    memcpy (player,ptr,sizeof(*obj) - (sizeof(player->next) + sizeof(player->prev)));  // don't copy over links!
-    ptr += sizeof(*obj);
+    InitObjList ();
 
-    while (--count)
+    newobj = player;
+
+    while (1)
     {
-        newobj = GetNewObj();
-        memcpy (newobj,ptr,sizeof(*obj) - (sizeof(newobj->next) + sizeof(newobj->prev)));  // don't copy over links!
+        memcpy (newobj,ptr,sizeof(*newobj) - (sizeof(newobj->next) + sizeof(newobj->prev)));
+
+        if (newobj == player)
+            newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_player);
+        else
+            newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_save_temp);
 
         actorat[newobj->tilex][newobj->tiley] = newobj;  // TODO: what if it's a non-blocking actor
 #if LOOK_FOR_DEAD_GUYS
         if (newobj->flags & FL_DEADGUY)
             deadguys[numdeadguys++] = newobj;
 #endif
-        ptr += sizeof(*obj);
+        if (!--count)
+            break;
+
+        ptr += sizeof(*newobj);
+
+        newobj = GetNewObj();
     }
 
     free (temp);
@@ -655,7 +691,9 @@ void LoadLevel (int levelnum)
     //
     // read all sorts of stuff
     //
-    ReadInfo (false,&laststatobj,sizeof(laststatobj),file);
+    ReadInfo (false,&laststatobjnum,sizeof(laststatobjnum),file);
+    laststatobj = &statobjlist[laststatobjnum];
+
     ReadInfo (true,statobjlist,sizeof(statobjlist),file);
     ReadInfo (true,doorobjlist,sizeof(doorobjlist),file);
     ReadInfo (false,&pwallstate,sizeof(pwallstate),file);
@@ -747,14 +785,18 @@ void LoadLevel (int levelnum)
 
 void SaveLevel (int levelnum)
 {
-    objtype  *obj;
-    FILE     *file;
-    int      oldmapon;
-    int32_t  offset,cksize;
-    char     chunk[5];
-    unsigned count;
-    unsigned gflags = gamestate.flags;
-    byte     *temp,*ptr;
+    objtype   *obj;
+    statetype *tempstate;
+    FILE      *file;
+    int       x,y;
+    int       oldmapon;
+    int32_t   size,cksize;
+    char      chunk[5];
+    word      actornum,laststatobjnum;
+    word      *maptable;
+    unsigned  count;
+    unsigned  gflags = gamestate.flags;
+    byte      *temp,*ptr;
 
     WindowY = 181;
 
@@ -805,8 +847,28 @@ void SaveLevel (int levelnum)
     //
     checksum = cksize = 0;
 
+    size = (mapwidth * mapheight) * sizeof(*maptable);
+    maptable = SafeMalloc(size);
+
+    for (y = 0; y < mapheight; y++)
+    {
+        for (x = 0; x < mapwidth; x++)
+        {
+            obj = actorat[x][y];
+
+            if (ISPOINTER(obj))
+                actornum = 0x8000 | (word)(obj - objlist);
+            else
+                actornum = (word)(uintptr_t)obj;
+
+            maptable[(y << MAPSHIFT) + x] = actornum;
+        }
+    }
+
+    free (maptable);
+
     cksize += WriteInfo(true,tilemap,sizeof(tilemap),file);
-    cksize += WriteInfo(true,actorat,sizeof(actorat),file);
+    cksize += WriteInfo(true,maptable,size,file);
     cksize += WriteInfo(true,areaconnect,sizeof(areaconnect),file);
     cksize += WriteInfo(true,areabyplayer,sizeof(areabyplayer),file);
 
@@ -820,10 +882,19 @@ void SaveLevel (int levelnum)
 
     for (obj = player; obj; obj = obj->next)
     {
+        tempstate = obj->state;
+
+        if (obj->obclass == playerobj)
+            obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_player);
+        else
+            obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_save_temp);
+
         memcpy (ptr,obj,sizeof(*obj));
 
-        count++;
+        obj->state = tempstate;
+
         ptr += sizeof(*obj);
+        count++;
     }
 
     cksize += WriteInfo(false,&count,sizeof(count),file);
@@ -834,7 +905,9 @@ void SaveLevel (int levelnum)
     //
     // write all sorts of info
     //
-    cksize += WriteInfo(false,&laststatobj,sizeof(laststatobj),file);
+    laststatobjnum = (word)(laststatobj - statobjlist);
+
+    cksize += WriteInfo(false,&laststatobjnum,sizeof(laststatobjnum),file);
     cksize += WriteInfo(true,statobjlist,sizeof(statobjlist),file);
     cksize += WriteInfo(true,doorobjlist,sizeof(doorobjlist),file);
     cksize += WriteInfo(false,&pwallstate,sizeof(pwallstate),file);
@@ -861,14 +934,14 @@ void SaveLevel (int levelnum)
     //
     // write chunk size & set file size
     //
-    offset = ftell(file);
+    size = ftell(file);
 
     fseek (file,-(cksize + sizeof(cksize)),SEEK_CUR);
 
     if (!fwrite(&cksize,sizeof(cksize),1,file))
         Quit ("Error writing file %s: %s",tempPath,strerror(errno));
 
-    if (ftruncate(fileno(file),offset) == -1)
+    if (ftruncate(fileno(file),size) == -1)
         Quit ("Error truncating file %s: %s",tempPath,strerror(errno));
 
     fclose (file);
