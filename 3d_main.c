@@ -654,7 +654,12 @@ void LoadLevel (int levelnum)
         else
             newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_save_temp);
 
-        actorat[newobj->tilex][newobj->tiley] = newobj;  // TODO: what if it's a non-blocking actor
+        //
+        // KS: I remember that dead actor spots can become solid after loading
+        // a saved game, and this line is probably the reason why. It should
+        // test for FL_NONMARK | FL_NEVERMARK before updating actorat
+        //
+        actorat[newobj->tilex][newobj->tiley] = newobj;
 #if LOOK_FOR_DEAD_GUYS
         if (newobj->flags & FL_DEADGUY)
             deadguys[numdeadguys++] = newobj;
@@ -1666,7 +1671,6 @@ void InitGame (void)
 
 bool DoMovie (int movie, SDL_Color *palette)
 {
-#ifdef NOTYET
     bool retval;
 
     //StopMusic ();
@@ -1674,19 +1678,13 @@ bool DoMovie (int movie, SDL_Color *palette)
 
     CA_LoadAllSounds ();
 
-    if (palette)
-        Movies[movie].palette = palette;
-    else
-        Movies[movie].palette = gamepal;
+    Movies[movie].palette = palette;
 
     retval = MOVIE_Play(&Movies[movie]);
 
     SD_StopSound ();
 
     return retval;
-#else
-    return false;
-#endif
 }
 
 
@@ -1845,20 +1843,20 @@ void PreDemo (void)
         CA_UncacheAudioChunk (STARTMUSIC + APOGFNFM_MUS);
 
         //
-        // do a blue flash
+        // do a blue flash!
         //
         VW_FadePaletteOut (0,255,25,29,53,20);
-        VW_ClearScreen (0);
-        VW_FadeIn ();
+        screen.flags &= ~SC_FADED;
+        VW_FadeOut ();
 
         //
         // JAM logo intro
         //
         SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
-#ifdef NOTYET
-        if (!DoMovie(mv_intro,0))
+
+        if (!DoMovie(mv_intro,gamepal))
             Quit ("JAM animation (IANIM.%s) does not exist!",extension);
-#endif
+
         if (PowerBall)
         {
             for (i = 0; i < 60 && !DebugOk; i++)
@@ -1884,7 +1882,6 @@ void PreDemo (void)
         //
         // PC-13
         //
-        VW_FadeOut ();
         VW_ClearScreen (0x14);
         VW_DrawPic (0,64,PC13PIC);
         VW_FadeIn ();
@@ -1895,8 +1892,8 @@ void PreDemo (void)
         // do a red flash!
         //
         VW_FadePaletteOut (0,255,39,0,0,20);
-        VW_ClearScreen (0);
-        VW_FadeIn ();
+        screen.flags &= ~SC_FADED;
+        VW_FadeOut ();
     }
 }
 
