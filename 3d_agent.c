@@ -18,7 +18,6 @@
 #define MAX_DA          100
 
 #define MAX_TERM_COMMAND_LEN    31
-#define MSG_BUFFER_LEN          150
 
 #define BAR_W           48
 #define BAR_H           5
@@ -1472,7 +1471,10 @@ bool DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MsgType
     if (MsgTicsRemain)
         StatusDrawPic (0,40,BRI_LIGHTPIC);  // TODO: check this
 
-    gamestate.msg = Msg;
+    if (strlen(Msg) > MSG_BUFFER_LEN)
+        Quit ("Message is too long!");
+
+    snprintf (gamestate.msg,sizeof(gamestate.msg),Msg);
 
     DrawInfoArea_COUNT = InitInfoArea_COUNT = 3;
 
@@ -1671,9 +1673,6 @@ void DisplayNoMoMsgs (void)
 = sprite animations will be difficult to implement unless all frames are
 = of the same dimensions.
 =
-= KS: Modified to manipulate the string via an allocated buffer (const correctness...)
-=     It might be simpler to allocate gamestate.msg directly
-=
 ============================================================================
 */
 
@@ -1681,11 +1680,9 @@ void DrawInfoArea (void)
 {
     #define IA_FONT_HEIGHT 6
 
-    int    temp_color;
-    char   *msgbuffer;
-    char   *first_ch,*scan_ch;
-    char   temp;
-    size_t len;
+    int  temp_color;
+    char *first_ch,*scan_ch;
+    char temp;
 
 #if IN_DEVELOPMENT
     if (gamestate.flags & GS_SHOW_OVERHEAD)
@@ -1693,15 +1690,10 @@ void DrawInfoArea (void)
 #endif
     DrawInfoArea_COUNT--;
 
-    if (!gamestate.msg || !*gamestate.msg)
+    if (!*gamestate.msg)
         return;
 
-    len = strlen(gamestate.msg) + 1;
-    msgbuffer = SafeMalloc(len);
-
-    snprintf (msgbuffer,len,gamestate.msg);
-
-    first_ch = msgbuffer;
+    first_ch = gamestate.msg;
 
     fontnumber = 2;
     fontcolor = InfoAreaSetup.text_color;
@@ -1719,7 +1711,7 @@ void DrawInfoArea (void)
             // print current line
             //
             temp = *scan_ch;
-            *scan_ch = '\0';    // TODO: buffer is already null terminated from snprintf
+            *scan_ch = '\0';
 
             if (*first_ch != TP_RETURN_CHAR)
             {
@@ -1759,8 +1751,6 @@ void DrawInfoArea (void)
         else
             first_ch = HandleControlCodes(first_ch);
     }
-
-    free (msgbuffer);
 }
 
 
@@ -3032,9 +3022,6 @@ bool Interrogate (objtype *obj)
     if (msgptr)
     {
         snprintf (msg,sizeof(msg),"%s%s%s%s",msgbuffer,int_rr,msgptr,int_xx);
-
-        if (strlen(msg) > MSG_BUFFER_LEN)
-            Quit ("Interrogation message too long!");
 
         DisplayInfoMsg (msg,MP_INTERROGATE,DISPLAY_MSG_STD_TIME * 2,MT_GENERAL);
         SD_PlaySound (INTERROGATESND);

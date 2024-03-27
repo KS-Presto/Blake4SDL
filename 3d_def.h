@@ -17,10 +17,12 @@
 
 #define _VERSION_           "V1.01"
 
-#define GOLD_MORPH_LEVEL      19   // level which Dr. GoldFire Morphs
+#define GOLD_MORPH_LEVEL      19    // level which Dr. GoldFire Morphs
 
 #define VERSION_TEXT_COLOR    (0x82)
 #define VERSION_TEXT_BKCOLOR  (0x80)
+
+#define MSG_BUFFER_LEN      150     // max length of info area messages
 
 #define NO_SHADING          128
 #define LAMP_ON_SHADING     12
@@ -1008,7 +1010,7 @@ typedef struct
     int8_t     episode;
     int32_t    timecount;
     fixed      killx,killy;
-    const char *msg;        // InfoArea msg
+    char       msg[MSG_BUFFER_LEN + 1];        // InfoArea msg
 
     int8_t     numkeys[NUMKEYS],old_numkeys[NUMKEYS];
     barrier_t  barrier_table[MAX_BARRIER_SWITCHES];
