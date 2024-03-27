@@ -43,6 +43,8 @@
 #define BORDER_LO_COLOR     0x80
 #define BORDER_TEXT_COLOR   0xaf
 
+#define MASKCOLOR           0xfe
+
 //
 // FONT DEFINES
 //

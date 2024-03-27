@@ -4,8 +4,7 @@
 
 
 //#define WOLFDOORS
-#define MASKABLE_DOORS  (false)
-#define MASKABLE_POSTS  (false | MASKABLE_DOORS)
+//#define MASKABLE_DOORS
 
 // the door is the last picture before the sprites
 
@@ -465,6 +464,8 @@ int CalcHeight (void)
 =
 = ScalePost
 =
+= Draws an unmasked post centered in the viewport
+=
 ===================
 */
 
@@ -506,9 +507,9 @@ void ScalePost (void)
         //
         *dest = shadingtable[src[-srcofs]];
 
-		//
-		// write bottom half
-		//
+        //
+        // write bottom half
+        //
         dest[destofs] = shadingtable[src[srcofs + 1]];
 
         dest -= screen.buffer->pitch;
@@ -517,6 +518,72 @@ void ScalePost (void)
     }
 }
 
+
+/*
+===================
+=
+= ScaleMPost
+=
+= Draws a masked post centered in the viewport
+=
+===================
+*/
+#ifdef MASKABLE_DOORS
+void ScaleMPost (void)
+{
+    byte     *src,*dest;
+    int      srcofs,srcindex;
+    int      height;
+    fixed    frac,fracstep;
+    uint32_t doubPitch;
+    uint32_t destofs;
+
+    height = wallheight[postx] >> 3;
+
+    if (!height)
+        return;
+
+    SetShading (height,0);
+
+    fracstep = FixedDiv(TEXTURESIZE / 2,height);
+    frac = fracstep >> 1;
+
+    destofs = screen.buffer->pitch;
+    doubPitch = screen.buffer->pitch << 1;
+
+    src = &postsource[(TEXTURESIZE / 2) - 1];
+
+    dest = vbuf + ylookup[centery - 1] + postx;
+
+    if (height > centery)
+        height = centery;
+
+    while (height--)
+    {
+        srcofs = frac >> FRACBITS;
+
+        //
+        // write top half
+        //
+        srcindex = src[-srcofs];
+
+        if (srcindex != MASKCOLOR)
+            *dest = shadingtable[src[-srcofs]];
+
+        //
+        // write bottom half
+        //
+        srcindex = src[srcofs + 1];
+
+        if (srcindex != MASKCOLOR)
+            dest[destofs] = shadingtable[src[srcofs + 1]];
+
+        dest -= screen.buffer->pitch;
+        destofs += doubPitch;
+        frac += fracstep;
+    }
+}
+#endif
 
 /*
 ====================
@@ -724,7 +791,7 @@ void HitHorizDoor (void)
         doorpage += UL_METAL;
 
     postsource = PM_GetPage(DOORWALL + doorpage) + texture;
-#if MASKABLE_DOORS
+#ifdef MASKABLE_DOORS
     ScaleMPost ();
 #else
     ScalePost ();
@@ -823,7 +890,7 @@ void HitVertDoor (void)
         doorpage += UL_METAL;
 
     postsource = PM_GetPage(DOORWALL + doorpage + 1) + texture;
-#if MASKABLE_DOORS
+#ifdef MASKABLE_DOORS
     ScaleMPost ();
 #else
     ScalePost ();
