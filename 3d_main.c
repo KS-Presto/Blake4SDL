@@ -1908,7 +1908,7 @@ void PreDemo (void)
 
 void DemoLoop (void)
 {
-#if DEMOS_ENABLED
+#ifdef DEMOS_ENABLED
     int       LastDemo = 0;
 #endif
     bool      breakit;
@@ -1997,7 +1997,7 @@ void DemoLoop (void)
             //
             // demo
             //
-#if DEMOS_ENABLED
+#ifdef DEMOS_ENABLED
 #if IN_DEVELOPMENT
             if (!MS_CheckParm("recdemo"))
 #endif

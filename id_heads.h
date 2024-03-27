@@ -39,13 +39,8 @@
 
 //#define CARMACIZED
 #define WOLF
-#define FREE_FUNCTIONS      (false)
-#define FREE_DATA           (false)
-#define DEMOS_ENABLED       (true)
-#define RESTART_PICTURE_PAUSE   (false)
-#define GEORGE_CHEAT        (false)
-
-#define FORCE_FILE_CLOSE    (true)  // true - forces all files closed once they are used
+//#define DEMOS_ENABLED
+#define GEORGE_CHEAT        false
 
 //
 // GAME VERSION TYPES
@@ -59,15 +54,15 @@
 // CURRENT GAME VERSION DEFINE - Change this define according to the
 //           game release versions 1,1-3,4-6, or 1-6.
 
-#define GAME_VERSION        (MISSIONS_1_THR_6)
-//#define GAME_VERSION         (MISSIONS_1_THR_3)
-//#define GAME_VERSION     (SHAREWARE_VERSION)
+#define GAME_VERSION            (MISSIONS_1_THR_6)
+//#define GAME_VERSION            (MISSIONS_1_THR_3)
+//#define GAME_VERSION            (SHAREWARE_VERSION)
 
 
-#define TECH_SUPPORT_VERSION    (false)
-#define IN_DEVELOPMENT          (false)
+#define TECH_SUPPORT_VERSION    false
+#define IN_DEVELOPMENT          false
 
-#define DUAL_SWAP_FILES    (false)    // Support for Shadowed and NonShadowed page files
+#define DUAL_SWAP_FILES         false    // support for shadowed/non-shadowed page files
 
 #include "gfxv_vsi.h"
 #include "audiovsi.h"
@@ -110,9 +105,6 @@ typedef struct
 
 #include "jm_io.h"
 #include "jm_tp.h"
-#ifdef NOTYET
-#include "jm_debug.h"
-#endif
 #include "movie.h"
 
 #define Quit(s, ...)    Terminate(__func__,(s),##__VA_ARGS__)
