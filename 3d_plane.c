@@ -6,6 +6,8 @@ byte     *ceilingsource,*floorsource;
 
 void     (*MapRowPtr) (void);
 
+int      ceilingpic,floorpic;
+
 int16_t  *spanstart;
 
 unsigned mr_rowofs;
@@ -63,7 +65,7 @@ void DrawSpans (int x1, int x2, int height)
 ===================
 */
 
-void LoadPlanes (int ceilingpic, int floorpic)
+void LoadPlanes (void)
 {
     if (ceilingpic > 0)
         ceilingsource = PM_GetPage(ceilingpic);
