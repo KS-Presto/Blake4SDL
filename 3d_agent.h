@@ -122,6 +122,7 @@ bool     Interrogate (objtype *obj);
 
 void     GiveWeapon (int weapon);
 void     HealSelf (int points);
+void     TakeDamage (int points, objtype *attacker);
 void     GiveKey (int key);
 void     TakeKey (int key);
 void     GiveToken (int tokens);

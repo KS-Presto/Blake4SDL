@@ -768,14 +768,15 @@ void CheckKeys (void)
         {
             fontnumber = 4;
             SetFontColor (0,15);
-#ifdef NOTYET
+
             if (DebugKeys())
-#endif
+            {
                 DrawPlayBorder ();
 
-            IN_CenterMouse ();
+                IN_CenterMouse ();
 
-            lasttimecount = GetTimeCount();
+                lasttimecount = GetTimeCount();
+            }
 
             return;
         }

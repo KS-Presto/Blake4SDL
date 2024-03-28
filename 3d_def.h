@@ -93,6 +93,8 @@ void jsprintf (const char *msg, ...);
 #define LOW_GRN     0x74
 
 
+#define MAX_WARP_LEVEL      23
+
 #define MAX_DEST_PATH_LEN	30
 
 #define MAX_GUN_DELAY       12
@@ -1333,8 +1335,7 @@ int32_t  DeleteChunk (FILE *sourcefile, const char *chunk);
 =============================================================================
 */
 
-int  DebugKeys (void);
-void CalcMemFree (void);
+bool  DebugKeys (void);
 
 
 /*

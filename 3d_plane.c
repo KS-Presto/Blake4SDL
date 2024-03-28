@@ -67,15 +67,15 @@ void DrawSpans (int x1, int x2, int height)
 
 void LoadPlanes (void)
 {
-    if (ceilingpic > 0)
+    if (ceilingpic >= 0 && ceilingpic < NUM_TILES)
         ceilingsource = PM_GetPage(ceilingpic);
     else
-        ceilingsource = NULL;
+        Quit ("Invalid ceiling pic!");
 
-    if (floorpic > 0)
+    if (floorpic >= 0 && floorpic < NUM_TILES)
         floorsource = PM_GetPage(floorpic);
     else
-        floorsource = NULL;
+        Quit ("Invalid floor pic!");
 }
 
 

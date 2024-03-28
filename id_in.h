@@ -76,6 +76,8 @@
 #define sc_Equal        SDL_SCANCODE_EQUALS
 #define sc_Minus        SDL_SCANCODE_MINUS
 #define sc_Tilde        SDL_SCANCODE_GRAVE
+#define sc_LBracket     SDL_SCANCODE_LEFTBRACKET
+#define sc_RBracket     SDL_SCANCODE_RIGHTBRACKET
 
 #define sc_A            SDL_SCANCODE_A
 #define sc_B            SDL_SCANCODE_B
@@ -148,6 +150,7 @@ void        IN_Shutdown (void);
 void        IN_ProcessEvents (void);
 void        IN_WaitEvent (void);
 void        IN_WaitAndProcessEvents (void);
+void        IN_ClearKey (ScanCode code);
 void        IN_ClearKeysDown (void);
 void        IN_ClearTextInput (void);
 void        IN_ReadControl (ControlInfo *info);
