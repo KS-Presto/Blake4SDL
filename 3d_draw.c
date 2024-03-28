@@ -998,7 +998,7 @@ void ClearScreen (void)
 
         while (y--)
         {
-            memset (dest,TopColor,viewwidth);
+            memset (dest,ceilingcolor,viewwidth);
             dest -= screen.buffer->pitch;
         }
     }
@@ -1011,7 +1011,7 @@ void ClearScreen (void)
 
         while (y--)
         {
-            memset (dest,BottomColor,viewwidth);
+            memset (dest,floorcolor,viewwidth);
             dest -= screen.buffer->pitch;
         }
     }
