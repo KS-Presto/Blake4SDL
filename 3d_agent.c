@@ -1234,7 +1234,7 @@ void UpdateRadarGauge (void)
 
 void DrawRadarGauge (void)
 {
-    char zoom;
+    int zoom;
 
     DrawLedStrip (235,155,gamestate.radar_leds,NUM_AMMO_SEGS);
 
@@ -2042,8 +2042,6 @@ void ForceUpdateStatusBar (void)
 =
 = RedrawStatusAreas
 =
-= TODO: this might not be needed anymore (it was only called twice anyway)
-=
 ====================
 */
 
@@ -2053,8 +2051,6 @@ void RedrawStatusAreas (void)
 
     VW_DrawPic (0,0,TOP_STATUSBARPIC);
 
-    ShadowPrintLocationText (sp_normal);
-
     StatusDrawPic (0,0,STATUSBARPIC);
     DrawAmmoPic ();
     DrawScoreNum ();
@@ -2062,6 +2058,8 @@ void RedrawStatusAreas (void)
     DrawAmmoNum ();
     DrawKeyPics ();
     DrawHealthNum ();
+
+    ShadowPrintLocationText (sp_normal);
 }
 
 
