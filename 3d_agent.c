@@ -2510,24 +2510,22 @@ void Thrust (int angle, int32_t speed)
         {
 #ifdef CEILING_FLOOR_COLORS
             case 0xfe00:
-                TopColor = offset & 0xff00;
-                TopColor |= TopColor >> 8;
-                BottomColor = offset & 0xff;
-                BottomColor |= BottomColor << 8;
+                ceilingcolor = offset >> 8;
+                floorcolor = offset & 0xff;
                 break;
 #endif
 
 #if 0
-            case 0xF600:
-                normalshadediv = (offset & 0xff00) >> 8;
+            case 0xf600:
+                normalshadediv = offset >> 8;
 
                 if (normalshadediv > 12)
-                    AGENT_ERROR (NORMAL_SHADE_TOO_BIG);
+                    Quit ("Shade divisor too large! Must be 1-12!");
 
                 shademax = offset & 0xff;
 
-                if (shademax > SHADEMAX || shademax < 5)
-                    AGENT_ERROR(SHADEMAX_VALUE_BAD);
+                if (shademax < 5 || shademax > SHADEMAX)
+                    Quit ("Shade max value out of range! Must be 5-63!");
 
                 normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
                 break;
