@@ -2864,7 +2864,7 @@ void FinishDemoRecord (void)
 
     VW_FadeIn ();
 
-    CenterWindow (24,3);
+    US_CenterWindow (24,3);
     PrintY += 6;
     fontnumber = 4;
     US_Print (" Demo number (0-9):");
@@ -2874,7 +2874,7 @@ void FinishDemoRecord (void)
     {
         level = atoi(str);
 
-        if (level >= 0 && level <= MAPS_PER_EPISODE)
+        if (level >= 0 && level <= MAX_WARP_LEVEL)
         {
             snprintf (fname,sizeof(fname),"%s%s",demoname,extension);
             fname[4] = '0' + level;
@@ -2910,10 +2910,10 @@ void RecordDemo (void)
 {
     int level,esc;
 
-    CenterWindow (26,3);
+    US_CenterWindow (26,3);
     PrintY += 6;
     fontnumber = 4;
-    snprintf (str,sizeof(str),"  Demo which level(0-%d):",MAPS_PER_EPISODE - 2);
+    snprintf (str,sizeof(str),"  Demo which level(0-%d):",MAX_WARP_LEVEL);
     US_Print (str);
     VW_FadeIn ();
 
@@ -2924,7 +2924,7 @@ void RecordDemo (void)
 
     level = atoi(str);
 
-    if (level > MAPS_PER_EPISODE - 2)
+    if (level > MAX_WARP_LEVEL)
         return;
 
     SetFontColor (0,15);
@@ -3020,7 +3020,7 @@ void PlayDemo (int demonumber)
 
     VW_FadeOut ();
     DrawPlayScreen (true);
-    LoadPlanes (CeilingTile,FloorTile);
+    LoadPlanes ();
 
     screen.flags |= SC_FIZZLEIN;
 

@@ -2032,11 +2032,12 @@ void DemoLoop (void)
         CA_UncacheAudioChunk (STARTMUSIC + TITLE_LOOP_MUSIC);
 
         VW_FadeOut ();
-
+#ifdef NOTYET
 #ifdef DEMOS_EXTERN
         if (MS_CheckParm("recdemo"))
             RecordDemo ();
         else
+#endif
 #endif
         {
 #if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
@@ -2239,10 +2240,6 @@ void MakeDestPath (const char *file)
 
 int main (int argc, char *argv[])
 {
-#if IN_DEVELOPMENT
-    MakeDestPath (ERROR_LOG);
-    remove (tempPath);
-#endif
     MakeDestPath (PLAYTEMP_FILE);
     remove (tempPath);
 

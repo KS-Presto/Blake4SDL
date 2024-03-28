@@ -45,7 +45,7 @@ void    SetupFizzlein (int x, int y, int width, int height);
 void    DrawTopInfo (int type);
 void    SetViewSize (int size);
 void    ShowViewSize (int size);
-void    FizzleOut (void);
+void    RecordDemo (void);
 void    GameLoop (void);
 
 void    PlaySoundLocGlobal (int sound, fixed gx, fixed gy);

@@ -7,7 +7,7 @@
 #include "jm_lzh.h"
 #endif
 
-#if DEMOS_EXTERN
+#ifdef DEMOS_EXTERN
 
 /*
 ===================
