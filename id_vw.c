@@ -536,14 +536,14 @@ void VW_DePlaneVGA (byte *source, int width, int height)
 
 void VW_MemToScreen (byte *source, int width, int height, int x, int y)
 {
-	byte *dest;
+    byte *dest;
 
-	dest = VW_LockSurface(screen.buffer);
+    dest = VW_LockSurface(screen.buffer);
 
-	if (!dest)
+    if (!dest)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-	dest += ylookup[y] + x;
+    dest += ylookup[y] + x;
 
     while (height--)
     {
