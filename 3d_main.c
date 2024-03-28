@@ -447,9 +447,9 @@ void ReadInfo (bool decompress, void *dest, uint32_t size, FILE *file)
 {
 #ifdef NOTYET
     uint32_t dsize,csize;
-
-    PreloadUpdate (LS_current++,LS_total);
 #endif
+    LoadLevelUpdate (LS_current++,LS_total);
+
 #ifdef NOTYET
     if (decompress)
     {
@@ -487,9 +487,9 @@ void ReadInfo (bool decompress, void *dest, uint32_t size, FILE *file)
 uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
 {
     uint32_t csize;
-#ifdef NOTYET
-    PreloadUpdate (LS_current++,LS_total);
-#endif
+
+    LoadLevelUpdate (LS_current++,LS_total);
+
 #ifdef NOTYET
     if (compress)
     {
@@ -573,16 +573,16 @@ void LoadLevel (int levelnum)
     if (!file || !FindChunk(file,chunk) || ForceLoadDefault)
     {
         fclose (file);
-#ifdef NOTYET
-        PreloadUpdate (LS_current + ((LS_total - LS_current) >> 1),LS_total);
-#endif
+
+        LoadLevelUpdate (LS_current + ((LS_total - LS_current) >> 1),LS_total);
+
         SetupGameLevel ();
 
         gamestate.flags |= GS_VIRGIN_LEVEL;
         gamestate.turn_around = 0;
-#ifdef NOTYET
-        PreloadUpdate (1,1);
-#endif
+
+        LoadLevelUpdate (1,1);
+
         ForceLoadDefault = false;
 
         return;
@@ -720,9 +720,8 @@ void LoadLevel (int levelnum)
     //
     // read and evaluate checksum
     //
-#ifdef NOTYET
-    PreloadUpdate (LS_current++,LS_total);
-#endif
+    LoadLevelUpdate (LS_current++,LS_total);
+
     if (!fread(&oldchecksum,sizeof(oldchecksum),1,file))
         Quit ("Error reading file: %s",strerror(errno));
 

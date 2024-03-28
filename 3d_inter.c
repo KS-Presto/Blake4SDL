@@ -22,7 +22,6 @@ char       BreifingText[13] = "BRIEF_Wx.TXT";
 
 bool Breifing (int BreifingType, int episode)
 {
-#ifdef NOTYET
 #ifndef ID_CACHE_BRIEFS
     char chars[3] = {'L','W','I'};
 
@@ -32,7 +31,6 @@ bool Breifing (int BreifingType, int episode)
     HelpPresenter (BreifingText,true,0,false);
 #else
     HelpPresenter (NULL,true,((BRIEF_W1 + (episode * 2)) + BreifingType) - 1,false);
-#endif
 #endif
     return EscPressed;
 }
@@ -121,6 +119,33 @@ void DisplayPrepingMsg (const char *text)
 /*
 =================
 =
+= LoadLevelUpdate
+=
+=================
+*/
+
+void LoadLevelUpdate (int current, int total)
+{
+    int w;
+
+    if (!total)
+        return;
+
+    if (current > total)
+        current = total;
+
+    w = ((int32_t)(WindowW - 10) * current) / total;
+
+    if (w)
+        VW_Bar (WindowX,WindowY,w - 1,1,BORDER_TEXT_COLOR);
+
+    VW_UpdateScreen (screen.buffer);
+}
+
+
+/*
+=================
+=
 = DrawLevelTransition
 =
 =================
@@ -128,20 +153,12 @@ void DisplayPrepingMsg (const char *text)
 
 void DrawLevelTransition (void)
 {
-    int w;
-
     WindowY = 188;
 
     if (!(gamestate.flags & GS_QUICKRUN))
         VW_FadeIn ();
 
-    w = ((int32_t)((WindowW - 10) * 10)) / 10;
-
-    if (w)
-        VW_Bar (WindowX,WindowY,w - 1,1,BORDER_TEXT_COLOR);
-
-    VW_UpdateScreen (screen.buffer);
-
+    LoadLevelUpdate (1,1);
     IN_UserInput (70);
 
     if (playstate != ex_transported)

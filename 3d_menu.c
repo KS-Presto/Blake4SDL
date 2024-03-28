@@ -1524,10 +1524,10 @@ void DrawLSAction (int which)
     DrawTopInfo (sp_loading + which);
     DrawPlayBorder ();
     DisplayPrepingMsg (LOADSAVE_GAME_MSG[which]);
-#ifdef NOTYET
+
     if (which)
-        PreloadUpdate (1,1);    // GFX: bar is full when saving...
-#endif
+        LoadLevelUpdate (1,1);    // GFX: bar is full when saving
+
     LS_current = 1;
     LS_total = total[which];
     WindowY = 181;

@@ -1642,6 +1642,7 @@ extern  char BreifingText[13];
 void     DisplayPrepingMsg (const char *text);
 bool     Breifing (int BreifingType, int episode);
 void     ShPrint (const char *text, int shadowcolor, bool singlechar);
+void     LoadLevelUpdate (int current, int total);
 void     DrawLevelTransition (void);
 void     DrawHighScores (void);
 void     CheckHighScore (int32_t score, int other);

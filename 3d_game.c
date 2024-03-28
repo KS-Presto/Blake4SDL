@@ -33,7 +33,7 @@ unsigned        screenofs;
 fargametype     gamestuff;
 gametype        gamestate;
 
-int             LS_current,LS_total;
+int             LS_current = -1,LS_total = -1;
 
 int             mapwidth,mapheight;
 
@@ -3347,9 +3347,9 @@ void GameLoop (void)
         if (died)
         {
             WindowY = 188;
-#ifdef NOTYET
-            PreloadUpdate (1,1);
-#endif
+
+            LoadLevelUpdate (1,1);
+
             died = false;
             DrawPlayScreen (true);
         }
