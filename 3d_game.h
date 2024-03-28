@@ -15,14 +15,13 @@ extern  tilecoord_t     GoldieList[GOLDIE_MAX_SPAWNS];
 extern  GoldsternInfo_t GoldsternInfo;
 
 extern  int             VitalsRemain,VitalsOnFloor;
-extern  unsigned        TopColor,BottomColor;
 
 extern  eaWallInfo      eaList[];
 extern  int             NumEAWalls,NumEASpawned;
 extern  bool            startgame,ingame,loadedgame;
 extern  gametype        gamestate;
 
-extern  unsigned        TopColor,BottomColor;
+extern  unsigned        ceilingcolor,floorcolor;
 extern  int             viewsize;
 extern  int             viewscreenx,viewscreeny;
 extern  int             fizzlewidth,fizzleheight;
@@ -58,9 +57,9 @@ void    BMAmsg (const char *msg);
 void    CacheBMAmsg (int msgnum);
 void    BevelBox (int xl, int yl, int w, int h, int hi, int med, int lo);
 
-void    AddTotalPoints (unsigned points);
+void    AddTotalPoints (int points);
 void    AddTotalInformants (int informants);
-void    AddTotalEnemy (unsigned enemies);
+void    AddTotalEnemy (int enemies);
 
 void    SetFontColor (int f, int b);
 void    ShadowPrintLocationText (int type);

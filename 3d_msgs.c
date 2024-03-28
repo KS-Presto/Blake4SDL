@@ -88,9 +88,6 @@ char noeat_msg1[] = "\r\r    CAN'T EAT NOW,"
 //
 //---------------------------------------------------------------------------
 
-
-const char *computing = "Computing...";
-
 char NoAdLibCard[] =    "^FC57\r       MUSIC:\r"
                         "^FCA6  YOU DON'T HAVE AN\r"
                         "  ADLIB COMPATABLE\r"
@@ -643,7 +640,8 @@ char *ActorInfoMsg[] =
 };
 
 
-char int_xx[] = "^XX";  // TODO: this seems to be at the end of the msg chunks in grsegs?
+const char *computing = "Computing...";
+const char *int_xx = "^XX";
 
 
 /*

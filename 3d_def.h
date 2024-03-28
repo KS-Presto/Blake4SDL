@@ -1297,6 +1297,8 @@ int      scan_atoi (char *s);
 void     AlignPlayerOnTransporter (void);
 
 bool     DoMovie (int movie, SDL_Color *palette);
+void     SaveLevel (int levelnum);
+void     LoadLevel (int levelnum);
 bool     SaveTheGame (FILE *file, const char *description);
 bool     LoadTheGame (FILE *file);
 int32_t  ChecksumFile (const char *file, int32_t checksum);
@@ -1307,6 +1309,7 @@ void     UnauthorizedLevels (void);
 void     ShowChecksums (void);
 void     fprint (const char *text);
 
+bool     LevelInPlaytemp (int levelnum);
 void     InitPlaytemp (void);
 void     InitDigiMap (void);
 
@@ -1352,6 +1355,7 @@ extern  bool      noShots;
 extern  int       detonators_spawned;
 extern  int       starthitpoints[NUMDIFFICULTY][NUMHITENEMIES];
 extern  unsigned  MorphClass[];
+extern  unsigned  scanvalue;
 
 extern  statetype s_ofs_bounce;
 
@@ -1594,8 +1598,6 @@ extern  char  ExtraMan[];
 extern  char  OneMillion[];
 extern  char  TenMillion[];
 
-extern  const char  *computing;
-
 extern  char  NoAdLibCard[];
 extern  char  MusicOn[];
 extern  char  MusicOff[];
@@ -1612,7 +1614,8 @@ extern  char  pd_donthaveany[];
 extern  char  pd_no_computer[];
 extern  char  pd_floornotlocked[];
 
-extern  char  int_xx[];
+extern  const char  *computing;
+extern  const char  *int_xx;
 
 
 void      InitMsgCache (mCacheList *mList, int listsize, int infosize);
@@ -1631,6 +1634,8 @@ bool      ReuseMsg (mCacheInfo *ci, int count, int structsize);
 =============================================================================
 */
 
+extern  const char *prep_msg;
+
 extern  char BreifingText[13];
 
 
@@ -1639,5 +1644,6 @@ bool     Breifing (int BreifingType, int episode);
 void     ShPrint (const char *text, int shadowcolor, bool singlechar);
 void     DrawLevelTransition (void);
 void     DrawHighScores (void);
+void     CheckHighScore (int32_t score, int other);
 
 #endif

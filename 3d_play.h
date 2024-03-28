@@ -209,6 +209,7 @@ int     StopMusic (void);
 void    StartMusic (void);
 void    ContinueMusic (int offs);
 void    InitPaletteShifts (void);
+void    FinishPaletteShifts (void);
 void    StartBonusFlash (void);
 void    StartDamageFlash (int damage);
 void    PlayLoop (void);
