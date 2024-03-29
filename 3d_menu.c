@@ -3752,13 +3752,14 @@ void Message (const char *string)
 
 void TerminateString (char *pos)
 {
-    pos = strstr(pos,"^XX");
+    pos = strstr(pos,int_xx);
 
 #if IN_DEVELOPMENT
     if (!pos)
-        Quit ("A cached message was NOT terminated with \"^XX\"!");
+        Quit ("A cached message was NOT terminated with \"%s\"!",int_xx);
 #endif
-    *pos = '\0';
+    if (pos)
+        *pos = '\0';
 }
 
 
