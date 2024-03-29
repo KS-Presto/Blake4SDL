@@ -4,11 +4,13 @@
 #define _3D_STATE_H_
 
 
-extern  int      dirtoangle[NUMOBJDIRS];
-extern  int      opposite[NUMOBJDIRS];
-extern  int      diagonal[NUMOBJDIRS][NUMOBJDIRS];
+extern  bool      nevermark;
 
-extern  unsigned actor_points[];
+extern  const int dirtoangle[NUMOBJDIRS];
+extern  const int opposite[NUMOBJDIRS];
+extern  const int diagonal[NUMOBJDIRS][NUMOBJDIRS];
+
+extern  unsigned  actor_points[];
 
 
 void     SeekPlayerOrStatic (objtype *obj, fixed *deltax, fixed *deltay);
@@ -30,10 +32,11 @@ int      CalcAngle (objtype *from_obj, objtype *to_obj);
 
 bool     CheckLine (objtype *from_obj, objtype *to_obj);
 bool     CheckSight (objtype *from_obj, objtype *to_obj);
+bool     CheckView (objtype *from_obj, objtype *to_obj);
 
 void     FirstSighting (objtype *obj);
-bool     PosVisible (fixed from_x, fixed from_y, fixed to_x, fixed to_y, int from_angle);
-bool     PlayerIsBlocking (objtype *obj);
+bool     SightPlayer (objtype *obj);
+void     PlayerIsBlocking (objtype *obj);
 
 void     MakeAlertNoise (objtype *obj);
 objtype  *CheckAndReserve (void);

@@ -469,9 +469,9 @@ bool DebugKeys (void)
     else if (Keyboard[sc_D])   // D = Dumb/Blind Objects (player invisible)
     {
         US_CenterWindow (19,3);
-        PlayerInvisable ^= true;
+        PlayerInvisible ^= true;
 
-        if (PlayerInvisable)
+        if (PlayerInvisible)
             US_PrintCentered ("Player Invisible");
         else
             US_PrintCentered ("Player visible");

@@ -32,7 +32,7 @@ extern  int         shootdelta;
 //
 extern  bool        commandmode;
 extern  fixed       thrustspeed;
-extern  bool        PlayerInvisable;
+extern  bool        PlayerInvisible;
 extern  int         DrawInfoArea_COUNT;
 extern  int         InitInfoArea_COUNT;
 
@@ -72,6 +72,8 @@ extern  fixed       bounceOffset;
 
 extern  statetype   s_player;
 
+
+bool     ClipMove (objtype *obj, fixed xmove, fixed ymove);
 
 void     GunAttack (objtype *obj);
 

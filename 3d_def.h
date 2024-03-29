@@ -25,6 +25,7 @@
 #define MSG_BUFFER_LEN      150     // max length of info area messages
 
 #define NO_SHADING          128
+#define SHOOT_SHADING       10
 #define LAMP_ON_SHADING     12
 #define EXPLOSION_SHADING   52
 
@@ -207,7 +208,7 @@ void jsprintf (const char *msg, ...);
 #define GS_NEEDCOORD      0
 #define GS_FIRSTTIME      1
 #define GS_COORDFOUND     2
-#define GS_NO_MORE      ` 3
+#define GS_NO_MORE        3
 
 #define GOLDIE_MAX_SPAWNS       10              // max number of spawn points for Goldstern
 #define MIN_GOLDIE_FIRST_WAIT   (5 * 60)        // min wait time for FIRST goldstern (5 Secs)
@@ -702,6 +703,118 @@ enum keytypes
 };
 
 
+enum objclasstype
+{
+    nothing,
+    playerobj,
+    inertobj,
+    fixup_inertobj,
+    deadobj,
+
+    //
+    // Start of ordered list for ActorInfoMsg[] for attacking actor REBA messages
+    //
+    rentacopobj,
+    hang_terrotobj,
+    gen_scientistobj,
+    podobj,
+    electroobj,
+    electrosphereobj,
+    proguardobj,
+    genetic_guardobj,
+    mutant_human1obj,
+    mutant_human2obj,
+    lcan_wait_alienobj,
+    lcan_alienobj,
+    scan_wait_alienobj,
+    scan_alienobj,
+    gurney_waitobj,
+    gurneyobj,
+    liquidobj,
+    swatobj,
+    goldsternobj,
+    gold_morphobj,
+    volatiletransportobj,
+    floatingbombobj,
+    rotating_cubeobj,
+
+    spider_mutantobj,
+    breather_beastobj,
+    cyborg_warriorobj,
+    reptilian_warriorobj,
+    acid_dragonobj,
+    mech_guardianobj,
+
+    final_boss1obj,
+    final_boss2obj,
+    final_boss3obj,
+    final_boss4obj,
+
+    blakeobj,
+
+    crate1obj,
+    crate2obj,
+    crate3obj,
+
+    green_oozeobj,
+    black_oozeobj,
+    green2_oozeobj,
+    black2_oozeobj,
+    podeggobj,
+
+    morphing_spider_mutantobj,
+    morphing_reptilian_warriorobj,
+    morphing_mutanthuman2obj,
+
+    SPACER1_OBJ,
+
+    electroshotobj,   // NON-HITPOINT objects
+    post_barrierobj,
+    arc_barrierobj,
+    vpost_barrierobj,
+    vspike_barrierobj,
+    goldmorphshotobj,
+
+    security_lightobj,
+    explosionobj,
+    steamgrateobj,
+    steampipeobj,
+
+    liquidshotobj,
+
+    lcanshotobj,
+    podshotobj,
+    scanshotobj,
+    dogshotobj,
+    mut_hum1shotobj,
+
+    ventdripobj,
+    playerspshotobj,
+    flickerlightobj,
+
+    plasma_detonatorobj,
+    plasma_detonator_reserveobj,
+
+    grenadeobj,
+    bfg_shotobj,
+    bfg_explosionobj,
+    pd_explosionobj,
+
+    spider_mutantshotobj,
+    breather_beastshotobj,
+    cyborg_warriorshotobj,
+    reptilian_warriorshotobj,
+    acid_dragonshotobj,
+    mech_guardianshotobj,
+    final_boss2shotobj,
+    final_boss4shotobj,
+
+    doorexplodeobj,                 // door explosion_anim actor
+    gr_explosionobj,
+    gold_morphingobj,
+};
+
+
 enum enemytypes
 {
     en_rentacop,    // Actors with hitpoints (normal actors)
@@ -820,12 +933,20 @@ typedef struct objstruct
     fixed       transx,transy;    // in global coord
 
     int16_t     hitpoints;
-    byte        ammo;
+    byte        ammo;           // also holds barrier state (eg. bt_ON)
     byte        lighting;
     uint16_t    linc;
     int16_t     angle;
     int32_t     speed;
 
+    //
+    // TODO: these members are used to hold the memory addresses
+    // of doors and statics, but that can probably be changed
+    // to the index in doorobjlist/statobjlist
+    //
+    // otherwise they should probably be changed to intptr_t/uintptr_t
+    // to guarantee they'll be large enough to hold a full memory address
+    //
     int16_t     temp1,temp2;
     uint16_t    temp3;          // holds 'last door used' by 'smart' actors
 
@@ -836,8 +957,11 @@ typedef struct objstruct
 } objtype;
 
 
-#define SF_ROTATE    0x01
-#define SF_PAINFRAME 0x02
+enum stateflags
+{
+    SF_ROTATE = 0x01,
+    SF_PAIN   = 0x02,
+};
 
 typedef struct statestruct
 {
@@ -934,8 +1058,8 @@ typedef struct
 
 typedef struct
 {
-    byte tilex,tiley;
-    byte on;
+    tilecoord_t coord;
+    byte        on;
 } barrier_t;
 
 
@@ -1242,6 +1366,7 @@ typedef struct
 
 
 #include "3d_act1.h"
+#include "3d_act2.h"
 #include "3d_agent.h"
 #include "3d_draw.h"
 #include "3d_game.h"
@@ -1251,6 +1376,7 @@ typedef struct
 #include "3d_scale.h"
 #include "3d_state.h"
 #include "3d_utils.h"
+#include "states.h"
 
 
 /*
@@ -1341,199 +1467,6 @@ bool  DebugKeys (void);
 /*
 =============================================================================
 
-                        3D_ACT2 DEFINITIONS
-
-=============================================================================
-*/
-
-#define BARRIER_STATE(obj) ((obj)->ammo)
-
-#define InitSmartAnim(obj,ShapeNum,StartOfs, MaxOfs,AnimType, AnimDir)      \
-        InitSmartSpeedAnim(obj,ShapeNum,StartOfs,MaxOfs,AnimType,AnimDir,7)
-
-
-extern  bool      noShots;
-extern  int       detonators_spawned;
-extern  int       starthitpoints[NUMDIFFICULTY][NUMHITENEMIES];
-extern  unsigned  MorphClass[];
-extern  unsigned  scanvalue;
-
-extern  statetype s_ofs_bounce;
-
-extern  statetype s_ofs_esphere_death1;
-extern  statetype s_ofs_ouch;
-
-extern  statetype s_ofs_static;
-
-extern  statetype s_rent_die1;
-extern  statetype s_ofcdie1;
-extern  statetype s_swatdie1;
-extern  statetype s_prodie1;
-extern  statetype s_proshoot1;
-
-extern  statetype s_rent_chase1;
-extern  statetype s_ofcchase1;
-extern  statetype s_prochase1;
-extern  statetype s_swatchase1;
-
-extern  statetype s_rent_pain;
-extern  statetype s_ofcpain;
-extern  statetype s_propain;
-extern  statetype s_swatpain;
-
-extern  statetype s_hold;
-
-extern  statetype s_swatwounded1;
-
-extern  statetype s_terrot_wait;
-extern  statetype s_terrot_seek1;
-
-extern  statetype s_ofs_stand;
-extern  statetype s_ofs_chase1;
-extern  statetype s_ofs_pain;
-extern  statetype s_ofs_die1;
-extern  statetype s_ofs_pod_death1;
-extern  statetype s_ofs_pod_ouch;
-extern  statetype s_ofs_attack1;
-
-extern  statetype s_electro_appear1;
-extern  statetype s_electro_chase1;
-extern  statetype s_electro_ouch;
-extern  statetype s_electro_shoot1;
-extern  statetype s_electro_die1;
-
-extern  statetype s_liquid_wait;
-extern  statetype s_liquid_move;
-extern  statetype s_liquid_rise1;
-extern  statetype s_liquid_shoot1;
-extern  statetype s_liquid_ouch;
-extern  statetype s_liquid_shot;
-extern  statetype s_liquid_die1;
-extern  statetype s_liquid_shot_exp1;
-
-extern  statetype s_goldstand;
-extern  statetype s_goldpath1;
-extern  statetype s_goldpain;
-extern  statetype s_goldshoot1;
-extern  statetype s_goldchase1;
-extern  statetype s_goldwarp_it;    // Warp In w/button pressing
-extern  statetype s_goldwarp_out1;
-extern  statetype s_goldwarp_in1;
-
-extern  statetype s_goldmorph1;
-extern  statetype s_goldmorph2;
-extern  statetype s_goldmorph3;
-extern  statetype s_goldmorph4;
-extern  statetype s_goldmorph5;
-extern  statetype s_goldmorph6;
-extern  statetype s_goldmorph7;
-extern  statetype s_goldmorph8;
-
-extern  statetype s_mgold_chase1;
-extern  statetype s_mgold_chase2;
-extern  statetype s_mgold_chase3;
-extern  statetype s_mgold_chase4;
-
-extern  statetype s_mgold_shoot1;
-extern  statetype s_mgold_shoot2;
-extern  statetype s_mgold_shoot3;
-extern  statetype s_mgold_shoot4;
-
-extern  statetype s_mgold_pain;
-
-extern  statetype s_security_light;
-
-extern  statetype s_scout_path1;
-extern  statetype s_scout_path2;
-extern  statetype s_scout_path3;
-extern  statetype s_scout_path4;
-extern  statetype s_scout_pain;
-extern  statetype s_scout_run;
-extern  statetype s_scout_run2;
-extern  statetype s_scout_run3;
-extern  statetype s_scout_run4;
-extern  statetype s_scout_die1;
-extern  statetype s_scout_stand;
-extern  statetype s_scout_dead;
-
-extern  statetype s_explosion1;
-
-extern  statetype s_steamgrate;
-extern  statetype s_vital;
-
-extern  statetype s_vital_ouch;
-extern  statetype s_vital_die;
-extern  statetype s_vital_die1;
-extern  statetype s_vital_die2;
-extern  statetype s_vital_die3;
-extern  statetype s_vital_die4;
-extern  statetype s_vital_die5;
-extern  statetype s_vital_die6;
-extern  statetype s_vital_die7;
-extern  statetype s_vital_die8;
-
-extern  statetype s_ooze_chase;
-extern  statetype s_vpost_barrier;
-extern  statetype s_spike_barrier;
-
-extern  statetype s_barrier_transition;
-extern  statetype s_barrier_shutdown;
-
-
-void     MakeFakeStatic (objtype *obj);
-void     UnmakeFakeStatic (objtype *obj);
-
-void     T_PainThink (objtype *obj);
-void     T_ExplodeScout (objtype *obj);
-
-void     T_Security (objtype *obj);
-
-void     T_ChangeShape (objtype *obj);
-void     T_MakeOffset (objtype *obj);
-void     T_LiquidStand (objtype *obj);
-
-void     PlaceTowardPlayer (objtype *obj);
-
-void     T_Seek (objtype *obj);
-
-void     SpawnProjectile (objtype *shooter, int obclass);
-void     SpawnStand (int which, int tilex, int tiley, int dir);
-void     SpawnPatrol (int which, int tilex, int tiley, int dir);
-
-int      IntSqrt (int32_t va);
-unsigned CalcDistance (unsigned x1, unsigned y1, unsigned x2, unsigned y2);
-
-void     T_Hit (objtype *obj);
-void     SpawnOffsetObj (int which, int tilex, int tiley);
-
-void     InitSmartAnimStruct (objtype *obj, unsigned ShapeNum, byte StartOfs, byte MaxOfs, int AnimType, int AnimDir);
-bool     AnimateOfsObj (objtype *obj);
-void     AdvanceAnimREV (objtype *obj);
-void     AdvanceAnimFWD (objtype *obj);
-
-void     SpawnCusExplosion( fixed x, fixed y, unsigned StartFrame, unsigned NumFrames, unsigned Delay, unsigned Class);
-void     T_SpawnExplosion (objtype *obj);
-void     T_ExplodeDamage (objtype *obj);
-
-void     ExplodeRadius (objtype *obj, int damage, bool damageplayer);
-
-void     SpawnBarrier (int which, int tilex, int tiley, bool OnOff);
-void     ToggleBarrier (objtype *obj);
-
-void     InitAnim (objtype *obj, unsigned ShapeNum, byte StartOfs, byte MaxOfs, int AnimType, int AnimDir, unsigned Delay, unsigned WaitDelay);
-
-objtype  *FindObj (int which, int tilex, int tiley);
-objtype  *FindHiddenOfs (int which);
-void     SpawnHiddenOfs (int which, int tilex, int tiley);
-objtype  *MoveHiddenOfs (int which_class, int new_class, fixed x, fixed y);
-
-void     CheckForSpecialTile (objtype *obj, int tilex, int tiley);
-void     DropCargo (objtype *obj);
-
-
-/*
-=============================================================================
-
                         3D_TEXT DEFINITIONS
 
 =============================================================================
@@ -1615,6 +1548,7 @@ extern  char  pd_donthaveany[];
 extern  char  pd_no_computer[];
 extern  char  pd_floornotlocked[];
 
+extern  const char  *dki_msg;
 extern  const char  *computing;
 extern  const char  *int_xx;
 

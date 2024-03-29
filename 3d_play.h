@@ -35,118 +35,6 @@ enum objactivetype
 };
 
 
-enum objclasstype
-{
-    nothing,
-    playerobj,
-    inertobj,
-    fixup_inertobj,
-    deadobj,
-
-    //
-    // Start of ordered list for ActorInfoMsg[] for attacking actor REBA messages
-    //
-    rentacopobj,
-    hang_terrotobj,
-    gen_scientistobj,
-    podobj,
-    electroobj,
-    electrosphereobj,
-    proguardobj,
-    genetic_guardobj,
-    mutant_human1obj,
-    mutant_human2obj,
-    lcan_wait_alienobj,
-    lcan_alienobj,
-    scan_wait_alienobj,
-    scan_alienobj,
-    gurney_waitobj,
-    gurneyobj,
-    liquidobj,
-    swatobj,
-    goldsternobj,
-    gold_morphobj,
-    volatiletransportobj,
-    floatingbombobj,
-    rotating_cubeobj,
-
-    spider_mutantobj,
-    breather_beastobj,
-    cyborg_warriorobj,
-    reptilian_warriorobj,
-    acid_dragonobj,
-    mech_guardianobj,
-
-    final_boss1obj,
-    final_boss2obj,
-    final_boss3obj,
-    final_boss4obj,
-
-    blakeobj,
-
-    crate1obj,
-    crate2obj,
-    crate3obj,
-
-    green_oozeobj,
-    black_oozeobj,
-    green2_oozeobj,
-    black2_oozeobj,
-    podeggobj,
-
-    morphing_spider_mutantobj,
-    morphing_reptilian_warriorobj,
-    morphing_mutanthuman2obj,
-
-    SPACER1_OBJ,
-
-    electroshotobj,   // NON-HITPOINT objects
-    post_barrierobj,
-    arc_barrierobj,
-    vpost_barrierobj,
-    vspike_barrierobj,
-    goldmorphshotobj,
-
-    security_lightobj,
-    explosionobj,
-    steamgrateobj,
-    steampipeobj,
-
-    liquidshotobj,
-
-    lcanshotobj,
-    podshotobj,
-    scanshotobj,
-    dogshotobj,
-    mut_hum1shotobj,
-
-    ventdripobj,
-    playerspshotobj,
-    flickerlightobj,
-
-    plasma_detonatorobj,
-    plasma_detonator_reserveobj,
-
-    grenadeobj,
-    bfg_shotobj,
-    bfg_explosionobj,
-    pd_explosionobj,
-
-    spider_mutantshotobj,
-    breather_beastshotobj,
-    cyborg_warriorshotobj,
-    reptilian_warriorshotobj,
-    acid_dragonshotobj,
-    mech_guardianshotobj,
-    final_boss2shotobj,
-    final_boss4shotobj,
-
-    doorexplodeobj,                 // door explosion_anim actor
-    gr_explosionobj,
-    gold_morphingobj,
-};
-
-
 extern  int         playstate;
 
 extern  int         lastmusicoffset;
@@ -160,6 +48,8 @@ extern  objtype     dummyobj;
 extern  objtype     *actorat[MAPSIZE][MAPSIZE];
 extern  objtype     *deadguys[MAXACTORS];
 extern  int         numdeadguys;
+
+extern  int         objcount;
 
 extern  int         bordertime;
 

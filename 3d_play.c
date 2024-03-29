@@ -1634,13 +1634,13 @@ void PlayLoop (void)
 
             DoActor (obj);
         }
-#ifdef NOTYET
+
         if (NumEAWalls)
             CheckSpawnEA ();
 
         if (!GoldsternInfo.GoldSpawned && GoldsternInfo.SpawnCnt)
             CheckSpawnGoldstern ();
-#endif
+
         UpdatePaletteShifts ();
 
         ThreeDRefresh ();

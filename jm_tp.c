@@ -164,10 +164,10 @@ piShapeInfo piShapeTable[] =
     {H_PPIC,pis_pic},               // 54 - M key
     {MOUSEPIC,pis_pic},             // 55 - Mouse Pad
 
-    {SPR_OFC_W1_8,pis_scaled},      // 56 - gen_scientist, walking
-    {SPR_OFC_W2_8,pis_scaled},      // 57 - gen_scientist, walking
-    {SPR_OFC_W3_8,pis_scaled},      // 58 - gen_scientist, walking
-    {SPR_OFC_W4_8,pis_scaled},      // 59 - gen_scientist, walking
+    {SPR_BIO_W1_8,pis_scaled},      // 56 - gen_scientist, walking
+    {SPR_BIO_W2_8,pis_scaled},      // 57 - gen_scientist, walking
+    {SPR_BIO_W3_8,pis_scaled},      // 58 - gen_scientist, walking
+    {SPR_BIO_W4_8,pis_scaled},      // 59 - gen_scientist, walking
 
     {SPR_POD_WALK1,pis_scaled},     // 60 - podalien - walking
     {SPR_POD_WALK2,pis_scaled},     // 61 - podalien - walking

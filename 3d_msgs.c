@@ -640,6 +640,13 @@ char *ActorInfoMsg[] =
 };
 
 
+const char *dki_msg = "^FC39  YOU JUST SHOT AN\r"
+                      "     INFORMANT!\r"
+                      "^FC79 ONLY SHOOT BIO-TECHS\r"
+                      "  THAT SHOOT AT YOU!\r"
+                      "^FC19     DO NOT SHOOT\r"
+                      "     INFORMANTS!!\r";
+
 const char *computing = "Computing...";
 const char *int_xx = "^XX";
 

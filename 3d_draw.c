@@ -1050,8 +1050,8 @@ int CalcRotate (objtype *obj)
     while (angle < 0)
         angle += ANG360;
 
-    if (obj->state->flags & SF_PAINFRAME)     // 2 rotation pain frame
-        return 4 * (angle / ANG180);          // seperated by 3 (art layout...)
+    if (obj->state->flags & SF_PAIN)        // 2 rotation pain frame
+        return 4 * (angle / ANG180);        // seperated by 3 (art layout...)
 
     return angle / ANG45;
 }

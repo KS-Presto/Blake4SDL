@@ -155,7 +155,7 @@ int         anglefrac;
 
 objtype     *lastattacker;
 
-bool        PlayerInvisable;
+bool        PlayerInvisible;
 
 char        LocationText[MAX_LOCATION_DESC_LEN];
 
@@ -261,7 +261,6 @@ int     ShowRatio (int bx, int by, int px, int py, int32_t total, int32_t perc, 
 void    SpawnPlayer (int tilex, int tiley, int dir);
 void    Thrust (int angle, int32_t speed);
 bool    TryMove (objtype *obj, unsigned size);
-bool    ClipMove (objtype *obj, fixed xmove, fixed ymove);
 
 void    SocketToggle (bool TurnOn);
 void    CheckStatsBonus (void);
@@ -2646,10 +2645,9 @@ unsigned ValidAreaTile (unsigned area)
 
 void Cmd_Fire (void)
 {
-#ifdef NOTYET
 	if (noShots)
 		return;
-#endif
+
     if (gamestate.weapon == wp_autocharge && gamestate.weapon_wait)
         return;
 
@@ -2796,9 +2794,7 @@ void Cmd_Use (void)
                 //
                 case OFF_SWITCH:
                 case ON_SWITCH:
-#ifdef NOTYET
                     ActivateWallSwitch (iconnum,checkx,checky);
-#endif
                     break;
 
                 //
@@ -4507,14 +4503,14 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 void GunAttack (objtype *obj)
 {
     objtype *check,*closest,*oldclosest;
-//    int     damage;
-//    int     dx,dy,dist;
+    int     damage;
+    int     dx,dy,dist;
     int32_t viewdist;
     bool    skip = false;
-#ifdef NOTYET
+
     if (gamestate.weapon != wp_autocharge)
         MakeAlertNoise (obj);
-#endif
+
     switch (gamestate.weapon)
     {
         case wp_autocharge:
@@ -4570,7 +4566,7 @@ void GunAttack (objtype *obj)
         if (CheckLine(closest,player))
             break;
     }
-#ifdef NOTYET
+
     //
     // hit something
     //
@@ -4591,7 +4587,6 @@ void GunAttack (objtype *obj)
     }
 
     DamageActor (closest,damage,player);
-#endif
 }
 
 
@@ -4635,14 +4630,14 @@ void T_Attack (objtype *obj)
 {
     atkinf_t *cur;
     int      i;
-#ifdef NOTYET
-    if (noShots)  // TODO: something related to goldfire morphing
+
+    if (noShots)
     {
         obj->state = &s_player;
         gamestate.attackframe = gamestate.weaponframe = 0;
         return;
     }
-#endif
+
     if (gamestate.weapon == wp_autocharge)
         UpdateAmmoMsg ();
 
@@ -4802,17 +4797,13 @@ void T_Attack (objtype *obj)
                     }
 
                     SD_PlaySound (ATKGRENADESND);
-#ifdef NOTYET
                     SpawnProjectile (obj,grenadeobj);
                     MakeAlertNoise (obj);
-#endif
                 }
                 break;
 
             case 7:
-#ifdef NOTYET
                 TryDropPlasmaDetonator ();
-#endif
                 DrawAmmo (false);
                 break;
 
@@ -4845,10 +4836,8 @@ void T_Attack (objtype *obj)
                     }
 
                     SD_PlaySound (ATKIONCANNONSND);    // JTR - this needs to change
-#ifdef NOTYET
                     SpawnProjectile (obj,bfg_shotobj);
                     MakeAlertNoise (obj);
-#endif
                 }
                 break;
 
@@ -5025,7 +5014,6 @@ void SW_HandleActor (objtype *obj)
 
 void SW_HandleStatic (statobj_t *stat, int tilex, int tiley)
 {
-#ifdef NOTYET
     fixed x,y;
 
     switch (stat->itemnumber)
@@ -5041,7 +5029,6 @@ void SW_HandleStatic (statobj_t *stat, int tilex, int tiley)
             stat->itemnumber = bo_nothing;
             break;
     }
-#endif
 }
 
 
@@ -5074,7 +5061,6 @@ enum what_is_it
 
 bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
 {
-#ifdef NOTYET
     int       WhatItIs;
     objtype   *obj;
     statobj_t *stat;
@@ -5174,7 +5160,7 @@ bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
         case wit_NOTHING:
             return true;
     }
-#endif
+
     return false;
 }
 

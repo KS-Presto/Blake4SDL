@@ -101,7 +101,7 @@ stattype statinfo[] =
     {SPR_LCAN_ALIEN_EMPTY,block},   // 53 Large Alien Canister
     {SPR_SCAN_ALIEN_EMPTY,block},   // 54 Small Alien Canister
 
-    {SPR_OFC_DEAD},                 // 55 Dead Gen Sci.
+    {SPR_BIO_DEAD},                 // 55 Dead Gen Sci.
 
     {0},                            // 56 Spacer
 
@@ -609,10 +609,8 @@ void PlaceItemNearTile (int itemtype, int tilex, int tiley)
 
 void ExplodeStatics (int tilex, int tiley)
 {
-#ifdef NOTYET
-    statobj_t *statobj,*spot;
-    objtype   *obj;
-    int       ydiff,xdiff;
+    statobj_t *spot;
+    int       dx,dy;
     fixed     x,y;
     bool      remove;
 
@@ -620,10 +618,10 @@ void ExplodeStatics (int tilex, int tiley)
     {
         if (spot->shapenum != -1)
         {
-            ydiff = abs(spot->tiley - tiley);
-            xdiff = abs(spot->tilex - tilex);
+            dx = abs(spot->tilex - tilex);
+            dy = abs(spot->tiley - tiley);
 
-            if (xdiff < 2 && ydiff < 2)
+            if (dx < 2 && dy < 2)
             {
                 remove = false;
 
@@ -655,7 +653,6 @@ void ExplodeStatics (int tilex, int tiley)
             }
         }
     }
-#endif
 }
 
 
@@ -1172,7 +1169,7 @@ void BlockDoorOpen (int door)
 
 }
 
-#ifdef NOTYET
+
 /*
 =====================
 =
@@ -1223,16 +1220,16 @@ void TryBlastDoor (int door)
 void BlastNearDoors (int tilex, int tiley)
 {
     byte door;
-    char *doorptr;
+    byte *doorptr;
     int  x,y;
 
-    doorptr = (char *)&tilemap[tilex][tiley];
+    doorptr = &tilemap[tilex][tiley];
 
     for (x = -1; x < 2; x++)
     {
         for (y = -64; y < 128; y += 64)
         {
-            door = *(doorptr + x + y)
+            door = *(doorptr + x + y);
 
             if (door & 0x80)
             {
@@ -1243,7 +1240,7 @@ void BlastNearDoors (int tilex, int tiley)
         }
     }
 }
-#endif
+
 
 /*
 =====================
@@ -1257,24 +1254,22 @@ void BlastNearDoors (int tilex, int tiley)
 
 void DropPlasmaDetonator (void)
 {
-#ifdef NOTYET
     objtype *obj;
 
-    obj = MoveHiddenOfs(plasma_detonator_reserveobj,plasma_detonatorobj,player->x,player->y)
+    obj = MoveHiddenOfs(plasma_detonator_reserveobj,plasma_detonatorobj,player->x,player->y);
 
     if (obj)
     {
         obj->flags |= FL_SHOOTABLE;
 
         DISPLAY_TIMED_MSG (pd_dropped,MP_DOOR_OPERATE,MT_GENERAL);
-        SD_PlaySound (ROBOT_SERVOSND);  // jdebug-This sound will probly change.
+        SD_PlaySound (ROBOT_SERVOSND);
         TakePlasmaDetonator (1);
 
         return;
     }
 
     Quit ("Could not find Fission/Plasma Detonator reserve object!");
-#endif
 }
 
 
@@ -1290,7 +1285,6 @@ void DropPlasmaDetonator (void)
 
 void TryDropPlasmaDetonator (void)
 {
-#ifdef NOTYET
     #define MAX_RANGE_DIST    2
 
     objtype *obj;
@@ -1336,7 +1330,6 @@ void TryDropPlasmaDetonator (void)
     }
     else
         DropPlasmaDetonator ();
-#endif
 }
 
 
@@ -1881,7 +1874,6 @@ void OperateConcession (int concession)
 //
 // TODO: these functions really belong in 3d_act2.c
 //
-#ifdef NOTYET
 /*
 =================
 =
@@ -1892,19 +1884,19 @@ void OperateConcession (int concession)
 
 void CheckSpawnEA (void)
 {
-    objtype  temp,*check;
+    objtype  temp,*check,*newobj;
     int      i;
     int      nx,ny;
     word     *map;
     unsigned areanumber;
-    char     ofs,tx,ty,xdiff,ydiff;
+    int      ofs;
 
     if (objcount > MAXACTORS - 8)
         return;
 
     for (i = 0; i < NumEAWalls; i++)
     {
-        *map = &MAPSPOT(eaList[i].tilex,eaList[i].tiley,1);
+        map = &MAPSPOT(eaList[i].tilex,eaList[i].tiley,1);
 
         //
         // limit the number of aliens spawned by each outlet
@@ -1977,15 +1969,15 @@ void CheckSpawnEA (void)
         //
         usedummy = true;
 
-        SpawnStand (en_electro_alien,temp.tilex,temp.tiley,0);
+        newobj = SpawnStand(en_electro_alien,temp.tilex,temp.tiley,0);
         SD_PlaySound (ELECAPPEARSND);
         usedummy = false;
 
-        if (new != &dummyobj)
+        if (newobj != &dummyobj)
         {
             eaList[i].aliens_out++;
-            new->temp2 = i;
-            PlaySoundLocActor (ELECAPPEARSND,new);
+            newobj->temp2 = i;
+            PlaySoundLocActor (ELECAPPEARSND,newobj);
         }
 
         //
@@ -2089,4 +2081,3 @@ void FindNewGoldieSpawnSite (void)
         break;
     }
 }
-#endif

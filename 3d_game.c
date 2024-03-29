@@ -6,12 +6,6 @@
 #define LOCATION_TEXT_COLOR 0xaf
 #define ATABLEMAX           15
 
-//
-// TODO: 3D_ACT2.C
-//
-int detonators_spawned;
-unsigned scanvalue;
-
 #if IN_DEVELOPMENT
 int             db_count;
 #ifdef DEBUG_STATICS
@@ -325,9 +319,7 @@ void ScanInfoPlane (void)
     word           *start;
     sci_mCacheInfo *ci;
     scientist_t    *st;
-#ifdef NOTYET
     objtype        *newobj = NULL;
-#endif
     bool           gottextures = false;
 #ifdef CEILING_FLOOR_COLORS
     bool           gotcolors = false;
@@ -524,8 +516,8 @@ void ScanInfoPlane (void)
                 {
                     SpawnOffsetObj (en_crate2,x,y);
 
-                    new->temp2 = ExpCrateShapes[tile - 450];
-                    new->temp3 = (uint16_t)ReserveStatic();
+                    newobj->temp2 = ExpCrateShapes[tile - 450];
+                    newobj->temp3 = (uint16_t)ReserveStatic();
 
                     if (tile >= 457 && tile <= 460)
                         tile = (tile - 457) + bo_money_bag;
@@ -712,12 +704,12 @@ void ScanInfoPlane (void)
                 case 424:    // bo_coin5
                     SpawnStatic (x,y,tile - 315);
                     break;
-#ifdef NOTYET
+
                 case 486:    // Plasma Detonator
                     SpawnHiddenOfs (en_plasma_detonator_reserve,x,y);
                     SpawnStatic (x,y,486 - 375);
                     break;
-#endif
+
                 case 487:    // Door rubble
                 case 488:    // AutoMapper Bonus #1
                 case 489:    // BonziTree
@@ -970,7 +962,7 @@ void ScanInfoPlane (void)
                 case 115:
                     SpawnPatrol (en_rentacop,x,y,tile - 112);
                     break;
-
+#endif
                 //
                 // Bio-tech
                 //
@@ -992,7 +984,7 @@ void ScanInfoPlane (void)
                 case 117:
                 case 118:
                 case 119:
-                    SpawnStand (en_gen_scientist,x,y,tile - 116);
+                    newobj = SpawnStand(en_gen_scientist,x,y,tile - 116);
 
                     if (newobj->flags & FL_INFORMANT)
                     {
@@ -1019,7 +1011,7 @@ void ScanInfoPlane (void)
                 case 121:
                 case 122:
                 case 123:
-                    SpawnPatrol (en_gen_scientist,x,y,tile - 120);
+                    newobj = SpawnPatrol(en_gen_scientist,x,y,tile - 120);
 
                     if (newobj->flags & FL_INFORMANT)
                     {
@@ -1027,7 +1019,7 @@ void ScanInfoPlane (void)
                         newobj = NULL;
                     }
                     break;
-
+#ifdef NOTYET
                 //
                 // PRO Guard
                 //
@@ -1933,9 +1925,9 @@ void ScanInfoPlane (void)
             }
 #ifdef NOTYET
             //
-            // if "new" is an object that gives points, add those points to level total
+            // if newobj is an object that gives points, add those points to level total
             //
-            // "new" is cleared to keep from re-adding points from the previous actor
+            // newobj is cleared to keep from re-adding points from the previous actor
             //
             if (newobj && newobj->obclass >= rentacopobj && newobj->obclass < crate1obj)
             {
@@ -2317,13 +2309,12 @@ void SetupGameLevel (void)
             }
         }
     }
-#ifdef NOTYET
+
 //
 // check and make sure a detonator is in a 'locked' level
 //
     if (gamestate.mapon < 20 && !detonators_spawned && gamestuff.level[gamestate.mapon + 1].locked)
         Quit ("No Fission/Plasma Detonator in level! Go put one in the map PAL!");
-#endif
 }
 
 

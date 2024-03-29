@@ -226,6 +226,8 @@ extern  int          pwalldir,pwalldist;
 void      InitStatObjList (void);
 statobj_t *ReserveStatic (void);
 void      SpawnStatic (int tilex, int tiley, int type);
+void      PlaceItemType (int itemtype, int tilex, int tiley);
+void      PlaceItemNearTile (int itemtype, int tilex, int tiley);
 void      InitAreas (void);
 void      ConnectAreas (void);
 void      InitDoorObjList (void);
@@ -252,7 +254,7 @@ void      DropPlasmaDetonator (void);
 void      TryDropPlasmaDetonator (void);
 void      BlockDoorOpen (int door);
 void      BlastNearDoors (int tilex, int tiley);
-void      TryBlastDoor (char door);
+void      TryBlastDoor (int door);
 
 statobj_t *FindStatic (int tilex, int tiley);
 statobj_t *UseReservedStatic (int itemtype, int tilex, int tiley);

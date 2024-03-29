@@ -535,10 +535,7 @@ void LoadLevel (int levelnum)
 {
     bool      oldloaded = loadedgame;
     int32_t   oldchecksum,size;
-    objtype   *newobj;
-#ifdef NOTYET
-    objtype   *obj;
-#endif
+    objtype   *newobj,*obj;
     FILE      *file;
     int       x,y;
     int       mod;
@@ -674,7 +671,6 @@ void LoadLevel (int levelnum)
 
     free (temp);
 
-#ifdef NOTYET
     //
     //  re-establish links to barrier switches
     //
@@ -692,7 +688,7 @@ void LoadLevel (int levelnum)
     }
 
     ConnectBarriers ();
-#endif
+
     //
     // read all sorts of stuff
     //
@@ -709,11 +705,9 @@ void LoadLevel (int levelnum)
     ReadInfo (false,&pwalldist,sizeof(pwalldist),file);
     ReadInfo (true,TravelTable,sizeof(TravelTable),file);
     ReadInfo (true,&ConHintList,sizeof(ConHintList),file);
-#ifdef NOTYET
     ReadInfo (true,eaList,sizeof(eaList),file);
     ReadInfo (true,&GoldsternInfo,sizeof(GoldsternInfo),file);
     ReadInfo (true,&GoldieList,sizeof(GoldieList),file);
-#endif
     ReadInfo (false,gamestate.barrier_table,sizeof(gamestate.barrier_table),file);
     ReadInfo (false,&gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators),file);
 
@@ -922,11 +916,9 @@ void SaveLevel (int levelnum)
     cksize += WriteInfo(false,&pwalldist,sizeof(pwalldist),file);
     cksize += WriteInfo(true,TravelTable,sizeof(TravelTable),file);
     cksize += WriteInfo(true,&ConHintList,sizeof(ConHintList),file);
-#ifdef NOTYET
     cksize += WriteInfo(true,eaList,sizeof(eaList),file);
     cksize += WriteInfo(true,&GoldsternInfo,sizeof(GoldsternInfo),file);
     cksize += WriteInfo(true,&GoldieList,sizeof(GoldieList),file);
-#endif
     cksize += WriteInfo(false,gamestate.barrier_table,sizeof(gamestate.barrier_table),file);
     cksize += WriteInfo(false,&gamestate.plasma_detonators,sizeof(gamestate.plasma_detonators),file);
 
