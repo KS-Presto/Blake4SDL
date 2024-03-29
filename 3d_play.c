@@ -1263,11 +1263,10 @@ void DoActor (objtype *obj)
 
     if (!(obj->flags & FL_NEVERMARK))
     {
-        if (obj->flags & FL_NONMARK)
-        {
-            if (!actorat[obj->tilex][obj->tiley])
-                actorat[obj->tilex][obj->tiley] = obj;
-        }
+        if ((obj->flags & FL_NONMARK) && actorat[obj->tilex][obj->tiley])
+            return;
+
+        actorat[obj->tilex][obj->tiley] = obj;
     }
 }
 
