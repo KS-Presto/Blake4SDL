@@ -1675,15 +1675,7 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
             if (flags & fl_clearscback)
                 VW_Bar (x,y,64,64,bgcolor);
 
-            vbuf = VW_LockSurface(screen.buffer);
-
-            if (!vbuf)
-                Quit ("Unable to lock surface: %s\n",SDL_GetError());
-
             MegaSimpleScaleShape (x + 32,y + 32,64,shapenum,NO_SHADING);
-
-            VW_UnlockSurface (screen.buffer);
-            vbuf = NULL;
             break;
 
 #if NUMPICS

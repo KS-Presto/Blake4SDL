@@ -281,7 +281,15 @@ void MegaSimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, i
 
     viewheight = screen.height;
 
+    vbuf = VW_LockSurface(screen.buffer);
+
+    if (!vbuf)
+        Quit ("Unable to lock surface: %s\n",SDL_GetError());
+
     SimpleScaleShape (dispx,dispy,dispheight,shapenum,shade);
+
+    VW_UnlockSurface (screen.buffer);
+    vbuf = NULL;
 
     viewheight = oldviewheight;
 }
