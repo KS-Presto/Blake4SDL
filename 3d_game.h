@@ -4,19 +4,21 @@
 #define _3D_GAME_H_
 
 
-#define PlaySoundLocActor(obj)  PlaySoundLocGlobal((s),(obj)->x,(obj)->y)
-#define PlaySoundLocTile(s,x,y) PlaySoundLocGlobal ((s),((fixed)(x) << TILESHIFT) + TILECENTER,((fixed)(y) << TILESHIFT) + TILECENTER)
+#define PlaySoundLocActor(s,obj)  PlaySoundLocGlobal ((s),(obj)->x,(obj)->y)
+#define PlaySoundLocTile(s,x,y)   PlaySoundLocGlobal ((s),((fixed)(x) << TILESHIFT) + TILECENTER,((fixed)(y) << TILESHIFT) + TILECENTER)
 
 
 extern  int             db_count;
 extern  int             debug_bonus[2][800];
+extern  int             numenemy[gold_morphingobj];
+
 extern  fargametype     gamestuff;
 extern  tilecoord_t     GoldieList[GOLDIE_MAX_SPAWNS];
 extern  GoldsternInfo_t GoldsternInfo;
 
 extern  int             VitalsRemain,VitalsOnFloor;
 
-extern  eaWallInfo      eaList[];
+extern  eaWallInfo      eaList[MAXEAWALLS];
 extern  int             NumEAWalls,NumEASpawned;
 extern  bool            startgame,ingame,loadedgame;
 extern  gametype        gamestate;
