@@ -1643,11 +1643,6 @@ void ThreeDRefresh (void)
     memset (spotvis,false,sizeof(spotvis));
     spotvis[player->tilex][player->tiley] = true;
 
-    vbuf = VW_LockSurface(screen.buffer);
-
-    if (!vbuf)
-        Quit ("Unable to lock surface: %s\n",SDL_GetError());
-
 //
 // call any functions that may draw to a full screen
 //
@@ -1655,8 +1650,13 @@ void ThreeDRefresh (void)
     UpdateStatusBar ();
 
 //
-// offset the screenbuffer and draw to the viewport
+// get the screenbuffer pointer and offset it to draw to the viewport
 //
+    vbuf = VW_LockSurface(screen.buffer);
+
+    if (!vbuf)
+        Quit ("Unable to lock surface: %s\n",SDL_GetError());
+
     vbuf += screenofs;
 
     Setup3DView ();
