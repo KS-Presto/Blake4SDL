@@ -3747,6 +3747,11 @@ void Message (const char *string)
 =
 = Searches for an "^XX" and replaces with a null terminator
 =
+= KS: This will modify the message stored in grsegs, so beware
+= of any further problems caused by the lack of the special "^XX"
+= command in the message. It might be safer to duplicate the string
+= and modify that instead, so the original remains unchanged
+=
 ===================
 */
 
