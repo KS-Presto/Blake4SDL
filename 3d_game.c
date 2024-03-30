@@ -766,7 +766,7 @@ void ScanInfoPlane (void)
                 // Flickering light
                 //
                 case 79:
-                    SpawnOffsetObj (en_flickerlight,x,y);
+                    newobj = SpawnOffsetObj(en_flickerlight,x,y);
                     newobj->lighting = LAMP_ON_SHADING;
                     break;
 
