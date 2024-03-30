@@ -844,9 +844,9 @@ void DrawKeyPics (void)
     for (i = 0; i < NUMKEYS; i++)
     {
         if (gamestate.numkeys[i])
-            StatusDrawPic (120 + (i * 2),27,RED_KEYPIC + i);
+            StatusDrawPic (120 + (i * 16),27,RED_KEYPIC + i);
         else
-            StatusDrawPic (120 + (i * 2),27,NO_KEYPIC);
+            StatusDrawPic (120 + (i * 16),27,NO_KEYPIC);
     }
 }
 
