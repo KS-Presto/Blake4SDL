@@ -622,6 +622,7 @@ void LoadLevel (int levelnum)
     }
 
     free (maptable);
+    maptable = NULL;
 
     ReadInfo (true,areaconnect,sizeof(areaconnect),file);
     ReadInfo (true,areabyplayer,sizeof(areabyplayer),file);
@@ -845,6 +846,8 @@ void SaveLevel (int levelnum)
     //
     checksum = cksize = 0;
 
+    cksize += WriteInfo(true,tilemap,sizeof(tilemap),file);
+
     size = (mapwidth * mapheight) * sizeof(*maptable);
     maptable = SafeMalloc(size);
 
@@ -863,10 +866,11 @@ void SaveLevel (int levelnum)
         }
     }
 
-    free (maptable);
-
-    cksize += WriteInfo(true,tilemap,sizeof(tilemap),file);
     cksize += WriteInfo(true,maptable,size,file);
+
+    free (maptable);
+    maptable = NULL;
+
     cksize += WriteInfo(true,areaconnect,sizeof(areaconnect),file);
     cksize += WriteInfo(true,areabyplayer,sizeof(areabyplayer),file);
 
