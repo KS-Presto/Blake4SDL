@@ -1168,7 +1168,7 @@ bool MoveTrappedDiag (objtype *obj)
     //
     // don't mess with HORZs, VERTs, or normal DIAGs
     //
-    if (obj->trydir != en_diagsphere || ((obj->dir >> 1) << 1) != obj->dir)
+    if (obj->trydir != en_diagsphere || (obj->dir & 1))
         return false;
 
     //
@@ -3828,8 +3828,10 @@ int SelectPathDir (objtype *obj)
             //
             // turn clockwise
             //
-            if (--obj->dir < east)
+            if (obj->dir == east)
                 obj->dir = nodir - 1;
+            else
+                obj->dir--;
         }
         else
         {
