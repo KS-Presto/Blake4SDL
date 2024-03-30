@@ -1471,7 +1471,7 @@ bool DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MsgType
         StatusDrawPic (0,40,BRI_LIGHTPIC);  // TODO: check this
 
     if (strlen(Msg) > MSG_BUFFER_LEN)
-        Quit ("Message is too long!");
+        Quit ("Message \"%s\" is too long!",Msg);
 
     snprintf (gamestate.msg,sizeof(gamestate.msg),Msg);
 
@@ -1640,7 +1640,7 @@ void DisplayNoMoMsgs (void)
     defmsglen = strlen(default_msg);
     outmsg = SafeMalloc(defmsglen + 1);
 
-    snprintf (outmsg,defmsglen,default_msg);
+    snprintf (outmsg,defmsglen + 1,default_msg);
 
     //
     // find the food tokens substring
@@ -1665,9 +1665,9 @@ void DisplayNoMoMsgs (void)
         msglen = strlen(str);
 
         memcpy (&outmsg[defmsglen - msglen],str,msglen);
-
-        outmsg[defmsglen] = '\0';    // ensure it's null terminated
     }
+
+    outmsg[defmsglen] = '\0';    // ensure it's null terminated
 
     DisplayInfoMsg (outmsg,MP_max_val,0,MT_NOTHING);
 
