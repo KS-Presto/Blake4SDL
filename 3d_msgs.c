@@ -141,9 +141,9 @@ char SwitchNotActivateMsg[] =   "\r\r   WALL SWITCH NOT\r"
 char NoFoodTokens[] =   "\r\r  YOU DON'T HAVE ANY\r"
                         "     FOOD TOKENS!";
 
-char default_msg[] =    "\r    NO MESSAGES."
-                        "^FCA8\r    FOOD TOKENS:      "
-                        "                                 ";
+const char *default_msg = "\r    NO MESSAGES."
+                          "^FCA8\r    FOOD TOKENS:      "
+                          "                                 ";
 
 char needDetonator_msg[] = "\r\r^FC39 FIND THE DETONATOR!";
 

@@ -1593,7 +1593,12 @@ void UpdateInfoAreaClock (void)
 
 void DisplayNoMoMsgs (void)
 {
-    size_t len;
+    size_t     defmsglen,msglen;
+    const char *tokenstr = "FOOD TOKENS: ";
+    char       tokens[3],*tokenpos;
+    char       *outmsg;
+
+    *str = '\0';
 
     LastMsgPri = MP_min_val;
 
@@ -1630,13 +1635,43 @@ void DisplayNoMoMsgs (void)
     }
 
     //
-    // TODO: disgusting; refactor
+    // copy the default message to a buffer
     //
-    len = strlen(default_msg);
+    defmsglen = strlen(default_msg);
+    outmsg = SafeMalloc(defmsglen + 1);
 
-    snprintf (&default_msg[40],len - 40,"%-d%s",gamestate.tokens,str);
+    snprintf (outmsg,defmsglen,default_msg);
 
-    DisplayInfoMsg (default_msg,MP_max_val,0,MT_NOTHING);
+    //
+    // find the food tokens substring
+    //
+    tokenpos = strstr(outmsg,tokenstr);
+
+    if (!tokenpos)
+        Quit ("Default message has no \"%s\" sub-string!",tokenstr);
+
+    //
+    // insert the token count
+    //
+    snprintf (tokens,sizeof(tokens),"%-d",gamestate.tokens);
+
+    memcpy (&tokenpos[strlen(tokenstr)],tokens,strlen(tokens));
+
+    //
+    // copy any extra message to the output
+    //
+    if (*str)
+    {
+        msglen = strlen(str);
+
+        memcpy (&outmsg[defmsglen - msglen],str,msglen);
+
+        outmsg[defmsglen] = '\0';    // ensure it's null terminated
+    }
+
+    DisplayInfoMsg (outmsg,MP_max_val,0,MT_NOTHING);
+
+    free (outmsg);
 }
 
 
