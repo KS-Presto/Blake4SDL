@@ -4639,17 +4639,27 @@ void T_Player (objtype *obj)
 {
     CheckWeaponChange ();
 
-	if (gamestate.weapon == wp_autocharge)
-		UpdateAmmoMsg ();
+    if (gamestate.weapon == wp_autocharge)
+        UpdateAmmoMsg ();
+
+    if (tryDetonatorDelay > tics)
+        tryDetonatorDelay -= tics;
+    else
+        tryDetonatorDelay = 0;
 
     if (buttonstate[bt_use])
+    {
         Cmd_Use ();
+        SD_PlaySound (HITWALLSND);
+    }
 
     if (buttonstate[bt_attack] && !buttonheld[bt_attack])
         Cmd_Fire ();
 
     ControlMovement ();
-
+#ifdef NOTYET
+    HandleWeaponBounce ();
+#endif
     player->tilex = player->x >> TILESHIFT;
     player->tiley = player->y >> TILESHIFT;
 }
