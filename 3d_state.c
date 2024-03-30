@@ -703,12 +703,13 @@ void MoveObj (objtype *obj, fixed move)
     {
         if (areabyplayer[obj->areanumber])
         {
-            deltax = labs(obj->x - player->x);
-            deltay = labs(obj->y - player->y);
+            deltax = labs(newx - player->x);
+            deltay = labs(newy - player->y);
 
             if (deltax <= MINACTORDIST && deltay <= MINACTORDIST)
             {
                 PlayerIsBlocking (obj);
+
                 return;
             }
         }
