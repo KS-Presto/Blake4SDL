@@ -2040,7 +2040,7 @@ void SetupGameLevel (void)
         InitGoldsternInfo ();
     }
 
-    US_InitRndT (demoplayback || demorecord);
+    US_InitRndT (!(demoplayback || demorecord));
 
 //
 // load the level
