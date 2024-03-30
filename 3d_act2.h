@@ -61,5 +61,6 @@ objtype  *MoveHiddenOfs (int which_class, int new_class, fixed x, fixed y);
 
 void     CheckForSpecialTile (objtype *obj, int tilex, int tiley);
 void     DropCargo (objtype *obj);
+void     InitGoldsternInfo (void);
 
 #endif

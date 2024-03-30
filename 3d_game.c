@@ -311,15 +311,13 @@ void NewGame (int difficulty, int episode)
 void ScanInfoPlane (void)
 {
     int            x,y;
-#ifdef NOTYET
     int            obclass;
-#endif
     unsigned       tile;
     unsigned       tilehi,tilelo,block;
     word           *start;
     sci_mCacheInfo *ci;
     scientist_t    *st;
-    objtype        *newobj = NULL;
+    objtype        *newobj;
     bool           gottextures = false;
 #ifdef CEILING_FLOOR_COLORS
     bool           gotcolors = false;
@@ -338,6 +336,7 @@ void ScanInfoPlane (void)
     {
         for (x = 0; x < mapwidth; x++)
         {
+            newobj = NULL;
             tile = *start++;
 
             //
@@ -493,7 +492,7 @@ void ScanInfoPlane (void)
                         continue;
                     break;
             }
-#ifdef NOTYET
+
             //
             // special spawn coding for blastable crates
             //
@@ -502,7 +501,7 @@ void ScanInfoPlane (void)
 #if GAME_VERSION != SHAREWARE_VERSION
                 if (tile >= 468)
                 {
-                    SpawnOffsetObj (en_crate3,x,y);
+                    newobj = SpawnOffsetObj(en_crate3,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 468];
                     newobj->temp3 = STATICNUM(ReserveStatic());
@@ -514,7 +513,7 @@ void ScanInfoPlane (void)
                 }
                 else if (tile >= 450)
                 {
-                    SpawnOffsetObj (en_crate2,x,y);
+                    newobj = SpawnOffsetObj(en_crate2,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 450];
                     newobj->temp3 = STATICNUM(ReserveStatic());
@@ -525,7 +524,6 @@ void ScanInfoPlane (void)
                         tile = 0;
                 }
                 else
-#endif
 #if GAME_VERSION == SHAREWARE_VERSION
 #if IN_DEVELOPMENT
                      if (tile >= 450)
@@ -535,7 +533,7 @@ void ScanInfoPlane (void)
 #endif
                      if (tile >= 432)
                 {
-                    SpawnOffsetObj (en_crate1,x,y);
+                    newobj = SpawnOffsetObj(en_crate1,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 432];
                     newobj->temp3 = STATICNUM(ReserveStatic());
@@ -732,7 +730,7 @@ void ScanInfoPlane (void)
                 case 392:    // crate 1
                     SpawnStatic (x,y,tile - 315);
                     break;
-#ifdef NOTYET
+
                 case 81:
                 case 82:
                     SpawnOffsetObj (en_bloodvent + tile - 81,x,y);
@@ -899,7 +897,6 @@ void ScanInfoPlane (void)
 
                         SpawnStand (en_goldstern,x,y,0);
                         GoldsternInfo.GoldSpawned = true;
-                        new = NULL;
                     }
                     break;
 
@@ -915,7 +912,6 @@ void ScanInfoPlane (void)
                 //
                 case 177:
                     SpawnOffsetObj (en_rotating_cube,x,y);
-                    newobj = NULL;
                     break;
 
                 //
@@ -939,7 +935,7 @@ void ScanInfoPlane (void)
                 case 109:
                 case 110:
                 case 111:
-                    SpawnStand (en_rentacop,x,y,tile - 108);
+                    newobj = SpawnStand(en_rentacop,x,y,tile - 108);
                     break;
 
                 case 184:
@@ -960,9 +956,9 @@ void ScanInfoPlane (void)
                 case 113:
                 case 114:
                 case 115:
-                    SpawnPatrol (en_rentacop,x,y,tile - 112);
+                    newobj = SpawnPatrol(en_rentacop,x,y,tile - 112);
                     break;
-#endif
+
                 //
                 // Bio-tech
                 //
@@ -1019,7 +1015,7 @@ void ScanInfoPlane (void)
                         newobj = NULL;
                     }
                     break;
-#ifdef NOTYET
+
                 //
                 // PRO Guard
                 //
@@ -1041,7 +1037,7 @@ void ScanInfoPlane (void)
                 case 127:
                 case 128:
                 case 129:
-                    SpawnStand (en_proguard,x,y,tile - 126);
+                    newobj = SpawnStand(en_proguard,x,y,tile - 126);
                     break;
 
                 case 202:
@@ -1062,7 +1058,7 @@ void ScanInfoPlane (void)
                 case 131:
                 case 132:
                 case 133:
-                    SpawnPatrol (en_proguard,x,y,tile - 130);
+                    newobj = SpawnPatrol (en_proguard,x,y,tile - 130);
                     break;
 
                 //
@@ -1078,7 +1074,6 @@ void ScanInfoPlane (void)
 
                 case 310:
                     SpawnStand (en_electro_alien,x,y,0);
-                    newobj = NULL;
                     break;
 
                 //
@@ -1102,8 +1097,8 @@ void ScanInfoPlane (void)
                 case 329:
                 case 330:
                 case 331:
-                    SpawnStand (en_floatingbomb,x,y,tile - 328);
-                    new->flags |= FL_STATIONARY;
+                    newobj = SpawnStand(en_floatingbomb,x,y,tile - 328);
+                    newobj->flags |= FL_STATIONARY;
                     break;
 
                 //
@@ -1127,7 +1122,7 @@ void ScanInfoPlane (void)
                 case 261:
                 case 262:
                 case 263:
-                    SpawnStand (en_floatingbomb,x,y,tile - 260);
+                    newobj = SpawnStand(en_floatingbomb,x,y,tile - 260);
                     break;
 
                 //
@@ -1151,7 +1146,7 @@ void ScanInfoPlane (void)
                 case 265:
                 case 266:
                 case 267:
-                    SpawnPatrol (en_floatingbomb,x,y,tile - 264);
+                    newobj = SpawnPatrol(en_floatingbomb,x,y,tile - 264);
                     break;
 
                 //
@@ -1176,7 +1171,7 @@ void ScanInfoPlane (void)
                 case 315:
                 case 316:
                 case 317:
-                    SpawnStand (en_volatiletransport,x,y,tile - 314);
+                    newobj = SpawnStand(en_volatiletransport,x,y,tile - 314);
                     break;
 #elif IN_DEVELOPMENT
                 case 350:
@@ -1216,7 +1211,7 @@ void ScanInfoPlane (void)
                 case 319:
                 case 320:
                 case 321:
-                    SpawnPatrol (en_volatiletransport,x,y,tile - 318);
+                    newobj = SpawnPatrol(en_volatiletransport,x,y,tile - 318);
                     break;
 #elif IN_DEVELOPMENT
                 case 354:
@@ -1276,7 +1271,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 214:
-                    SpawnOffsetObj (en_genetic_guard,x,y);
+                    newobj = SpawnOffsetObj(en_genetic_guard,x,y);
                     break;
 
                 //
@@ -1289,7 +1284,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 250:
-                    SpawnOffsetObj (en_cyborg_warrior,x,y);
+                    newobj = SpawnOffsetObj(en_cyborg_warrior,x,y);
                     break;
 
                 //
@@ -1302,7 +1297,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 232:
-                    SpawnOffsetObj (en_spider_mutant,x,y);
+                    newobj = SpawnOffsetObj(en_spider_mutant,x,y);
                     break;
 
                 //
@@ -1315,7 +1310,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 268:
-                    SpawnOffsetObj (en_acid_dragon,x,y);
+                    newobj = SpawnOffsetObj(en_acid_dragon,x,y);
                     break;
 
                 //
@@ -1328,7 +1323,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 233:
-                    SpawnOffsetObj (en_breather_beast,x,y);
+                    newobj = SpawnOffsetObj(en_breather_beast,x,y);
                     break;
 
                 //
@@ -1341,7 +1336,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 269:
-                    SpawnOffsetObj (en_mech_guardian,x,y);
+                    newobj = SpawnOffsetObj(en_mech_guardian,x,y);
                     break;
 
                 //
@@ -1354,7 +1349,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 251:
-                    SpawnOffsetObj (en_reptilian_warrior,x,y);
+                    newobj = SpawnOffsetObj(en_reptilian_warrior,x,y);
                     break;
 
                 //
@@ -1367,7 +1362,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 103:
-                    SpawnOffsetObj (en_mutant_human1,x,y);
+                    newobj = SpawnOffsetObj(en_mutant_human1,x,y);
                     break;
 
                 //
@@ -1381,7 +1376,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 106:
-                    SpawnOffsetObj (en_mutant_human2,x,y);
+                    newobj = SpawnOffsetObj(en_mutant_human2,x,y);
                     break;
 #elif IN_DEVELOPMENT
                 case 125:
@@ -1406,7 +1401,7 @@ void ScanInfoPlane (void)
                         break;
                     }
                 case 134:
-                    SpawnOffsetObj (en_scan_wait_alien,x,y);
+                    newobj = SpawnOffsetObj(en_scan_wait_alien,x,y);
                     break;
 
                 //
@@ -1419,7 +1414,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 290:
-                    SpawnOffsetObj (en_scan_alien,x,y);
+                    newobj = SpawnOffsetObj(en_scan_alien,x,y);
                     break;
 
                 //
@@ -1439,7 +1434,7 @@ void ScanInfoPlane (void)
                         break;
                     }
                 case 170:
-                    SpawnOffsetObj (en_lcan_wait_alien,x,y);
+                    newobj = SpawnOffsetObj(en_lcan_wait_alien,x,y);
                     break;
 #elif IN_DEVELOPMENT
                 case 172:
@@ -1459,7 +1454,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 272:
-                    SpawnOffsetObj (en_lcan_alien,x,y);
+                    newobj = SpawnOffsetObj(en_lcan_alien,x,y);
                     break;
 #elif IN_DEVELOPMENT
                 case 270:
@@ -1485,7 +1480,7 @@ void ScanInfoPlane (void)
                         break;
                     }
                 case 137:
-                    SpawnOffsetObj (en_gurney_wait,x,y);
+                    newobj = SpawnOffsetObj(en_gurney_wait,x,y);
                     break;
 #elif IN_DEVELOPMENT
                 case 161:
@@ -1494,9 +1489,9 @@ void ScanInfoPlane (void)
                     INVALID_ACTOR_ERR;
                     break;
 #endif
-        //
-        // Gurney Mutant - awake
-        //
+                //
+                // Gurney Mutant - awake
+                //
 #if GAME_VERSION != SHAREWARE_VERSION
                 case 275:
                     if (gamestate.difficulty < gd_hard)
@@ -1505,7 +1500,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 273:
-                    SpawnOffsetObj (en_gurney,x,y);
+                    newobj = SpawnOffsetObj(en_gurney,x,y);
                     break;
 #elif IN_DEVELOPMENT
                 case 275:
@@ -1514,9 +1509,9 @@ void ScanInfoPlane (void)
                     INVALID_ACTOR_ERR;
                     break;
 #endif
-        //
-        // Fluid alien
-        //
+                //
+                // Fluid alien
+                //
 #if GAME_VERSION != SHAREWARE_VERSION
                 case 293:
                     if (gamestate.difficulty < gd_hard)
@@ -1525,7 +1520,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 291:
-                    SpawnStand (en_liquid,x,y,0);
+                    newobj = SpawnStand(en_liquid,x,y,0);
                     break;
 #elif IN_DEVELOPMENT
                 case 293:
@@ -1544,10 +1539,10 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         scanvalue = 0xff;
                 case 306:
-                    SpawnOffsetObj (en_podegg,x,y);
+                    newobj = SpawnOffsetObj(en_podegg,x,y);
 
                     if (scanvalue == 0xff)
-                        new->obclass = deadobj;
+                        newobj->obclass = deadobj;
                     else
                     {
                         AddTotalPoints (actor_points[podobj - rentacopobj]);
@@ -1570,7 +1565,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 307:
-                    SpawnOffsetObj (en_pod,x,y);
+                    newobj = SpawnOffsetObj(en_pod,x,y);
                     break;
 
                 //
@@ -1589,7 +1584,7 @@ void ScanInfoPlane (void)
                     {
                         AddTotalPoints (actor_points[en_spider_mutant]);
                         AddTotalEnemy (1);
-                        SpawnOffsetObj (en_morphing_spider_mutant,x,y);
+                        newobj = SpawnOffsetObj(en_morphing_spider_mutant,x,y);
 #ifdef TRACK_ENEMY_COUNT
                         numenemy[newobj->obclass]++;
 #endif
@@ -1614,7 +1609,7 @@ void ScanInfoPlane (void)
                     {
                         AddTotalPoints (actor_points[en_reptilian_warrior]);
                         AddTotalEnemy (1);
-                        SpawnOffsetObj (en_morphing_reptilian_warrior,x,y);
+                        newobj = SpawnOffsetObj(en_morphing_reptilian_warrior,x,y);
 #ifdef TRACK_ENEMY_COUNT
                         numenemy[newobj->obclass]++;
 #endif
@@ -1639,7 +1634,7 @@ void ScanInfoPlane (void)
                     {
                         AddTotalPoints (actor_points[en_mutant_human2]);
                         AddTotalEnemy (1);
-                        SpawnOffsetObj (en_morphing_mutanthuman2,x,y);
+                        newobj = SpawnOffsetObj(en_morphing_mutanthuman2,x,y);
 #ifdef TRACK_ENEMY_COUNT
                         numenemy[newobj->obclass]++;
 #endif
@@ -1658,7 +1653,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 324:
-                    SpawnOffsetObj (en_vertsphere,x,y);
+                    newobj = SpawnOffsetObj(en_vertsphere,x,y);
                     break;
 
                 //
@@ -1671,7 +1666,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 325:
-                    SpawnOffsetObj (en_horzsphere,x,y);
+                    newobj = SpawnOffsetObj(en_horzsphere,x,y);
                     break;
 
                 //
@@ -1684,7 +1679,7 @@ void ScanInfoPlane (void)
                     if (gamestate.difficulty < gd_medium)
                         break;
                 case 326:
-                    SpawnOffsetObj (en_diagsphere,x,y);
+                    newobj = SpawnOffsetObj(en_diagsphere,x,y);
                     break;
 
                 //
@@ -1708,7 +1703,7 @@ void ScanInfoPlane (void)
                 case 217:
                 case 218:
                 case 219:
-                    SpawnStand (en_swat,x,y,tile - 216);
+                    newobj = SpawnStand(en_swat,x,y,tile - 216);
                     break;
 
                 //
@@ -1732,7 +1727,7 @@ void ScanInfoPlane (void)
                 case 221:
                 case 222:
                 case 223:
-                    SpawnPatrol (en_swat,x,y,tile - 220);
+                    newobj = SpawnPatrol(en_swat,x,y,tile - 220);
                     break;
 
                 //
@@ -1756,8 +1751,8 @@ void ScanInfoPlane (void)
                 case 225:
                 case 226:
                 case 227:
-                    SpawnStand (en_hang_terrot,x,y,tile - 224);
-                    new->flags |= FL_STATIONARY;
+                    newobj = SpawnStand(en_hang_terrot,x,y,tile - 224);
+                    newobj->flags |= FL_STATIONARY;
                     break;
 
                 //
@@ -1781,7 +1776,7 @@ void ScanInfoPlane (void)
                 case 229:
                 case 230:
                 case 231:
-                    SpawnStand (en_hang_terrot,x,y,tile - 228);
+                    newobj = SpawnStand(en_hang_terrot,x,y,tile - 228);
                     break;
 
     //
@@ -1808,7 +1803,7 @@ void ScanInfoPlane (void)
                 case 505:
                 case 506:
                 case 507:
-                    SpawnPatrol (en_swat,x,y,tile - 504);
+                    newobj = SpawnPatrol(en_swat,x,y,tile - 504);
                     newobj->flags &= ~FL_RANDOM_TURN;
                     break;
 
@@ -1833,7 +1828,7 @@ void ScanInfoPlane (void)
                 case 513:
                 case 514:
                 case 515:
-                    SpawnPatrol (en_volatiletransport,x,y,tile - 512);
+                    newobj = SpawnPatrol(en_volatiletransport,x,y,tile - 512);
                     newobj->flags &= ~FL_RANDOM_TURN;
                     break;
 
@@ -1858,7 +1853,7 @@ void ScanInfoPlane (void)
                 case 509:
                 case 510:
                 case 511:
-                    SpawnPatrol (en_floatingbomb,x,y,tile - 508);
+                    newobj = SpawnPatrol(en_floatingbomb,x,y,tile - 508);
                     newobj->flags &= ~FL_RANDOM_TURN;
                     break;
 
@@ -1883,7 +1878,7 @@ void ScanInfoPlane (void)
                 case 559:
                 case 560:
                 case 561:
-                    SpawnPatrol (en_proguard,x,y,tile - 558);
+                    newobj = SpawnPatrol(en_proguard,x,y,tile - 558);
                     newobj->flags &= ~FL_RANDOM_TURN;
                     break;
 
@@ -1908,7 +1903,7 @@ void ScanInfoPlane (void)
                 case 517:
                 case 518:
                 case 519:
-                    SpawnPatrol (en_rentacop,x,y,tile - 516);
+                    newobj = SpawnPatrol(en_rentacop,x,y,tile - 516);
                     newobj->flags &= ~FL_RANDOM_TURN;
                     break;
 
@@ -1919,11 +1914,10 @@ void ScanInfoPlane (void)
                 case 631: // Final boss 2
                 case 632: // Final boss 3
                 case 633: // Final boss 4
-                    SpawnOffsetObj(en_final_boss1 + tile - 630,x,y);
+                    newobj = SpawnOffsetObj(en_final_boss1 + tile - 630,x,y);
                     break;
-#endif
             }
-#ifdef NOTYET
+
             //
             // if newobj is an object that gives points, add those points to level total
             //
@@ -1947,9 +1941,8 @@ void ScanInfoPlane (void)
 #ifdef TRACK_ENEMY_COUNT
                 numenemy[newobj->obclass]++;
 #endif
-                newobj = NULL;
             }
-#endif
+
             //
             // skip past FA code
             //
@@ -2036,17 +2029,15 @@ void SetupGameLevel (void)
     int            count,lock;
     word           *map,*map1,*map2;
     unsigned       tile,icon;
-#ifdef NOTYET
     bool           switchon = false;
-#endif
+
     ci = InfHintList.smInfo;    // TODO: check if it's safe to put this in the for loop
 
     if (!loadedgame)
     {
         gamestate.flags |= GS_CLIP_WALLS;
-#ifdef NOTYET
+
         InitGoldsternInfo ();
-#endif
     }
 
     US_InitRndT (demoplayback || demorecord);
@@ -2233,7 +2224,7 @@ void SetupGameLevel (void)
                             *map1 = 0;
                         }
                         break;
-#ifdef NOTYET
+
                     case EATILE:
                         eaList[NumEAWalls].tilex = x;
                         eaList[NumEAWalls].tiley = y;
@@ -2254,7 +2245,6 @@ void SetupGameLevel (void)
 
                         switchon = false;    // init for next time
                         break;
-#endif
                 }
             }
 
@@ -2266,9 +2256,8 @@ void SetupGameLevel (void)
 // spawn actors
 //
     ScanInfoPlane ();
-#ifdef NOTYET
     ConnectBarriers ();
-#endif
+
 //
 // init informant stuff
 //

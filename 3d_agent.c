@@ -3555,8 +3555,6 @@ int ShowRatio (int bx, int by, int nx, int ny, int32_t total, int32_t perc, int 
     int percentage;
 
     percentage = 1;
-    total = 300;
-    perc = 100;
 
     if (total)
     {
