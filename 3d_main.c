@@ -529,8 +529,6 @@ uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
 ====================
 */
 
-statetype s_save_temp;
-
 void LoadLevel (int levelnum)
 {
     bool      oldloaded = loadedgame;
@@ -649,7 +647,9 @@ void LoadLevel (int levelnum)
         if (newobj == player)
             newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_player);
         else
-            newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_save_temp);
+            newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_ofs_stand);
+
+        newobj->tempobj = (objtype *)((uintptr_t)newobj->tempobj + (uintptr_t)objlist);
 
         //
         // KS: I remember that dead actor spots can become solid after loading
@@ -783,7 +783,7 @@ void LoadLevel (int levelnum)
 
 void SaveLevel (int levelnum)
 {
-    objtype   *obj;
+    objtype   *obj,*tempobj;
     statetype *tempstate;
     FILE      *file;
     int       x,y;
@@ -881,15 +881,19 @@ void SaveLevel (int levelnum)
     for (obj = player; obj; obj = obj->next)
     {
         tempstate = obj->state;
+        tempobj = obj->tempobj;
 
         if (obj->obclass == playerobj)
             obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_player);
         else
-            obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_save_temp);
+            obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_ofs_stand);
+
+        obj->tempobj = (objtype *)((uintptr_t)obj->tempobj - (uintptr_t)objlist);
 
         memcpy (ptr,obj,sizeof(*obj));
 
         obj->state = tempstate;
+        obj->tempobj = tempobj;
 
         ptr += sizeof(*obj);
         count++;
@@ -903,7 +907,7 @@ void SaveLevel (int levelnum)
     //
     // write all sorts of info
     //
-    laststatobjnum = (word)(laststatobj - statobjlist);
+    laststatobjnum = STATICNUM(laststatobj);
 
     cksize += WriteInfo(false,&laststatobjnum,sizeof(laststatobjnum),file);
     cksize += WriteInfo(true,statobjlist,sizeof(statobjlist),file);

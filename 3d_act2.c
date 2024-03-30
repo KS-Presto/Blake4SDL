@@ -497,7 +497,8 @@ objtype *SpawnOffsetObj (int which, int tilex, int tiley)
             NewState (newobj,&s_ofs_random);
             newobj->temp1 = SPR_DOORBOMB;
             newobj->temp3 = PLASMA_DETONATORS_DELAY;
-            newobj->flags &= ~(FL_SOLID|FL_SHOOTABLE);
+            newobj->flags &= ~(FL_SOLID | FL_SHOOTABLE);
+
             if (detonators_spawned++)
                 Quit ("Too many Fission/Plasma Detonators in map %d! Must have only one!",gamestate.mapon + 1);
             break;
@@ -592,7 +593,7 @@ objtype *SpawnOffsetObj (int which, int tilex, int tiley)
         case en_morphing_reptilian_warrior:
         case en_morphing_mutanthuman2:
             if (scanvalue == 0xffff)
-                newobj->temp2 = 0xffff;   // set to max!   // (60 * 5) + (60 * (US_RndT() % 20));
+                newobj->temp2 = 0x7fff;   // set to max!   // (60 * 5) + (60 * (US_RndT() % 20));
             else
                 newobj->temp2 = scanvalue * 60;
 
@@ -608,6 +609,11 @@ objtype *SpawnOffsetObj (int which, int tilex, int tiley)
             break;
 
         case en_gurney_wait:
+            //
+            // TODO: I believe it uses temp3 for the delay here
+            // because temp2 was being used to hold the reserved
+            // objtype * pointer, but temp2 should be free to use now
+            //
             if (scanvalue == 0xffff)
                 newobj->temp3 = 0;
             else
@@ -1377,41 +1383,29 @@ objtype *MoveHiddenOfs (int whichclass, int newclass, fixed x, fixed y)
 =
 = Sets up an object for a SmartAnimation
 =
-= ShapeNum  - first shape number in anim
-= StartOfs  - starting offset in the animation to start with
-= MaxOfs    - ending offset in the animation
-= AnimType  - type of animation (at_CYCLE,at_ONCE,or at_REBOUND)
-= AnimDir   - direction of animation to start (ad_FWD, or ad_REV)
+= shapenum  - first shape number in anim
+= startofs  - starting offset in the animation to start with
+= maxofs    - ending offset in the animation
+= type      - type of animation (at_CYCLE, at_ONCE, or at_REBOUND)
+= dir       - direction of animation to start (ad_FWD, or ad_REV)
+= delay     - delay tic value per frame
+= waitdelay - current number of tics remaining before advancing to next frame
 =
 = ** This function should ALWAYS be used to init/start SmartAnimations! **
-=
-= NOTE: It is the programmer's responsiblity to watch bit field ranges on
-=       the passed parameters
-=
-= NOTE: THINK function AnimateOfsObj() requires the use of temp3 of objstruct!
 =
 ==============================
 */
 
-void InitSmartAnimStruct (objtype *obj, int shapenum, int startofs, int maxofs, int type, int dir)
-{
-    ofs_anim_t AnimStruct;
-
-    AnimStruct.curframe = startofs;
-    AnimStruct.maxframe = maxofs;
-    AnimStruct.animtype = type;
-    AnimStruct.animdir = dir;
-
-    obj->temp1 = shapenum + AnimStruct.curframe;
-
-    *(ofs_anim_t *)&obj->temp3 = AnimStruct;    // TODO: ewww
-}
-
 void InitAnim (objtype *obj, int shapenum, int startofs, int maxofs, int type, int dir, int delay, int waitdelay)
 {
-    InitSmartAnimStruct (obj,shapenum,startofs,maxofs,type,dir);
-    obj->s_tilex = waitdelay;
-    obj->s_tiley = delay;
+    obj->anim.curframe = startofs;
+    obj->anim.maxframe = maxofs;
+    obj->anim.animtype = type;
+    obj->anim.animdir = dir;
+    obj->anim.delay = delay;
+    obj->anim.waitdelay = waitdelay;
+
+    obj->temp1 = shapenum + obj->anim.curframe;
 
     NewState (obj,&s_ofs_smart_anim);
 }
@@ -1430,13 +1424,12 @@ void InitAnim (objtype *obj, int shapenum, int startofs, int maxofs, int type, i
 // FUNCTIONS: T_SmartThink - called continuously and is
 //            special coded for an object/actor
 //
-//            T_SmartThought - alled only once allowing for other
+//            T_SmartThought - called only once allowing for other
 //            special coding, (eg. the spawning of another animation at
 //            any point in the current animation, death screams, sounds, etc)
 //
 // * NOTES:   T_SmartThink could be modified to handle generic animations
 //            like cycle, once, rebound, etc. using flags in objstruct.
-//
 //
 
 //statetype s_ofs_smart_anim = {0,0,1,NULL,T_SmartThought,&s_ofs_smart_anim};
@@ -1469,7 +1462,7 @@ void T_SmartThought (objtype *obj)
         case black_oozeobj:
         case green2_oozeobj:
         case black2_oozeobj:
-            if (((US_RndT() & 7) == 7) && ((ofs_anim_t *)&obj->temp3)->curframe == 2)
+            if (((US_RndT() & 7) == 7) && obj->anim.curframe == 2)
             {
                 if (obj->tilex == player->tilex && obj->tiley == player->tiley)
                     TakeDamage (4,obj);
@@ -1496,7 +1489,7 @@ void T_SmartThought (objtype *obj)
             //
             // check for turn offs
             //
-            if ((unsigned)obj->temp2 != 0xffff)    // TODO: what is this
+            if (obj->temp2 != 0x7fff)
             {
                 if (!gamestate.barrier_table[obj->temp2].on)
                     ToggleBarrier (obj);
@@ -1510,7 +1503,7 @@ void T_SmartThought (objtype *obj)
                 //
                 // slowly inc back to normal
                 //
-                obj->lighting += ANIM_INFO(obj)->curframe;
+                obj->lighting += obj->anim.curframe;
 
                 if (obj->lighting > 0)
                     obj->lighting = 0;
@@ -1518,7 +1511,7 @@ void T_SmartThought (objtype *obj)
             break;
     }
 
-    if (ANIM_INFO(obj)->animtype)
+    if (obj->anim.animtype)
     {
         if (AnimateOfsObj(obj))
         {
@@ -1579,7 +1572,7 @@ void T_SmartThought (objtype *obj)
             }
         }
 
-        if (ANIM_INFO(obj)->curframe == 3)
+        if (obj->anim.curframe == 3)
         {
             switch (obj->obclass)
             {
@@ -1590,7 +1583,7 @@ void T_SmartThought (objtype *obj)
                         // make sure that there are at least DR_MIN_STATICS
                         //
                         avail = MAXSTATS;
-                        total = (int)(laststatobj - statobjlist);
+                        total = STATICNUM(laststatobj);
 
                         for (i = 0; i < total; i++)
                         {
@@ -1631,12 +1624,8 @@ void T_SmartThought (objtype *obj)
 
                 case gurney_waitobj:
 #ifdef OBJ_RESERV
-#if IN_DEVELOPMENT
-                    if ((unsigned)obj->temp2 < (uintptr_t)objlist || (unsigned)obj->temp2 > (uintptr_t)&objlist[MAXACTORS])
-                        Quit ("Gurney->temp2 out of range!");
-#endif
-                    if (obj->temp2)
-                        RemoveObj ((objtype *)obj->temp2);
+                    if (obj->tempobj)
+                        RemoveObj (obj->tempobj);
 #endif
                     SpawnOffsetObj (en_gurney,obj->tilex,obj->tiley);
                     NewState (obj,&s_ofs_static);
@@ -1644,12 +1633,8 @@ void T_SmartThought (objtype *obj)
 
                 case scan_wait_alienobj:
 #ifdef OBJ_RESERV
-#if IN_DEVELOPMENT
-                    if ((unsigned)obj->temp2 < (uintptr_t)objlist || (unsigned)obj->temp2 >= (uintptr_t)&objlist[MAXACTORS])
-                        Quit ("Scan->temp2 out of range!");
-#endif
-                    if (obj->temp2)
-                        RemoveObj ((objtype *)obj->temp2);
+                    if (obj->tempobj)
+                        RemoveObj (obj->tempobj);
 #endif
                     SpawnOffsetObj (en_scan_alien,obj->tilex,obj->tiley);
                     NewState (obj,&s_ofs_static);
@@ -1657,20 +1642,16 @@ void T_SmartThought (objtype *obj)
 
                 case lcan_wait_alienobj:
 #ifdef OBJ_RESERV
-#if IN_DEVELOPMENT
-                if ((unsigned)obj->temp2 < (uintptr_t)objlist || (unsigned)obj->temp2 >= (uintptr_t)&objlist[MAXACTORS])
-                    Quit ("Scan->temp2 out of range!");
+                    if (obj->tempobj)
+                        RemoveObj (obj->tempobj);
 #endif
-                if (obj->temp2)
-                    RemoveObj ((objtype *)obj->temp2);
-#endif
-                SpawnOffsetObj (en_lcan_alien,obj->tilex,obj->tiley);
-                NewState (obj,&s_ofs_static);
-                break;
+                    SpawnOffsetObj (en_lcan_alien,obj->tilex,obj->tiley);
+                    NewState (obj,&s_ofs_static);
+                    break;
             }
         }
 
-        if (ANIM_INFO(obj)->curframe == 2)
+        if (obj->anim.curframe == 2)
         {
             switch (obj->obclass)
             {
@@ -1714,24 +1695,24 @@ void T_SmartThought (objtype *obj)
 = IMPORTANT NOTE: This does NOT work on the same principle as the old
 = """"""""""""""  AnimateObj function!
 =
-= obj->temp1    - holds the current shape number
+= obj->temp1           - holds the current shape number
 =
-= obj->temp3.maxframe  - frames in anim. (0 == 1 Frame, 1 == 2 Frames, etc)
+= obj->anim.maxframe   - frames in anim. (0 == 1 Frame, 1 == 2 Frames, etc)
 =
-= obj->temp3.curframe  - holds the the shape offset which temp1 is off from
+= obj->anim.curframe   - holds the the shape offset which temp1 is off from
 =                        the 1st shape in the anim. ALWAYS POSITIVE NUMBER!
 =                        REVerse animations have the "curframe" on the last
 =                        offset and temp1 - CURFRAME should equal the first
 =                        frame and MAXFRAME should equal the offset for the
 =                        first frame
 =
-= obj->temp3.animdir   - determines the direction of the animation
+= obj->anim.animdir    - determines the direction of the animation
 =
-= obj->s_tilex         - current number of tics remaining before advancing
+= obj->anim.waitdelay  - current number of tics remaining before advancing
 =                        to next frame
 =
-= obj->s_tiley         - delay tic value per frame - this value is copied
-=                        into obj->s_tilex upon reaching the end of a frame
+= obj->anim.delay      - delay tic value per frame - this value is copied
+=                        into obj->anim.waitdelay upon reaching the end of a frame
 =
 = If you want to do a reverse animation then you would need to init
 = temp1 to the shape number of the LAST shape, "curframe" to the offset
@@ -1740,21 +1721,7 @@ void T_SmartThought (objtype *obj)
 = * NOTES: This is an OffsetObject which requires the use of temp1 of
 =          objstruct!
 =
-= * NOTES: The use of a SmartAnim requires the use of temp3 of objstruct!
-=          Therefore, any other THINKS (like LookForGoodies) AN NOT be used
-=          while this routine is being called also.
-=
 = * NOTES: ALL SmartAnimations have the SAME animation delay rates! Sorry!
-=
-= * NOTES: The SmartAnimations use s_tilex & s_tiley for animation delay
-=          values - All SMART actors can not be used if they are using
-=          a "smart" think!
-=
-= KS: Using an AnimStruct pointer in objstruct would lift these limitations
-=     as well as get rid of the nasty use of type-punning to hold memory
-=     addresses in ->temp3. It was a clever method of getting around the
-=     memory cost, but there's no reason not to add it now (and it would
-=     only have been another 2 bytes per actor in DOS anyway...)
 =
 ==============================
 */
@@ -1766,42 +1733,41 @@ bool AnimateOfsObj (objtype *obj)
     //
     // check animation delay
     //
-    if (obj->s_tilex)
+    if (obj->anim.waitdelay)
     {
-        if (obj->s_tilex < tics)
-            obj->s_tilex = 0;
+        if (obj->anim.waitdelay < tics)
+            obj->anim.waitdelay = 0;
         else
-            obj->s_tilex -= tics;
+            obj->anim.waitdelay -= tics;
 
         return false;
     }
 
-    switch (ANIM_INFO(obj)->animtype)
+    switch (obj->anim.animtype)
     {
         case at_ONCE:
         case at_CYCLE:
-            switch (ANIM_INFO(obj)->animdir)
+            switch (obj->anim.animdir)
             {
                 case ad_FWD:
-                    if (ANIM_INFO(obj)->curframe < ANIM_INFO(obj)->maxframe)
+                    if (obj->anim.curframe < obj->anim.maxframe)
                         AdvanceAnimFWD (obj);
-                    else if (ANIM_INFO(obj)->animtype == at_CYCLE)
+                    else if (obj->anim.animtype == at_CYCLE)
                     {
-                        obj->temp1-= ANIM_INFO(obj)->curframe; // pull shapenum back to start
+                        obj->temp1 -= obj->anim.curframe;    // pull shapenum back to start
 
                         //
                         // reset cycle animation
                         //
-                        ANIM_INFO(obj)->curframe = 0;
-
-                        obj->s_tilex = obj->s_tiley;
+                        obj->anim.curframe = 0;
+                        obj->anim.waitdelay = obj->anim.delay;
                     }
                     else
                     {
                         //
                         // terminate ONCE anim type
                         //
-                        ANIM_INFO(obj)->animtype = at_NONE;
+                        obj->anim.animtype = at_NONE;
                         done = true;
                     }
                     break;
@@ -1824,10 +1790,9 @@ bool AnimateOfsObj (objtype *obj)
 
 void AdvanceAnimFWD (objtype *obj)
 {
-    ANIM_INFO(obj)->curframe++;
-
+    obj->anim.curframe++;
     obj->temp1++;
-    obj->s_tilex = obj->s_tiley;
+    obj->anim.waitdelay = obj->anim.delay;
 }
 
 
@@ -1909,7 +1874,7 @@ void ActivateWallSwitch (unsigned iconnum, int tilex, int tiley)
 ===============
 */
 
-void DisplaySwitchOperateMsg (unsigned coords)
+void DisplaySwitchOperateMsg (int coords)
 {
     const char *msg[2] = {"\r\r DEACTIVATING BARRIER","\r\r  ACTIVATING BARRIER"};
     barrier_t  *barrier;
@@ -1927,12 +1892,12 @@ void DisplaySwitchOperateMsg (unsigned coords)
 =
 = Finds/Inserts arc entry in arc list
 =
-= Returns offset into barrier_table[] for a particular arc
+= Returns offset into barrier_table for a particular arc
 =
 ===============
 */
 
-unsigned UpdateBarrierTable (int tilex, int tiley, bool OnOff)
+int UpdateBarrierTable (int tilex, int tiley, bool OnOff)
 {
     barrier_t *barrier;
     int       num;
@@ -1972,16 +1937,16 @@ unsigned UpdateBarrierTable (int tilex, int tiley, bool OnOff)
 =
 = Scans a switch table for an arc in this level
 =
-= Returns : 0xFFFF  - Not found in table
-=           barrier - barrier_table of the barrier for [num]
+= Returns : 0x7fff  - Not found in table
+=           num     - index of the barrier in barrier_table
 =
 ===============
 */
 
-unsigned ScanBarrierTable (int tilex, int tiley)
+int ScanBarrierTable (int tilex, int tiley)
 {
     barrier_t *barrier;
-    unsigned  num;
+    int       num;
 
     barrier = gamestate.barrier_table;
 
@@ -1991,7 +1956,7 @@ unsigned ScanBarrierTable (int tilex, int tiley)
             return num;     // found switch
     }
 
-    return 0xffff;          // mark as empty
+    return 0x7fff;          // mark as empty
 }
 
 
@@ -2005,9 +1970,9 @@ unsigned ScanBarrierTable (int tilex, int tiley)
 ===============
 */
 
-bool CheckActor (objtype *check, unsigned code)
+bool CheckActor (objtype *check, int code)
 {
-    if ((unsigned)check->temp2 == 0xffff)
+    if (check->temp2 == 0x7fff)
     {
         //
         // connect actor to barrier switch (code is index into barrier table)
@@ -2029,7 +1994,7 @@ bool CheckActor (objtype *check, unsigned code)
 ===============
 */
 
-int CheckAndConnect (int tilex, int tiley, unsigned code)
+int CheckAndConnect (int tilex, int tiley, int code)
 {
     objtype *check;
     int     offsets[] = {-1,0,1,0};
@@ -2076,7 +2041,7 @@ int CheckAndConnect (int tilex, int tiley, unsigned code)
 void ConnectBarriers (void)
 {
     barrier_t *barrier;
-    unsigned  num;
+    int       num;
 
     barrier = gamestate.barrier_table;
 
@@ -2354,7 +2319,7 @@ void T_BarrierTransition (objtype *obj)
         // on/closed position
         //
         case bt_ON:
-            if ((unsigned)obj->temp2 == 0xffff)
+            if (obj->temp2 == 0x7fff)
             {
                 if (obj->temp3 < tics)
                     ToggleBarrier (obj);
@@ -2370,7 +2335,7 @@ void T_BarrierTransition (objtype *obj)
         // off/open position
         //
         case bt_OFF:
-            if ((unsigned)obj->temp2 == 0xffff)
+            if (obj->temp2 == 0x7fff)
             {
                 if (obj->temp3 < tics)
                     ToggleBarrier (obj);
@@ -2423,7 +2388,7 @@ void T_BarrierTransition (objtype *obj)
                     case 7:
                         BARRIER_STATE(obj) = bt_ON;
 
-                        if ((unsigned)obj->temp2 == 0xffff)
+                        if (obj->temp2 == 0x7fff)
                             obj->temp3 = VPOST_WAIT_DELAY;
                         break;
                 }
@@ -2434,7 +2399,7 @@ void T_BarrierTransition (objtype *obj)
             //
             // check to see if it was toggled
             //
-            if ((unsigned)obj->temp2 != 0xffff)
+            if (obj->temp2 != 0x7fff)
             {
                 if (!gamestate.barrier_table[obj->temp2].on)
                     ToggleBarrier (obj);
@@ -2469,7 +2434,7 @@ void T_BarrierTransition (objtype *obj)
                     case 0:
                         BARRIER_STATE(obj) = bt_OFF;
 
-                        if ((unsigned)obj->temp2 == 0xffff)
+                        if (obj->temp2 == 0x7fff)
                             obj->temp3 = VPOST_WAIT_DELAY;
                         break;
                 }
@@ -2477,7 +2442,7 @@ void T_BarrierTransition (objtype *obj)
             else
                 obj->temp3 -= tics;
 
-            if ((unsigned)obj->temp2 != 0xffff)
+            if (obj->temp2 != 0x7fff)
             {
                 if (gamestate.barrier_table[obj->temp2].on)
                     ToggleBarrier (obj);
@@ -4862,7 +4827,7 @@ void SpawnProjectile (objtype *shooter, int obclass)
             angleadj = 1 - (US_RndT() & 3);
             newobj->temp1 = BossShotShapes[obclass - spider_mutantshotobj];
             newobj->flags = FL_OFFSET_STATES | FL_PROJ_CHECK_TRANSPARENT | FL_STORED_OBJPTR;
-            newobj->temp3 = (uint16_t)shooter;
+            newobj->tempobj = shooter;
             break;
 
         case mut_hum1shotobj:
@@ -4875,7 +4840,7 @@ void SpawnProjectile (objtype *shooter, int obclass)
             angleadj = 1 - (US_RndT() & 3);
             newobj->temp1 = SPR_ELEC_SHOT1;
             newobj->flags = FL_OFFSET_STATES | FL_PROJ_CHECK_TRANSPARENT | FL_STORED_OBJPTR;
-            newobj->temp3 = (uint16_t)shooter;
+            newobj->tempobj = shooter;
 
             switch (obclass)
             {
@@ -4899,7 +4864,7 @@ void SpawnProjectile (objtype *shooter, int obclass)
             newobj->flags = FL_OFFSET_STATES | FL_PROJ_CHECK_TRANSPARENT | FL_STORED_OBJPTR;
             newobj->speed = SPDPROJ + US_RndT();
             angleadj = 2 - (US_RndT() % 5);
-            newobj->temp3 = (uint16_t)shooter;
+            newobj->tempobj = shooter;
             break;
 
         case liquidshotobj:
@@ -4909,7 +4874,7 @@ void SpawnProjectile (objtype *shooter, int obclass)
             newobj->speed = SPDPROJ + US_RndT();
             angleadj = 2 - (US_RndT() % 5);
             newobj->s_tilex = newobj->s_tiley = 0;
-            newobj->temp3 = (uint16_t)shooter;
+            newobj->tempobj = shooter;
             break;
 
         case grenadeobj:
@@ -5200,7 +5165,7 @@ void T_Projectile (objtype *obj)
             // KS: nasty!
             //
             if (obj->flags & FL_STORED_OBJPTR)
-                attacker = (objtype *)obj->temp3;
+                attacker = obj->tempobj;
             else
                 attacker = obj;
 
@@ -5493,10 +5458,7 @@ void T_BlowBack (objtype *obj)
 
     if (!(obj->flags & FL_SLIDE_INIT))
     {
-        //
-        // KS: ugly
-        //
-        killer = (objtype *)SLIDE_TEMP(obj);
+        killer = obj->tempobj;
 
         if (!killer)
         {
@@ -5505,8 +5467,6 @@ void T_BlowBack (objtype *obj)
         }
 
         obj->angle = CalcAngle(killer,obj);
-
-        killer = (objtype *)SLIDE_TEMP(obj);
 
         if (killer == player)
             SLIDE_TEMP(obj) = dist_table[gamestate.weapon];

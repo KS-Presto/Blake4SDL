@@ -842,10 +842,10 @@ void KillActor (objtype *obj)
         case crate2obj:
         case crate3obj:
 #if IN_DEVELOPMENT
-            if (!obj->temp3)
-                Quit ("exp crate->temp3 is NULL!");
+            if (obj->temp3 >= MAXSTATS)
+                Quit ("exp crate->temp3 out of range!");
 #endif
-            ((statobj_t *)(obj->temp3))->shapenum = -1;  // release reserve static
+            statobjlist[obj->temp3].shapenum = -1;      // release reserve static
 
             SpawnStatic (tilex,tiley,obj->temp2);
             obj->obclass = deadobj;
@@ -1202,9 +1202,9 @@ void DamageActor (objtype *obj, int damage, objtype *attacker)
             case scan_wait_alienobj:
             case lcan_wait_alienobj:
             case gurney_waitobj:
-                obj->temp2 = (int16_t)CheckAndReserve();
+                obj->tempobj = CheckAndReserve();
 
-                if (!obj->temp2)
+                if (!obj->tempobj)
                 {
                     obj->hitpoints += damage;
                     return;
@@ -1225,7 +1225,7 @@ void DamageActor (objtype *obj, int damage, objtype *attacker)
                 break;
         }
 
-        obj->hitpoints = (int16_t)attacker;
+        obj->tempobj = attacker;
         KillActor (obj);
         return;
     }
@@ -1785,9 +1785,9 @@ void FirstSighting (objtype *obj)
         case gurney_waitobj:
             if (obj->temp3)
             {
-                obj->temp2 = (int16_t)CheckAndReserve();
+                obj->tempobj = CheckAndReserve();
 
-                if (obj->temp2)
+                if (obj->tempobj)
                 {
                     obj->flags &= ~(FL_SHOOTABLE);
                     InitSmartAnim (obj,SPR_GURNEY_MUT_B1,0,3,at_ONCE,ad_FWD);
@@ -2196,7 +2196,7 @@ bool LookForGoodies (objtype *obj, unsigned RunReason)
             doornum = Random(doorsfound);
             door = doorlist[doornum];
 
-            if ((uint16_t)door == obj->temp3 && doorsfound > 1)
+            if (DOORNUM(door) == obj->temp3 && doorsfound > 1)
             {
                 if (++doornum >= doorsfound)
                     doornum = 0;
@@ -2204,7 +2204,7 @@ bool LookForGoodies (objtype *obj, unsigned RunReason)
                 door = doorlist[doornum];
             }
 
-            obj->temp3 = (uint16_t)door;
+            obj->temp3 = DOORNUM(door);
 
             obj->s_tilex = door->tilex;
             obj->s_tiley = door->tiley;

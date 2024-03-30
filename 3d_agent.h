@@ -135,9 +135,9 @@ void     GivePlasmaDetonator (int count);
 void     LoadTerminalCommands (void);
 
 void     ActivateWallSwitch (unsigned iconnum, int x, int y);
-unsigned UpdateBarrierTable (int x, int y, bool OnOff);
-unsigned ScanBarrierTable (int x, int y);
-void     DisplaySwitchOperateMsg (unsigned coords);
+int      UpdateBarrierTable (int x, int y, bool OnOff);
+int      ScanBarrierTable (int x, int y);
+void     DisplaySwitchOperateMsg (int coords);
 
 void     DisplayNoMoMsgs (void);
 void     PrintStatPercent (int nx, int ny, int percentage);

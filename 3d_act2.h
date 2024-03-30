@@ -4,7 +4,8 @@
 #define _3D_ACT2_H_
 
 
-#define BARRIER_STATE(obj) ((obj)->ammo)
+#define SLIDE_TEMP(obj)     ((obj)->hitpoints)
+#define BARRIER_STATE(obj)  ((obj)->ammo)
 
 #define InitSmartAnim(obj,shapenum,startofs,maxofs,type,dir)      \
         InitSmartSpeedAnim(obj,shapenum,startofs,maxofs,type,dir,7)

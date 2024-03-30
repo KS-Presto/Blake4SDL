@@ -108,6 +108,8 @@ void jsprintf (const char *msg, ...);
 #define MAPSPOT(x,y,plane) (mapsegs[plane][((y) << MAPSHIFT) + (x)])
 
 #define ISPOINTER(x)       ((((uintptr_t)(x)) & ~0xffff) != 0)
+#define STATICNUM(x)       ((uint16_t)((x) - statobjlist))
+#define DOORNUM(x)         ((uint16_t)((x) - doorobjlist))
 
 #define MAX(a,b)           (((a) > (b)) ? (a) : (b))
 #define MIN(a,b)           (((a) < (b)) ? (a) : (b))
@@ -116,11 +118,6 @@ void jsprintf (const char *msg, ...);
 
 #define FMAPWIDTH          ((fixed)mapwidth << TILESHIFT)
 #define FMAPHEIGHT         ((fixed)mapheight << TILESHIFT)
-
-#define ObjVisable(from_obj,to_obj)  PosVisable(from_obj->x,from_obj->y,to_obj->x,to_obj->y,from_obj->angle)
-
-// SmartAnim macro
-#define ANIM_INFO(o)     ((ofs_anim_t *)&(o)->temp3)
 
 
 #define DISPLAY_MSG_STD_TIME            (5 * 60)    // tics display len
@@ -143,8 +140,6 @@ void jsprintf (const char *msg, ...);
 //
 #define MAX_BARRIER_SWITCHES     40     // max number level wall switches
 
-
-#define SLIDE_TEMP(obj)          (obj->hitpoints)
 
 //
 // M_BASE1 - represents 100 percent in 1st base
@@ -908,6 +903,17 @@ enum enemytypes
 };
 
 
+typedef struct
+{
+    byte animtype;
+    byte curframe;
+    byte maxframe;
+    byte animdir;
+    byte delay;
+    byte waitdelay;
+} ofs_anim_t;
+
+
 typedef struct objstruct
 {
     byte        tilex,tiley;
@@ -939,16 +945,12 @@ typedef struct objstruct
     int16_t     angle;
     int32_t     speed;
 
-    //
-    // TODO: these members are used to hold the memory addresses
-    // of doors and statics, but that can probably be changed
-    // to the index in doorobjlist/statobjlist
-    //
-    // otherwise they should probably be changed to intptr_t/uintptr_t
-    // to guarantee they'll be large enough to hold a full memory address
-    //
     int16_t     temp1,temp2;
-    uint16_t    temp3;          // holds 'last door used' by 'smart' actors
+    uint16_t    temp3;          // holds reserved static object index & 'last door index used' by 'smart' actors
+
+    ofs_anim_t  anim;
+
+    struct      objstruct *tempobj;
 
     /**
     // DO NOT ADD ANY MEMBERS AFTER THESE!!!
@@ -1180,18 +1182,6 @@ enum animdirtypes
     ad_FWD,
     ad_REV
 };
-
-//
-// TODO: this is an abomination
-//
-typedef struct ofs_anim_struct
-{
-    uint16_t animtype:2;  // animtypes
-    uint16_t curframe:5;
-    uint16_t maxframe:5;
-    uint16_t animdir:1;  // animdirtypes
-    uint16_t extra:3;
-} ofs_anim_t;
 
 
 //

@@ -505,7 +505,7 @@ void ScanInfoPlane (void)
                     SpawnOffsetObj (en_crate3,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 468];
-                    newobj->temp3 = (uint16_t)ReserveStatic();
+                    newobj->temp3 = STATICNUM(ReserveStatic());
 
                     if (tile >= 475 && tile <= 478)
                         tile = (tile - 475) + bo_money_bag;
@@ -517,7 +517,7 @@ void ScanInfoPlane (void)
                     SpawnOffsetObj (en_crate2,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 450];
-                    newobj->temp3 = (uint16_t)ReserveStatic();
+                    newobj->temp3 = STATICNUM(ReserveStatic());
 
                     if (tile >= 457 && tile <= 460)
                         tile = (tile - 457) + bo_money_bag;
@@ -538,7 +538,7 @@ void ScanInfoPlane (void)
                     SpawnOffsetObj (en_crate1,x,y);
 
                     newobj->temp2 = ExpCrateShapes[tile - 432];
-                    newobj->temp3 = (uint16_t)ReserveStatic();
+                    newobj->temp3 = STATICNUM(ReserveStatic());
 
                     if (tile >= 439 && tile <= 442)
                         tile = (tile - 439) + bo_money_bag;

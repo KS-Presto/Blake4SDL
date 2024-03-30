@@ -88,7 +88,7 @@ void CountObjects (void)
     active = inactive = count = 0;
 
     US_Print ("Total statics :");
-    total = (int)(laststatobj - statobjlist);
+    total = STATICNUM(laststatobj);
     US_PrintSigned (total);
 
     US_Print ("\nIn use statics:");
