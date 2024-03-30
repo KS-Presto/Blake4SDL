@@ -102,10 +102,8 @@ byte        *lightsource;
 byte        *shadingtable;
 
 
-void    TransformActor (objtype *obj);
 void    BuildTables (void);
 void    ClearScreen (void);
-int     CalcRotate (objtype *obj);
 void    DrawScaleds (void);
 void    CalcTics (void);
 void    ThreeDRefresh (void);
@@ -298,20 +296,20 @@ void CalcProjection (fixed focal)
 =   scale           : conversion from global value to screen value
 =
 = sets:
-=   viewx,transx,transy,viewheight: projected edge location and size
+=   viewx,transx,viewheight: projected edge location and size
 =
 ========================
 */
 
-void TransformActor (objtype *obj)
+void TransformActor (fixed x, fixed y, int16_t *dispx, int16_t *dispheight, fixed *transx)
 {
     fixed gx,gy,gxt,gyt,nx,ny;
 
 //
 // translate point to view centered coordinates
 //
-    gx = obj->x - viewx;
-    gy = obj->y - viewy;
+    gx = x - viewx;
+    gy = y - viewy;
 
 //
 // calculate nx
@@ -336,15 +334,15 @@ void TransformActor (objtype *obj)
 //
 // calculate perspective ratio
 //
-    obj->transx = nx;
-    obj->transy = ny;
+    if (transx)
+        *transx = nx;
 
     if (nx < MINDIST)       // too close, don't overflow the divide
-        obj->viewheight = 0;
+        *dispheight = 0;
     else
     {
-        obj->viewx = (int)(centerx + ((ny * scale) / nx));
-        obj->viewheight = (int)(heightnumerator / (nx >> 8));
+        *dispx = (int)(centerx + ((ny * scale) / nx));
+        *dispheight = (int)(heightnumerator / (nx >> 8));
     }
 }
 
@@ -1027,7 +1025,7 @@ void ClearScreen (void)
 =====================
 */
 
-int CalcRotate (objtype *obj)
+int CalcRotate (objtype *obj, int viewx)
 {
     int angle,viewangle;
     int dir = obj->dir;
@@ -1036,7 +1034,7 @@ int CalcRotate (objtype *obj)
     // this isn't exactly correct, as it should vary by a trig value,
     // but it is close enough with only eight rotations
     //
-    viewangle = player->angle + ((centerx - obj->viewx) / 8);
+    viewangle = player->angle + ((centerx - viewx) / 8);
 
     if (dir == nodir)
         dir = obj->trydir & 127;
@@ -1154,9 +1152,9 @@ void DrawScaleds (void)
         {
             obj->active = ac_yes;
 
-            TransformActor (obj);
+            TransformActor (obj->x,obj->y,&visptr->viewx,&visptr->viewheight,NULL);
 
-            if (!obj->viewheight)
+            if (!visptr->viewheight)
                 continue;           // too close or far away
 
             if ((obj->flags2 & (FL2_CLOAKED | FL2_DAMAGE_CLOAK)) == FL2_CLOAKED)
@@ -1173,14 +1171,11 @@ void DrawScaleds (void)
             if (!(obj->flags & FL_DEADGUY))
                 obj->flags2 &= ~FL2_DAMAGE_CLOAK;
 
-            visptr->viewx = obj->viewx;
-            visptr->viewheight = obj->viewheight;
-
             if (visptr->shapenum == -1)
                 visptr->shapenum = obj->temp1;      // special shape
 
             if (obj->state->flags & SF_ROTATE)
-                visptr->shapenum += CalcRotate(obj);
+                visptr->shapenum += CalcRotate(obj,visptr->viewx);
 
             if (visptr < &visobjlist[MAXVISIBLE - 1])  // don't let it overflow
                 visptr++;

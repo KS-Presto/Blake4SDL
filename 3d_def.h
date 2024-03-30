@@ -934,10 +934,6 @@ typedef struct objstruct
     fixed       x,y;
     byte        s_tilex,s_tiley;  // s_tilex == 0, running for corner
 
-    int16_t     viewx;
-    int16_t     viewheight;
-    fixed       transx,transy;    // in global coord
-
     int16_t     hitpoints;
     byte        ammo;           // also holds barrier state (eg. bt_ON)
     byte        lighting;

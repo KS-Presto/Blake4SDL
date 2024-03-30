@@ -4505,7 +4505,9 @@ void GunAttack (objtype *obj)
     objtype *check,*closest,*oldclosest;
     int     damage;
     int     dx,dy,dist;
+    int16_t viewx,viewheight;
     int32_t viewdist;
+    fixed   transx;
     bool    skip = false;
 
     if (gamestate.weapon != wp_autocharge)
@@ -4546,12 +4548,14 @@ void GunAttack (objtype *obj)
         {
             if ((check->flags & FL_SHOOTABLE) && (check->flags & FL_VISIBLE))
             {
-                if (abs(check->viewx - centerx) < shootdelta && check->transx < viewdist)
+                TransformActor (check->x,check->y,&viewx,&viewheight,&transx);
+
+                if (abs(viewx - centerx) < shootdelta && transx < viewdist && viewheight)
                 {
                     if ((skip && check->obclass == hang_terrotobj) || (check->flags2 & FL2_NOTGUNSHOOTABLE))
                         continue;
 
-                    viewdist = check->transx;
+                    viewdist = transx;
                     closest = check;
                 }
             }
