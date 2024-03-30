@@ -554,7 +554,7 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
     ScanCode scan;
     char     *text,string[MaxString],oldstring[MaxString];
     int      i;
-    int      cursor,len;
+    int      ch,cursor,len;
     word     w,h,temp;
     uint32_t lasttime,curtime;
 
@@ -620,16 +620,22 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
 
         for (text = textinput; *text; text++)
         {
+            ch = *text;
+
             len = strlen(string);
 
             VW_MeasureString (string,&w,&h);
 
-            if (isprint(*text) && (len < MaxString - 1) && ((!maxchars) || (len < maxchars)) && ((!maxwidth) || (w < maxwidth)))
+            if (isprint(ch) && len < MaxString - 1 && (!maxchars || len < maxchars) && (!maxwidth || w < maxwidth))
             {
                 for (i = len + 1; i > cursor; i--)
                     string[i] = string[i - 1];
 
-                string[cursor++] = *text;
+                if (fontnumber == 2)
+                    ch = toupper(ch);    // this font has uppercase only
+
+                string[cursor++] = ch;
+
                 redraw = true;
             }
         }

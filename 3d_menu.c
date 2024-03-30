@@ -3134,13 +3134,11 @@ void ReadGameNames (void)
     //
     // see which save game files are available & read string in
     //
-    snprintf (name,sizeof(name),savefilename);
+    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
 
     for (i = 0; i < MaxSaveGames; i++)
     {
         name[7] = '0' + i;
-
-        SaveGamesAvail[i] = true;
 
         MakeDestPath (name);
 
@@ -3148,6 +3146,8 @@ void ReadGameNames (void)
 
         if (file)
         {
+            SaveGamesAvail[i] = true;
+
             if (FindChunk(file,"DESC"))
             {
                 if (!fread(SaveGameNames[i],sizeof(SaveGameNames[i]),1,file))
