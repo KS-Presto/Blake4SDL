@@ -95,8 +95,8 @@ int         normalshade;
 int         normalshadediv = 1;
 int         shademax = 36;
 
-int         nsd_table[] = { 1, 6, 3, 4, 1, 2};
-int         sm_table[] =  {36,51,62,63,18,52};
+int         nsd_table[SHADEDIV] = { 1, 6, 3, 4, 1, 2};
+int         sm_table[SHADEDIV] =  {36,51,62,63,18,52};
 
 byte        *lightsource;
 byte        *shadingtable;
@@ -148,7 +148,7 @@ void Init3DRenderer (void)
     InitPaletteShifts ();
     SetViewSize (viewsize);
 
-    lightsource = colormap;    // TODO: should this be offset?
+    lightsource = colormap;
 }
 
 

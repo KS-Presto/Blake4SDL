@@ -24,11 +24,6 @@
 
 #define MSG_BUFFER_LEN      150     // max length of info area messages
 
-#define NO_SHADING          128
-#define SHOOT_SHADING       10
-#define LAMP_ON_SHADING     12
-#define EXPLOSION_SHADING   52
-
 #define BETA_TEST           false
 #define LOOK_FOR_DEAD_GUYS  false
 

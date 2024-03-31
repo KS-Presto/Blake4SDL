@@ -5,6 +5,7 @@
 
 
 #define NO_SHADING          128
+#define SHOOT_SHADING       10
 #define LAMP_ON_SHADING     12
 #define EXPLOSION_SHADING   52
 
@@ -80,8 +81,8 @@ extern  int         normalshade;
 extern  int         normalshadediv;
 extern  int         shademax;
 
-extern  int         nsd_table[];
-extern  int         sm_table[];
+extern  int         nsd_table[SHADEDIV];
+extern  int         sm_table[SHADEDIV];
 
 extern  byte        *lightsource;
 extern  byte        *shadingtable;

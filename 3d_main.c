@@ -548,7 +548,7 @@ void LoadLevel (int levelnum)
     WindowY = 181;
     gamestuff.level[levelnum].locked = false;
 
-    mod = levelnum % 6;
+    mod = gamestate.mapon % SHADEDIV;
     normalshadediv = nsd_table[mod];
     shademax = sm_table[mod];
     normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
