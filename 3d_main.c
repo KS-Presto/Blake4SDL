@@ -2117,10 +2117,11 @@ void CheckParameters (int argc, char *argv[])
 {
     int  i;
     char *arg;
+    screen.flags |= SC_FULLSCREEN;
 
     for (i = 1; i < argc; i++)
     {
-        arg = argv[i++];
+        arg = argv[i];
 
         if (!strcmp(arg,"q"))
             gamestate.flags |= GS_QUICKRUN;
@@ -2174,6 +2175,8 @@ void CheckParameters (int argc, char *argv[])
         }
         else if (!strcmp(arg,"radar"))
             gamestate.flags |= GS_SHOW_OVERHEAD;
+        else if (!strcmp(arg,"windowed"))
+            screen.flags &= ~SC_FULLSCREEN;
     }
 }
 

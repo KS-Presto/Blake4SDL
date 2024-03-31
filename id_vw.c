@@ -56,15 +56,24 @@ static const uint32_t rndmasks[] =
 
 void VW_Startup (void)
 {
-    int x,y;
-    int w,h;
-    uint32_t flags;
+    int      x,y;
+    int      w,h;
+    uint32_t flags = 0;
+
+    if (screen.flags & SC_FULLSCREEN)
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    else
+    {
+        flags |= SDL_WINDOW_RESIZABLE;
+
+        if (screen.flags & SC_INPUTGRABBED)
+            flags |= SDL_WINDOW_INPUT_GRABBED;
+    }
 
     x = SDL_WINDOWPOS_CENTERED;
     y = SDL_WINDOWPOS_CENTERED;
     w = screen.width = 320;
     h = screen.height = 200;
-    flags = SDL_WINDOW_RESIZABLE;
 
     screen.title = "Blake4SDL";
 
