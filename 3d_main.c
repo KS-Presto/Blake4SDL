@@ -815,7 +815,7 @@ void SaveLevel (int levelnum)
     //
     MakeDestPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"wb+");
+    file = fopen(tempPath,"rb+");
 
     if (!file)
         CA_CannotOpen (tempPath);
