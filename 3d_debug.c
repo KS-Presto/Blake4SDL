@@ -454,17 +454,17 @@ bool DebugKeys (void)
     else if (Keyboard[sc_K])  // K = Map Content totals
     {
         CountTotals ();
-        return 1;
+        return true;
     }
     else if (Keyboard[sc_C])  // C = count objects
     {
         CountObjects ();
-        return 1;
+        return true;
     }
     else if (Keyboard[sc_R])
     {
         ShowMap ();
-        return 1;
+        return true;
     }
     else if (Keyboard[sc_D])   // D = Dumb/Blind Objects (player invisible)
     {

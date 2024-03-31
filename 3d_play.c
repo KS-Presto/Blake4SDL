@@ -778,6 +778,8 @@ void CheckKeys (void)
                 lasttimecount = GetTimeCount();
             }
 
+            fontnumber = 2;
+
             return;
         }
     }
