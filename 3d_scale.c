@@ -34,8 +34,6 @@ void DrawColumn (int count, int src, byte *dest)
 =
 = DrawTranslucentColumn
 =
-= TODO: shading table needs intensifying?
-=
 ===================
 */
 
@@ -43,7 +41,7 @@ void DrawTranslucentColumn (int count, byte *dest)
 {
     while (count--)
     {
-        *dest = shadingtable[*dest];
+        *dest = shadingtable[0xa00 + *dest];
         dest += screen.buffer->pitch;
     }
 }
