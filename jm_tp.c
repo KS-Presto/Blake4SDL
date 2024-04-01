@@ -521,8 +521,8 @@ static unsigned flags;
 
 static int      bgcolor,ltcolor,dkcolor,shcolor;
 static int      anim_bgcolor = -1;
-static unsigned xl,yl,xh,yh;
-static unsigned cur_x,cur_y,last_cur_x,last_cur_y;
+static uint16_t xl,yl,xh,yh;
+static uint16_t cur_x,cur_y,last_cur_x,last_cur_y;
 
 static char     *first_ch;
 static char     *scan_ch,temp;
@@ -651,11 +651,10 @@ void TP_Presenter (PresenterInfo *pinfo)
     //
     // debug stuff -- draws box AROUND text presenter's printable region
     //
-    // VW_Hlin (xl - TP_MARGIN,yl - TP_MARGIN,xh - xl + 1 + (TP_MARGIN * 2),255);
-    // VW_Vlin (xh + TP_MARGIN,yl - TP_MARGIN,yh - yl + 1 + (TP_MARGIN * 2),255);
-    // VW_Hlin (xl - TP_MARGIN,yh + TP_MARGIN,xh - xl + 1 + (TP_MARGIN * 2),255);
-    // VW_Vlin (xl - TP_MARGIN,yl - TP_MARGIN,yh - yl + 1 + (TP_MARGIN * 2),255);
-    //
+    //VW_Hlin (xl - TP_MARGIN,xh + (TP_MARGIN * 2),yl - TP_MARGIN,255);
+    //VW_Vlin (yl - TP_MARGIN,yh + (TP_MARGIN * 2),xh + TP_MARGIN,255);
+    //VW_Hlin (xl - TP_MARGIN,xh + (TP_MARGIN * 2),yh + TP_MARGIN,255);
+    //VW_Vlin (yl - TP_MARGIN,yh + (TP_MARGIN * 2),xl - TP_MARGIN,255);
 
 #ifdef DRAW_TO_FRONT
     VW_UpdateScreen ();
@@ -708,7 +707,9 @@ void TP_WrapText (void)
 {
     int  last_x;
     int  oldc;
-    word width,height;
+    int  width,height;
+    word w,h;
+    byte *dest;
     char *last_ch;
 
     flags &= ~fl_startofline;
@@ -756,6 +757,7 @@ void TP_WrapText (void)
         }
     }
 
+    //
     // print current line
     //
     temp = *scan_ch;
@@ -763,9 +765,9 @@ void TP_WrapText (void)
 
     if (justify_mode == jm_right && !(flags & fl_center))
     {
-        VW_MeasureString (first_ch,&width,&height);
+        VW_MeasureString (first_ch,&w,&h);
 
-        cur_x = xh - width + 1;
+        cur_x = xh - w + 1;
 
         if (cur_x < xl)
             cur_x = xl;
@@ -792,7 +794,7 @@ void TP_WrapText (void)
     *scan_ch = temp;
     first_ch = scan_ch;
 
-    tp_newline:;
+tp_newline:
     flags &= ~fl_center;
 
     //
@@ -838,12 +840,25 @@ void TP_WrapText (void)
         //
         if ((pi->flags & TPF_SCROLL_REGION) && cur_y + (font->height * 2) > yh)
         {
-#ifdef NOTYET
-            // TODO: do we need to do anything here?
-            VL_ScreenToScreen (bufferofs + ((((yl + font->height + is_shadowed) * 320) + xl) / 4),
-            bufferofs + (((yl * 320) + xl) / 4),(xh-xl+1)/4,(yh-yl+1)-font->height+is_shadowed);
-#endif
-            VW_Bar (cur_x,cur_y,xh - xl + 1 + (TP_MARGIN * 2),yh - cur_y + 1,bgcolor);
+            //
+            // copy the rectangle below the first line
+            //
+            width = xh - xl + 1;
+            height = (yh - yl + 1) - font->height + is_shadowed;
+
+            dest = SafeMalloc(width * height);
+
+            VW_ScreenToMem (dest,width,height,xl,yl + font->height + is_shadowed);
+
+            //
+            // draw it starting at the top of the rectangle
+            // and clear the last line
+            //
+            VW_MemToScreen (dest,width,height,xl,yl);
+
+            free (dest);
+
+            VW_Bar (cur_x,cur_y,width + (TP_MARGIN * 2),yh - cur_y + 1,bgcolor);
 
             if (cur_y + font->height > yh)
                 cur_y = yh - font->height + 1 - is_shadowed;
@@ -1007,7 +1022,10 @@ void TP_HandleCodes (void)
                     }
                 }
 
-                cur_x += ((xh - cur_x + 1) - length) / 2;
+                //
+                // KS: ick... this is disgusting
+                //
+                cur_x += ((uint16_t)((xh - cur_x + 1) - length)) / 2;
                 flags |= fl_center;
 
                 if (pi->flags & TPF_SHOW_CURSOR)
@@ -1312,7 +1330,7 @@ void TP_HandleCodes (void)
                 first_ch += 3;
 
                 if (pi->flags & TPF_SHOW_CURSOR)
-                TP_JumpCursor ();
+                    TP_JumpCursor ();
                 break;
 
             //
@@ -1346,7 +1364,7 @@ void TP_HandleCodes (void)
                 py = cur_y;
                 old_color = fontcolor;
                 fontcolor = TERM_BCOLOR;
-                VW_DrawString("@");
+                VW_DrawString ("@");
                 fontcolor = old_color;
 #endif
                 break;

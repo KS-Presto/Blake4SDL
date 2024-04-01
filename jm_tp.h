@@ -70,10 +70,10 @@ typedef struct
     char     *script[TP_MAX_PAGES];
     void     *scriptstart;
     int16_t  numpages,pagenum;
-    int16_t  xl,yl,xh,yh;
+    uint16_t xl,yl,xh,yh;
     byte     fontnumber;
     byte     bgcolor,ltcolor,dkcolor,shcolor;
-    int16_t  cur_x,cur_y;
+    uint16_t cur_x,cur_y;
     int8_t   print_delay;
     byte     highlight_color,fontcolor;
     int16_t  id_cache;

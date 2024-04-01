@@ -63,7 +63,7 @@ extern  uint32_t     *ylookup;
 
 extern  int          fontcolor,backcolor;
 extern  int          fontnumber;
-extern  int          px,py;
+extern  int16_t      px,py;
 
 extern  SDL_Color    gamepal[256];
 

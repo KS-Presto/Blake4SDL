@@ -10,7 +10,7 @@ pictabletype *pictable;
 
 uint32_t     *ylookup;
 
-int          px,py;
+int16_t      px,py;
 int          fontcolor,backcolor;
 int          fontnumber;
 
