@@ -2939,6 +2939,7 @@ void Cmd_Use (void)
 
 bool Interrogate (objtype *obj)
 {
+    int            i;
     bool           rt_value = true;
     sci_mCacheInfo *ci;
     scientist_t    *st;
@@ -2977,8 +2978,13 @@ bool Interrogate (objtype *obj)
             {
                 NumAreaMsgs = 0;
 
-                for (ci = InfHintList.smInfo; ci->areanumber != 0xff; ci++)
+                for (i = 0; i < InfHintList.NumMsgs; i++)
                 {
+                    ci = &InfHintList.smInfo[i];
+
+                    if (ci->areanumber == 0xff)
+                        break;
+
                     if (ci->areanumber == obj->areanumber)
                         InfAreaMsgs[NumAreaMsgs++] = InfHintList.smInfo[ci->mInfo.local_val].mInfo.mSeg;
                 }

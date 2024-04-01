@@ -2024,14 +2024,12 @@ void AddTotalEnemy (int enemies)
 
 void SetupGameLevel (void)
 {
-    sci_mCacheInfo *ci;
-    int            x,y;
-    int            count,lock;
-    word           *map,*map1,*map2;
-    unsigned       tile,icon;
-    bool           switchon = false;
-
-    ci = InfHintList.smInfo;    // TODO: check if it's safe to put this in the for loop
+    int      i;
+    int      x,y;
+    int      lock;
+    word     *map,*map1,*map2;
+    unsigned tile,icon;
+    bool     switchon = false;
 
     if (!loadedgame)
     {
@@ -2261,12 +2259,16 @@ void SetupGameLevel (void)
 //
 // init informant stuff
 //
-    count = InfHintList.NumMsgs;
     LastInfArea = 0xff;
     FirstGenInfMsg = 0;
 
-    for (; ci->areanumber != 0xff && count--; ci++)
+    for (i = 0; i < InfHintList.NumMsgs; i++)
+    {
+        if (InfHintList.smInfo[i].areanumber == 0xff)
+            break;
+
         FirstGenInfMsg++;
+    }
 
     TotalGenInfMsgs = InfHintList.NumMsgs - FirstGenInfMsg;
 
