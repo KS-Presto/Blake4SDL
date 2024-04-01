@@ -553,8 +553,9 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
     bool     redraw,cursorvis,cursormoved,done,result;
     ScanCode scan;
     char     *text,string[MaxString],oldstring[MaxString];
+    char     ch;
     int      i;
-    int      ch,cursor,len;
+    int      cursor,len;
     word     w,h,temp;
     uint32_t lasttime,curtime;
 
@@ -593,7 +594,7 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
         switch (scan)
         {
             case sc_Return:
-                snprintf (buf,sizeof(buf),string);
+                snprintf (buf,maxchars + 1,string);
                 done = true;
                 result = true;
                 break;
