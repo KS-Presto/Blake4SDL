@@ -5110,7 +5110,7 @@ bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
 {
     int       WhatItIs;
     objtype   *obj;
-    statobj_t *stat;
+    statobj_t *stat = NULL;
     unsigned  tile,doornum;
     unsigned  iconnum;
 
@@ -5201,6 +5201,9 @@ bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
             return false;
 
         case wit_STATIC:
+            if (!stat)
+                break;
+
             SW_HandleStatic (stat,tilex,tiley);
             return true;
 
