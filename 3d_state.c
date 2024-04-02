@@ -2365,10 +2365,17 @@ void SeekPlayerOrStatic (objtype *obj, fixed *deltax, fixed *deltay)
 
 void PlayerIsBlocking (objtype *obj)
 {
-    obj->tilex += oppdirinc[obj->dir][0];
-    obj->tiley += oppdirinc[obj->dir][1];
+    fixed distance = obj->distance;
+
     obj->dir = opposite[obj->dir];
-    obj->distance ^= TILEGLOBAL - 1;
+
+    if (!TryWalk(obj,true))
+    {
+        obj->dir = nodir;
+        return;
+    }
+
+    obj->distance = TILEGLOBAL - distance;
 }
 
 
