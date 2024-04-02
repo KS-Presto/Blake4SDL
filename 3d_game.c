@@ -2945,7 +2945,7 @@ void RecordDemo (void)
 
     FinishDemoRecord ();
 }
-
+#endif
 
 /*
 ==================
@@ -2959,7 +2959,9 @@ void RecordDemo (void)
 
 void PlayDemo (int demonumber)
 {
+#ifdef DEMOS_EXTERN
     char     fname[13];
+#endif
     uint16_t length;
 
 #ifndef DEMOS_EXTERN
@@ -3001,11 +3003,13 @@ void PlayDemo (int demonumber)
     LoadLevel (gamestate.mapon);
 
     VW_FadeOut ();
+
     DrawPlayScreen (true);
     LoadPlanes ();
-
-    screen.flags |= SC_FIZZLEIN;
-
+#ifdef NOTYET
+    SetupFizzlein (viewscreenx,viewscreeny,viewwidth,viewheight);
+    //screen.flags |= SC_FIZZLEIN;
+#endif
     PlayLoop ();
 
     if (gamestate.health <= 0)
@@ -3023,7 +3027,7 @@ void PlayDemo (int demonumber)
 
     playstate = ex_title;
 }
-#endif
+
 
 /*
 ==================

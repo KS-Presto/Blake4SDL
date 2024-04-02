@@ -48,6 +48,7 @@ void    DrawTopInfo (int type);
 void    SetViewSize (int size);
 void    ShowViewSize (int size);
 void    RecordDemo (void);
+void    PlayDemo (int demonumber);
 void    GameLoop (void);
 
 void    PlaySoundLocGlobal (int sound, fixed gx, fixed gy);

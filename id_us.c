@@ -82,7 +82,7 @@ void US_InitRndT (bool randomize)
 
 int US_RndT (void)
 {
-    return rndtable[rndindex++ & 0xff];
+    return rndtable[++rndindex & 0xff];
 }
 
 
