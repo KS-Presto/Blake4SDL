@@ -194,7 +194,7 @@ void ShowMap (void)
 }
 
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 /*
 ================
 =
@@ -571,8 +571,8 @@ bool DebugKeys (void)
 
         return true;
     }
-#if IN_DEVELOPMENT
-#if (!BETA_TEST)
+#ifdef IN_DEVELOPMENT
+#ifndef BETA_TEST
     else if (Keyboard[sc_N])   // N = no clip
     {
         US_CenterWindow (18,3);
@@ -784,8 +784,8 @@ bool DebugKeys (void)
 
         return true;
     }
-#if (IN_DEVELOPMENT)
-#if !BETA_TEST
+#ifdef IN_DEVELOPMENT
+#ifndef BETA_TEST
     else if (Keyboard[sc_Y])
     {
         GivePoints (100000,false);

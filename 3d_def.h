@@ -6,30 +6,15 @@
 
 #include "id_heads.h"
 
-#ifdef NOTYET
-#include "jm_cio.h"
-#endif
-
-//#define DEMOS_EXTERN
-//#define MYPROFILE
-//#define TRACK_ENEMY_COUNT
-#define OBJ_RESERV
-
-#define _VERSION_           "V1.01"
 
 #define GOLD_MORPH_LEVEL      19    // level which Dr. GoldFire Morphs
 
-#define VERSION_TEXT_COLOR    (0x82)
-#define VERSION_TEXT_BKCOLOR  (0x80)
+#define VERSION_TEXT_COLOR    0x82
+#define VERSION_TEXT_BKCOLOR  0x80
 
 #define MSG_BUFFER_LEN      150     // max length of info area messages
 
-#define BETA_TEST           false
-#define LOOK_FOR_DEAD_GUYS  false
-
 #define BETA_CODE           "NEWGAME"
-
-#define LIMITED_AMMO
 
 #define PLAYTEMP_FILE       "PLAYTEMP"
 #define OLD_PLAYTEMP_FILE   "OLDPTEMP"
@@ -44,33 +29,13 @@
 //
 // FONT DEFINES
 //
-#define ID_FONT         (STARTFONT)
+#define ID_FONT         STARTFONT
 #define BIG_FONT        (STARTFONT + 1)
 #define SIXPOINT_FONT   (STARTFONT + 2)
 #define TALL_FONT       (STARTFONT + 3)
 #define COAL_FONT       (STARTFONT + 4)
 #define RADAR_FONT      (STARTFONT + 5)
 
-//#define LOCKED_FLOORS
-
-#define ID_CACHE_BRIEFS
-#define ID_CACHE_HELP
-#define ID_CACHE_LOSE
-#define ID_CACHE_CREDITS
-
-
-//#define DEBUG_STATICS
-//#define DEBUG_ACTORS
-
-/*
-=============================================================================
-
-                        GAME VERSION DEPENDANT DEFINATIONS
-
-=============================================================================
-*/
-
-void jsprintf (const char *msg, ...);
 
 /*
 =============================================================================
@@ -1416,7 +1381,6 @@ void     InvalidLevels (void);
 void     CheckValidity (const char *file, int32_t valid_checksum);
 void     UnauthorizedLevels (void);
 void     ShowChecksums (void);
-void     fprint (const char *text);
 
 bool     LevelInPlaytemp (int levelnum);
 void     InitPlaytemp (void);

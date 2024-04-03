@@ -3,9 +3,6 @@
 #include "3d_def.h"
 
 
-#define CHECK_FOR_EPISODES
-
-
 #define INSTRUCTIONS_Y_POS      164
 #define DESCRIPTIONS_Y_POS      134
 
@@ -667,7 +664,7 @@ int CP_CheckQuick (int scan)
             if (SaveGamesAvail[LSItems.curpos] && pickquick)
             {
                 snprintf (str,sizeof(str),"Quick Save will overwrite:\n\"%s\"?",SaveGameNames[LSItems.curpos]);
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
                 if (TestQuickSave || Confirm(str))
                 {
                     if (TestQuickSave)
@@ -3759,7 +3756,7 @@ void TerminateString (char *pos)
 {
     pos = strstr(pos,int_xx);
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (!pos)
         Quit ("A cached message was NOT terminated with \"%s\"!",int_xx);
 #endif
@@ -4086,7 +4083,7 @@ void CheckForEpisodes (void)
     strcat (audioname,extension);
     strcat (demoname,extension);
 #endif
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
     char altpagefilename[13];
 
     snprintf (altpagefilename,sizeof(altpagefilename),"SVSWAP.%s",extension);

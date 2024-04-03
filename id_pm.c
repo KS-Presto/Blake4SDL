@@ -22,7 +22,7 @@ enum shadfiletypes
 
 int  FileUsed = sd_NONE;
 
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
 bool shadowsavail;
 #endif
 
@@ -38,7 +38,7 @@ FILE *PM_OpenPageFile (void)
 {
     FILE *file;
     char pagefilename[13];
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
     if (!(gamestate.flags & GS_DRAW_FLOOR) && shadowsavail)
     {
         snprintf (pagefilename,sizeof(pagefilename),"svswap.%s",extension);

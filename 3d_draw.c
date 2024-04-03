@@ -3,12 +3,7 @@
 #include "3d_def.h"
 
 
-//#define WOLFDOORS
-//#define MASKABLE_DOORS
-
-// the door is the last picture before the sprites
-
-#define DOORWALL (PMSpriteStart - NUMDOORPICS)
+#define DOORWALL  (PMSpriteStart - NUMDOORPICS)
 
 #define ACTORSIZE 0x4000
 

@@ -96,10 +96,6 @@ enum pisTypes
     pis_scaled,
     pis_scwall,
     pis_latchpic,
-#if TP_640x200
-    pis_pic2x,
-    pis_sprite2x,
-#endif
 };
 
 

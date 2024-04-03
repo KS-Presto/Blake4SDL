@@ -69,7 +69,7 @@ objtype *SpawnNewObj (int tilex, int tiley, statetype *state)
 
     newobj->areanumber = GetAreaNumber(newobj->tilex,newobj->tiley);
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (newobj->areanumber >= NUMAREAS && !nevermark)
         Quit ("Actor spawned on wall at %dx%d",newobj->tilex,newobj->tiley);
 #endif
@@ -325,7 +325,7 @@ bool TryWalk (objtype *obj, bool moveit)
 
     obj->areanumber = GetAreaNumber(obj->tilex,obj->tiley);
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (obj->areanumber >= NUMAREAS)
         Quit ("Actor walked on wall at %dx%d",obj->tilex,obj->tiley);
 #endif
@@ -842,7 +842,7 @@ void KillActor (objtype *obj)
         case crate1obj:
         case crate2obj:
         case crate3obj:
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
             if (obj->temp3 >= MAXSTATS)
                 Quit ("exp crate->temp3 out of range!");
 #endif
@@ -1031,7 +1031,7 @@ void KillActor (objtype *obj)
             obj->lighting = EXPLOSION_SHADING;
             break;
     }
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
     switch (clas)
     {
         case SMART_ACTORS:
@@ -1940,7 +1940,7 @@ bool SightPlayer (objtype *obj)
     return true;
 }
 
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
 /*
 ===============
 =
@@ -1980,7 +1980,6 @@ bool LookForDeadGuys (objtype *obj)
 
 bool LookForGoodies (objtype *obj, unsigned RunReason)
 {
-    // #define ONE_TRACK_MIND
     #define DOORCHOICES    8
 
     doorobj_t *door,*doorlist[DOORCHOICES];

@@ -3,11 +3,6 @@
 #include "3d_def.h"
 
 
-#define EXPLODE_STATIC_SCAN
-#define BFG_SHOT_STOPS
-// #define DODGE_N_CHASE
-
-
 #define SPDPATROL       512
 #define SPDPROJ         7168
 #define PROJSIZE        TILECENTER          // collision with actor range
@@ -825,7 +820,7 @@ void T_OfsThink (objtype *obj)
             break;
 
         case podeggobj:
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
             if (!((Keyboard[sc_6] || Keyboard[sc_7]) && Keyboard[sc_8] && DebugOk))
 #endif
             if (!(obj->flags & FL_VISIBLE))
@@ -834,7 +829,7 @@ void T_OfsThink (objtype *obj)
             if (obj->temp2 == 0xff * 60)
                 break;
 
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
             if ((Keyboard[sc_6] || Keyboard[sc_7]) && Keyboard[sc_8] && DebugOk)
                 obj->temp2 = 0;
 #endif
@@ -852,13 +847,13 @@ void T_OfsThink (objtype *obj)
         case morphing_spider_mutantobj:
         case morphing_reptilian_warriorobj:
         case morphing_mutanthuman2obj:
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
             if (!((Keyboard[sc_6] || Keyboard[sc_7]) && Keyboard[sc_8] && DebugOk))
 #endif
             if (!(obj->flags & FL_VISIBLE))
                 break;
 
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
             if ((Keyboard[sc_6] || Keyboard[sc_7]) && Keyboard[sc_8] && DebugOk)
                 obj->temp2 = 0;
 #endif
@@ -1515,6 +1510,16 @@ void T_SmartThought (objtype *obj)
     {
         if (AnimateOfsObj(obj))
         {
+            //
+            // KS: Morphing objs have at least a couple of bugs. Since it
+            // doesn't call FirstSighting right away, it doesn't get a speed increase,
+            // and since FL_ATTACKMODE isn't being set, when the player
+            // deals damage it'll call FirstSighting, speed it up, and play
+            // its alert sound again. This can easily be fixed by replacing the
+            // PlaySoundLocActor & NewState calls here with a single FirstSighting call.
+            // Finally, during the morphing animation, sometimes it displays the wrong
+            // sprite for at least 1 frame.
+            //
             switch (obj->obclass)
             {
                 case morphing_spider_mutantobj:
@@ -1528,6 +1533,7 @@ void T_SmartThought (objtype *obj)
                     obj->flags &= ~FL_FAKE_STATIC;
                     obj->flags |= FL_PROJ_TRANSPARENT | FL_SHOOTABLE;
                     NewState (obj,&s_ofs_chase1);
+                    //FirstSighting (obj);
                     break;
 
                 case podeggobj:
@@ -1817,8 +1823,6 @@ void AdvanceAnimFWD (objtype *obj)
 
 void ActivateWallSwitch (unsigned iconnum, int tilex, int tiley)
 {
-    #define UPDATE_OTHER_SWITCHES
-
     int       states[] = {OFF_SWITCH,ON_SWITCH};
     int       mapx,mapy;
     unsigned  icon,num;
@@ -3032,7 +3036,7 @@ void CheckForSpecialTile (objtype *obj, int tilex, int tiley)
 
     *map = obj->areanumber = GetAreaNumber(tilex,tiley);
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (obj->areanumber >= NUMAREAS)
         Quit ("Actor spawned on wall at %dx%d",tilex,tiley);
 #endif
@@ -3051,7 +3055,7 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
 {
     objtype *newobj;
     int     ammo = 8;
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     int     oldtx,oldty;
 #endif
     switch (which)
@@ -3138,13 +3142,13 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
 
     actorat[newobj->tilex][newobj->tiley] = NULL;   // don't use original spot
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     oldtx = newobj->tilex;
     oldty = newobj->tiley;
 #endif
     TryWalk (newobj,true);
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (newobj->obclass != blakeobj)
     {
         if ((uintptr_t)actorat[newobj->tilex][newobj->tiley] == BLOCKTILE)
@@ -3889,7 +3893,7 @@ void T_Path (objtype *obj)
                     return;
             }
 
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
             if (LookForDeadGuys(obj))
                 return;
 #endif

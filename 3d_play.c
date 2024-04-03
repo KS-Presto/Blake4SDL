@@ -47,7 +47,7 @@ int             playstate;
 
 bool            PowerBall;
 
-#if TECH_SUPPORT_VERSION
+#ifdef TECH_SUPPORT_VERSION
 int             DebugOk = true;
 #else
 int             DebugOk;
@@ -56,7 +56,7 @@ int             bordertime,DebugOk,InstantWin,InstantQuit;
 
 unsigned        ExtraRadarFlags;
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 int             TestQuickSave,TestAutoMapper;
 #endif
 
@@ -65,7 +65,7 @@ objtype         *player,*objfreelist;
 objtype         dummyobj;
 
 objtype         *actorat[MAPSIZE][MAPSIZE];
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
 objtype         *deadguys[MAXACTORS];
 int             numdeadguys;
 #endif
@@ -108,7 +108,7 @@ bool            refreshscreen;
 bool            demorecord,demoplayback;
 int8_t          *demoptr,*lastdemoptr;
 int8_t          *demobuffer;
-#if (GAME_VERSION != SHAREWARE_VERSION) || GEORGE_CHEAT
+#if (GAME_VERSION != SHAREWARE_VERSION) || defined(GEORGE_CHEAT)
 byte            jam_buff_cmp[] = {sc_J,sc_A,sc_M};
 byte            jam_buff[sizeof(jam_buff_cmp)];
 #endif
@@ -442,7 +442,7 @@ void CheckKeys (void)
 
     scan = LastScan;
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef ACTIVATE_TERMINAL
     if (Keyboard[sc_9] && Keyboard[sc_0])
         ActivateTerminal (true);
@@ -541,7 +541,7 @@ void CheckKeys (void)
 
     if (Keyboard[sc_Enter])
     {
-#if (GAME_VERSION != SHAREWARE_VERSION) || GEORGE_CHEAT
+#if (GAME_VERSION != SHAREWARE_VERSION) || defined(GEORGE_CHEAT)
         if (!memcmp(jam_buff,jam_buff_cmp,sizeof(jam_buff_cmp)))
         {
             jam_buff[0] = '\0';
@@ -653,7 +653,7 @@ void CheckKeys (void)
         return;
     }
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (TestQuickSave)
     {
         //TestQuickSave--;
@@ -812,7 +812,7 @@ void CheckKeys (void)
     {
         gamestate.flags ^= GS_DRAW_FLOOR;
         Keyboard[sc_F] = false;
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
         ChangeSwapFiles (true);
 #endif
     }
@@ -877,7 +877,7 @@ void CheckMusicToggle (void)
         M_KeyReleased = true;
 }
 
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
 /*
 =====================
 =
@@ -990,7 +990,7 @@ void InitObjList (void)
     lastobj = lastattacker = NULL;
 
     objcount = 0;
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
     numdeadguys = 0;
     memset (deadguys,0,sizeof(deadguys));
 #endif
@@ -1312,7 +1312,7 @@ int StopMusic (void)
 void StartMusic (void)
 {
     SD_MusicOff ();
-#if IN_DEVELOPMENT || GAME_VERSION != SHAREWARE_VERSION || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || GAME_VERSION != SHAREWARE_VERSION || defined(TECH_SUPPORT_VERSION)
     if (gamestate.flags & GS_MUSIC_TEST)
         lastmusicchunk = musicnum;
     else
@@ -1337,7 +1337,7 @@ void StartMusic (void)
 void ContinueMusic (int offs)
 {
     SD_MusicOff ();
-#if IN_DEVELOPMENT || GAME_VERSION != SHAREWARE_VERSION || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || GAME_VERSION != SHAREWARE_VERSION || defined(TECH_SUPPORT_VERSION)
     if (gamestate.flags & GS_MUSIC_TEST)
         lastmusicchunk = musicnum;
     else

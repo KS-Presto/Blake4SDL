@@ -1696,25 +1696,10 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
             MegaSimpleScaleShape (x + 32,y + 32,64,shapenum,NO_SHADING);
             break;
 
-#if NUMPICS
         case pis_latchpic:
         case pis_pic:
-#if TP_640x200
-        case pis_pic2x:
-#endif
             VW_DrawPic (x,y,shapenum);
-            //VW_geDrawPic (x >> 3,y,shapenum,shapetype == pis_pic2x);
             break;
-#endif
-
-#if NUMSPRITES
-        case pis_sprite:
-#if TP_640x200
-        case pis_sprite2x:
-#endif
-            //VW_geDrawSprite (x,y - (spr->orgy >> G_P_SHIFT),shapenum,shapetype == pis_sprite2x);
-            break;
-#endif
     }
 
     //
@@ -1820,19 +1805,12 @@ int TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype)
             y2 = y1 + 63;
             break;
 
-#if NUMPICS
         case pis_pic:
         case pis_latchpic:
-#if TP_640x200
-        case pis_pic2x:
-            width = pictable[shapenum - STARTPICS].width << (3 + (shapetype == pis_pic2x));
-#else
             width = pictable[shapenum - STARTPICS].width;
-#endif
             x2 = x1 + width - 1;
             y2 = y1 + (pictable[shapenum - STARTPICS].height) - 1;
             break;
-#endif
     }
 
     if (flags & fl_boxshape)
@@ -1848,11 +1826,6 @@ int TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype)
             VW_Hlin (x1,x2,y2,dkcolor);
             VW_Vlin (y1,y2,x1,ltcolor);
             VW_Vlin (y1,y2,x2,dkcolor);
-
-#if TP_640x200
-            VW_Vlin (y1,y2,x1 + 1,ltcolor);
-            VW_Vlin (y1,y2,x2 + 1,dkcolor);
-#endif
         }
     }
 

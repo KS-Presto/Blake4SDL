@@ -706,13 +706,7 @@ void FreeMsgCache (mCacheList *mList, int infosize)
     {
         free (ci->mSeg);
         ci->mSeg = NULL;
-#if 1
-        ci = (mCacheInfo *)((byte *)ci + infosize);  // TODO: this looks better, but make sure it doesn't break
-#else
-        ch = (char *)ci;
-        ch += infosize;
-        ci = (mCacheInfo *)ch;
-#endif
+        ci = (mCacheInfo *)((byte *)ci + infosize);
     }
 }
 

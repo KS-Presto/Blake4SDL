@@ -6,7 +6,7 @@
 #define LOCATION_TEXT_COLOR 0xaf
 #define ATABLEMAX           15
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 int             db_count;
 #ifdef DEBUG_STATICS
 byte            debug_bonus[2][800];
@@ -268,7 +268,7 @@ void NewGame (int difficulty, int episode)
     gamestate.episode = episode;
     gamestate.flags |= (GS_CLIP_WALLS | GS_ATTACK_INFOAREA);
 
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
     if (gamestate.flags & GS_STARTLEVEL)
     {
         gamestate.mapon = starting_level;
@@ -322,7 +322,7 @@ void ScanInfoPlane (void)
 #ifdef CEILING_FLOOR_COLORS
     bool           gotcolors = false;
 #endif
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     db_count = 0;
 #endif
     detonators_spawned = 0;
@@ -525,7 +525,7 @@ void ScanInfoPlane (void)
                 }
                 else
 #if GAME_VERSION == SHAREWARE_VERSION
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
                      if (tile >= 450)
                     INVALID_ACTOR_ERR;
                 else
@@ -552,7 +552,7 @@ void ScanInfoPlane (void)
                     tile -= bo_money_bag;
 
                     AddTotalPoints (static_points[tile]);
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef DEBUG_STATICS
                     debug_bonus[0][db_count++] = static_points[tile];
 #endif
@@ -577,7 +577,7 @@ void ScanInfoPlane (void)
                 case 87:     // Gold
                 case 88:     // Bonus
                     AddTotalPoints (static_points[statinfo[tile - 23].type-bo_money_bag]);
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef DEBUG_STATICS
                     debug_bonus[0][db_count++] = static_points[statinfo[tile - 23].type - bo_money_bag];
 #endif
@@ -655,7 +655,7 @@ void ScanInfoPlane (void)
                 case 400:    // gold 2
                 case 401:    // gold 3
                     AddTotalPoints (static_points[statinfo[tile - 315].type - bo_money_bag]);
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef DEBUG_STATICS
                     debug_bonus[0][db_count++] = static_points[statinfo[tile - 315].type - bo_money_bag];
 #endif
@@ -723,7 +723,7 @@ void ScanInfoPlane (void)
                 case 393:    // crate 2
                 case 394:    // crate 3
 #if GAME_VERSION == SHAREWARE_VERSION
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
                     INVALID_ACTOR_ERR;
 #endif
 #endif
@@ -1173,7 +1173,7 @@ void ScanInfoPlane (void)
                 case 317:
                     newobj = SpawnStand(en_volatiletransport,x,y,tile - 314);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 350:
                 case 351:
                 case 352:
@@ -1213,7 +1213,7 @@ void ScanInfoPlane (void)
                 case 321:
                     newobj = SpawnPatrol(en_volatiletransport,x,y,tile - 318);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 354:
                 case 355:
                 case 356:
@@ -1378,7 +1378,7 @@ void ScanInfoPlane (void)
                 case 106:
                     newobj = SpawnOffsetObj(en_mutant_human2,x,y);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 125:
                 case 107:
                 case 106:
@@ -1436,7 +1436,7 @@ void ScanInfoPlane (void)
                 case 170:
                     newobj = SpawnOffsetObj(en_lcan_wait_alien,x,y);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 172:
                 case 171:
                 case 170:
@@ -1456,7 +1456,7 @@ void ScanInfoPlane (void)
                 case 272:
                     newobj = SpawnOffsetObj(en_lcan_alien,x,y);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 270:
                 case 271:
                 case 272:
@@ -1482,7 +1482,7 @@ void ScanInfoPlane (void)
                 case 137:
                     newobj = SpawnOffsetObj(en_gurney_wait,x,y);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 161:
                 case 173:
                 case 137:
@@ -1502,7 +1502,7 @@ void ScanInfoPlane (void)
                 case 273:
                     newobj = SpawnOffsetObj(en_gurney,x,y);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 275:
                 case 274:
                 case 273:
@@ -1522,7 +1522,7 @@ void ScanInfoPlane (void)
                 case 291:
                     newobj = SpawnStand(en_liquid,x,y,0);
                     break;
-#elif IN_DEVELOPMENT
+#elif defined(IN_DEVELOPMENT)
                 case 293:
                 case 292:
                 case 291:
@@ -1957,7 +1957,7 @@ void ScanInfoPlane (void)
     if (!loadedgame)
         gamestuff.level[gamestate.mapon].stats.accum_inf = gamestuff.level[gamestate.mapon].stats.total_inf;
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     db_count = 0;
 #endif
 }

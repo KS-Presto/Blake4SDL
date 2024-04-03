@@ -620,34 +620,6 @@ int32_t CA_CacheAudioChunk (int chunk)
     return length;
 }
 
-#if 0
-/*
-======================
-=
-= CA_CacheAdlibSoundChunk
-=
-======================
-*/
-
-void CA_CacheAdlibSoundChunk (int chunk)
-{
-    int32_t    pos,length;
-    AdLibSound *sound;
-
-    if (audiosegs[chunk])
-        return;                        // already in memory
-
-    pos = audiostarts[chunk];
-    length = audiostarts[chunk + 1] - pos;
-
-    sound = SafeMalloc(length);
-
-    fseek (audiofile,pos,SEEK_SET);
-    fread (sound,length,1,audiofile);
-
-    audiosegs[chunk] = (byte *)sound;
-}
-#endif
 
 /*
 ======================
@@ -696,21 +668,8 @@ void CA_LoadAllSounds (void)
             break;
     }
 
-#if 0
-    if (start == STARTADLIBSOUNDS)
-    {
-        for (i = 0; i < NUMSOUNDS; i++, start++)
-            CA_CacheAdlibSoundChunk (start);
-    }
-    else
-    {
-        for (i = 0; i < NUMSOUNDS; i++, start++)
-            CA_CacheAudioChunk (start);
-    }
-#else
     for (i = 0; i < NUMSOUNDS; i++, start++)
         CA_CacheAudioChunk (start);
-#endif
 }
 
 

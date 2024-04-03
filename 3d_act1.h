@@ -4,9 +4,6 @@
 #define _3D_ACT1_H_
 
 
-#define USE_TRANSFORMAREAS
-
-
 enum doorpics
 {
     // LOCKED DOORS

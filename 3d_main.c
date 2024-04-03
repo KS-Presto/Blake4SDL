@@ -15,11 +15,6 @@
 =============================================================================
 */
 
-
-#define SKIP_TITLE_AND_CREDITS  false
-#define SKIP_CHECKSUMS          true
-#define SHOW_CHECKSUM           false
-
 #if GAME_VERSION == SHAREWARE_VERSION
 
 #define AUDIOT_CHECKSUM     0xfff87142
@@ -56,7 +51,7 @@ int     debug_value;
 char    destPath[MAX_DEST_PATH_LEN + 1];
 char    tempPath[MAX_DEST_PATH_LEN + 15];
 
-#if BETA_TEST
+#ifdef BETA_TEST
 char    bc_buffer[] = BETA_CODE;
 #endif
 char    str[256],error[256];
@@ -67,7 +62,7 @@ int     mouseadjustment;
 bool    ForceLoadDefault;
 bool    ShowQuickMsg;
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 int     democount,jim;
 #endif
 int     param_samplerate = 44100;
@@ -648,7 +643,7 @@ void LoadLevel (int levelnum)
         // test for FL_NONMARK | FL_NEVERMARK before updating actorat
         //
         actorat[newobj->tilex][newobj->tiley] = newobj;
-#if LOOK_FOR_DEAD_GUYS
+#ifdef LOOK_FOR_DEAD_GUYS
         if (newobj->flags & FL_DEADGUY)
             deadguys[numdeadguys++] = newobj;
 #endif
@@ -1057,7 +1052,7 @@ bool LoadTheGame (FILE *file)
     //
     // reinitialize page manager
     //
-#if DUAL_SWAP_FILES
+#ifdef DUAL_SWAP_FILES
     PM_Shutdown ();
     PM_Startup ();
 #endif
@@ -1582,7 +1577,7 @@ void InitGame (void)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
         Quit ("Unable to init SDL: %s\n",SDL_GetError());
 
-#if IN_DEVELOPMENT || GEORGE_CHEAT || SHOW_CHECKSUM
+#if defined(IN_DEVELOPMENT) || defined(GEORGE_CHEAT) || defined(SHOW_CHECKSUM)
     if (MS_CheckParm("checksum"))
     {
         ShowChecksums ();
@@ -1601,11 +1596,11 @@ void InitGame (void)
     //
     // any problems with this version of the game?
     //
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
     if (!MS_CheckParm("nochex"))
 #endif
 
-#if !SKIP_CHECKSUMS
+#ifndef SKIP_CHECKSUMS
         CheckValidity ("MAPTEMP.",MAPTEMP_CHECKSUM);
 
 #if GAME_VERSION != SHAREWARE_VERSION
@@ -1614,7 +1609,7 @@ void InitGame (void)
 #endif
 #endif
     if (CheckForSpecialCode(POWERBALLTEXT))
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
         DebugOk = true;
 #else
         PowerBall = true;
@@ -1628,7 +1623,7 @@ void InitGame (void)
     if (CheckForSpecialCode(RADARTEXT))
         gamestate.flags |= GS_SHOW_OVERHEAD;
 #endif
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     //
     // clear monocrome
     //
@@ -1739,7 +1734,7 @@ void PreDemo (void)
     int       i;
     SDL_Color palette[256];
 
-#if TECH_SUPPORT_VERSION
+#if defined(TECH_SUPPORT_VERSION)
     fontnumber = 4;
     SetFontColor (0,15 * 3);
     CenterWindow (26,7);
@@ -1750,7 +1745,7 @@ void PreDemo (void)
     IN_UserInput (TickBase * 20);
     SD_StopDigitized ();
 
-#elif BETA_TEST
+#elif defined(BETA_TEST)
 
     bool param = false;
     char buffer[15] = {0};
@@ -1780,15 +1775,15 @@ void PreDemo (void)
 #endif
 #if 0  // TODO: skip this for now
 #if GAME_VERSION == SHAREWARE_VERSION
-#if IN_DEVELOPMENT || GEORGE_CHEAT
+#if defined(IN_DEVELOPMENT) || defined(GEORGE_CHEAT)
     if (!MS_CheckParm("nochex"))
 #endif
     {
-#if  (!SKIP_CHECKSUMS)
+#ifndef SKIP_CHECKSUMS
         CheckValidity("MAPTEMP.",MAPTEMP_CHECKSUM);
 #endif
     }
-#elif (!SKIP_CHECKSUMS)
+#elif !defined(SKIP_CHECKSUMS)
     if (ChecksumFile("FILE_ID.DIZ",0) != DIZFILE_CHECKSUM)
         gamestate.flags |= GS_BAD_DIZ_FILE;
 #endif
@@ -1912,7 +1907,7 @@ void DemoLoop (void)
             //
             // title page
             //
-#if !SKIP_TITLE_AND_CREDITS
+#ifndef SKIP_TITLE_AND_CREDITS
             breakit = false;
 
             VW_ConvertPalette (grsegs[TITLEPALETTE],titlepal,lengthof(titlepal));
@@ -1979,7 +1974,7 @@ void DemoLoop (void)
             // demo
             //
 #ifdef DEMOS_ENABLED
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
             if (!MS_CheckParm("recdemo"))
 #endif
                 PlayDemo (LastDemo++ % 6);
@@ -1998,7 +1993,7 @@ void DemoLoop (void)
             //
             // high scores
             //
-#if !SKIP_TITLE_AND_CREDITS
+#ifndef SKIP_TITLE_AND_CREDITS
             VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
             DrawHighScores ();
 
@@ -2022,7 +2017,7 @@ void DemoLoop (void)
 #endif
 #endif
         {
-#if IN_DEVELOPMENT || TECH_SUPPORT_VERSION
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
             if (gamestate.flags & GS_QUICKRUN)
             {
                 ReadGameNames ();
@@ -2136,7 +2131,7 @@ void CheckParameters (int argc, char *argv[])
         }
         else if (!strcmp(arg,"dval"))
         {
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef DEBUG_VALUE
             debug_value = scan_atoi(argv[i]);
 #endif

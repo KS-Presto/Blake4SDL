@@ -1496,7 +1496,7 @@ bool DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MsgType
 
 void ClearInfoArea (void)
 {
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (gamestate.flags & GS_SHOW_OVERHEAD)
         return;
 #endif
@@ -1718,7 +1718,7 @@ void DrawInfoArea (void)
     char *first_ch,*scan_ch;
     char temp;
 
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
     if (gamestate.flags & GS_SHOW_OVERHEAD)
         return;
 #endif
@@ -1922,14 +1922,13 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
             MegaSimpleScaleShape (x + 20,y + 19,37,shapenum,shade);
             width = 37;
             break;
-#if NUMPICS
+
         case pis_latchpic:  // TODO: make sure this is ok to merge
         case pis_pic:
             x = (x + 7) & 0xfff8;
             width = pictable[shapenum - STARTPICS].width;
             VW_DrawPic (x,y,shapenum);
             break;
-#endif
     }
 
     InfoAreaSetup.x += width;
@@ -2286,7 +2285,7 @@ void GetBonus (statobj_t *check)
     if (givepoints)
     {
         GivePoints (static_points[check->itemnumber - bo_money_bag],true);
-#if IN_DEVELOPMENT
+#ifdef IN_DEVELOPMENT
 #ifdef DEBUG_STATICS
         debug_bonus[1][db_count++] = static_points[check->itemnumber - bo_money_bag];
 #endif
@@ -2424,7 +2423,7 @@ bool ClipMove (objtype *obj, fixed xmove, fixed ymove)
     if (TryMove(obj,PLAYERSIZE))
         return false;
 
-#if (!BETA_TEST) && IN_DEVELOPMENT
+#if !defined(BETA_TEST) && defined(IN_DEVELOPMENT)
     if (!(gamestate.flags & GS_CLIP_WALLS) && obj == player)
         return true;
 #endif
@@ -5130,7 +5129,7 @@ bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
     WhatItIs  = wit_NOTHING;
 
     //
-    // deterimine if the switch points to an
+    // determine if the switch points to an
     // actor, door, wall, static or is special
     //
     if (!ISPOINTER(obj))
@@ -5166,7 +5165,7 @@ bool OperateSmartSwitch (int tilex, int tiley, int operation, bool force)
         if (ISPOINTER(obj))
             WhatItIs = wit_ACTOR;
         else
-            WhatItIs  = wit_NOTHING;
+            WhatItIs = wit_NOTHING;
     }
 
     switch (WhatItIs)
