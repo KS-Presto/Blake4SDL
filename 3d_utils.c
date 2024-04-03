@@ -47,8 +47,8 @@ void *safe_malloc (size_t size, const char *file, uint32_t line)
 
     if (!ptr)
     {
-        snprintf (str,sizeof(str),"%s",file);
-        Quit ("Error allocating memory: %s\nFile: %s Line: %u",strerror(errno),basename(str),line);
+        snprintf (str,sizeof(str),file);
+        Terminate (NULL,"Error allocating memory: %s\nFile: %s Line: %u",strerror(errno),basename(str),line);
     }
 
     return ptr;
