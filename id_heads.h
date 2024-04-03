@@ -104,6 +104,7 @@ typedef struct
 #include "id_us.h"
 
 #include "jm_io.h"
+#include "jm_lzh.h"
 #include "jm_tp.h"
 #include "movie.h"
 

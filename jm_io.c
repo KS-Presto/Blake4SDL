@@ -2,12 +2,6 @@
 
 #include "3d_def.h"
 
-#ifdef NOTYET
-#include "jm_cio.h"
-#include "jm_lzh.h"
-#endif
-
-#ifdef DEMOS_EXTERN
 
 /*
 ===================
@@ -32,7 +26,6 @@ void IO_WriteFile (char *filename, void *source, int32_t length)
     fclose (file);
 }
 
-#endif
 
 /*
 ===================
@@ -46,9 +39,6 @@ void IO_WriteFile (char *filename, void *source, int32_t length)
 
 int32_t IO_LoadFile (char *filename, void **dest)
 {
-#ifdef NOTYET
-    JAMPHeader head;
-#endif
     FILE       *file;
     const char *id = "JAMP";
     char       *buffer;
@@ -66,35 +56,7 @@ int32_t IO_LoadFile (char *filename, void **dest)
     fread (buffer,len - 1,1,file);
 
     if (!strcmp(buffer,id))
-    {
-#ifdef NOTYET
-        fread (&head,sizeof(head),1,file);
-        size = head.OriginalLen;
-
-        switch (head.CompType)
-        {
-            case ct_LZH:
-
-                LZH_Startup ();
-
-                *dest = SafeMalloc(head.OriginalLen);
-
-                LZH_Decompress ((void far *)handle,*dest,size,head.CompressLen,SRC_FILE | DEST_MEM);
-                LZH_Shutdown();
-                break;
-
-            case ct_LZW:
-                Quit ("No code for LZW compression!");
-                break;
-
-            default:
-                Quit ("Unknown compression type!");
-                break;
-        }
-#else
-        Quit ("Compression not yet supported!");
-#endif
-    }
+        Quit ("JAMPAK compression not supported!");
     else
     {
         size = CA_GetFileLength(file);

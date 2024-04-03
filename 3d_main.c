@@ -2,10 +2,6 @@
 
 #include "3d_def.h"
 
-#ifdef NOTYET
-#include "jm_cio.h"
-#include "jm_lzh.h"
-#endif
 
 /*
 =============================================================================
@@ -445,12 +441,10 @@ int32_t DeleteChunk (FILE *sourcefile, const char *chunk)
 
 void ReadInfo (bool decompress, void *dest, uint32_t size, FILE *file)
 {
-#ifdef NOTYET
     uint32_t dsize,csize;
-#endif
+
     LoadLevelUpdate (LS_current++,LS_total);
 
-#ifdef NOTYET
     if (decompress)
     {
         if (!fread(&csize,sizeof(csize),1,file))
@@ -460,13 +454,12 @@ void ReadInfo (bool decompress, void *dest, uint32_t size, FILE *file)
             Quit ("Error reading file: %s",strerror(errno));
 
         checksum = DoChecksum(lzh_work_buffer,csize,checksum);
-        dsize = LZH_Decompress(lzh_work_buffer,dest,size,csize,SRC_MEM | DEST_MEM);
+        dsize = LZH_Decompress(lzh_work_buffer,dest,size,csize);
 
         if (dsize != size)
-            Quit ("Bad decompression during game load!");
+            Quit ("Bad decompression during game load: chunk size is %d, expected size is %d",dsize,size);
     }
     else
-#endif
     {
         if (!fread(dest,size,1,file))
             Quit ("Error reading file: %s",strerror(errno));
@@ -490,15 +483,14 @@ uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
 
     LoadLevelUpdate (LS_current++,LS_total);
 
-#ifdef NOTYET
     if (compress)
     {
-        csize = LZH_Compress(src,lzh_work_buffer,size,SRC_MEM | DEST_MEM);
+        csize = LZH_Compress(src,lzh_work_buffer,size);
 
         if (csize > LZH_WORK_BUFFER_SIZE)
             Quit ("Save game compression buffer too small!");
 
-        if (!fwrite(&csize,sizeof(csize),1,file)
+        if (!fwrite(&csize,sizeof(csize),1,file))
             Quit ("Error writing file: %s",strerror(errno));
 
         if (!fwrite(lzh_work_buffer,csize,1,file))
@@ -508,7 +500,6 @@ uint32_t WriteInfo (bool compress, void *src, uint32_t size, FILE *file)
         csize += sizeof(csize);
     }
     else
-#endif
     {
         if (!fwrite(src,size,1,file))
             Quit ("Error writing file: %s",strerror(errno));
@@ -588,10 +579,9 @@ void LoadLevel (int levelnum)
     //
     // setup for LZH decompression
     //
-#ifdef NOTYET
     LZH_Startup ();
     lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
-#endif
+
     //
     // read all sorts of stuff
     //
@@ -761,10 +751,9 @@ void LoadLevel (int levelnum)
     //
     // clean-up LZH compression
     //
-#ifdef NOTYET
     free (lzh_work_buffer);
     LZH_Shutdown ();
-#endif
+
     SetViewSize (viewsize);
 
     //
@@ -829,10 +818,9 @@ void SaveLevel (int levelnum)
     //
     // setup LZH compression
     //
-#ifdef NOTYET
     LZH_Startup ();
     lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
-#endif
+
     //
     // write level chunk id
     //
@@ -953,10 +941,9 @@ void SaveLevel (int levelnum)
     //
     // clean-up LZH compression
     //
-#ifdef NOTYET
     free (lzh_work_buffer);
     LZH_Shutdown ();
-#endif
+
     SetViewSize (viewsize);
 
     gamestate.flags = gflags;
@@ -1052,20 +1039,17 @@ bool LoadTheGame (FILE *file)
         //
         // setup LZH decompression
         //
-#ifdef NOTYET
         LZH_Startup ();
         lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
-#endif
+
         ReadInfo (true,&gamestate,sizeof(gamestate),file);
         ReadInfo (true,&gamestuff,sizeof(gamestuff),file);
 
         //
         // clean-up LZH decompression
         //
-#ifdef NOTYET
         free (lzh_work_buffer);
         LZH_Shutdown ();
-#endif
     }
     else
         return false;
@@ -1193,20 +1177,18 @@ bool SaveTheGame (FILE *file, const char *description)
     //
     // setup LZH compression
     //
-#ifdef NOTYET
     LZH_Startup ();
     lzh_work_buffer = SafeMalloc(LZH_WORK_BUFFER_SIZE);
-#endif
+
     cksize += WriteInfo(true,&gamestate,sizeof(gamestate),file);
     cksize += WriteInfo(true,&gamestuff,sizeof(gamestuff),file);
 
     //
     // clean-up LZH compression
     //
-#ifdef NOTYET
     free (lzh_work_buffer);
     LZH_Shutdown ();
-#endif
+
     //
     // write chunk size
     //
