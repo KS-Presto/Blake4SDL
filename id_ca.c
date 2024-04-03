@@ -27,10 +27,7 @@ char        mfilename[13] = "MAPTEMP.";
 char        aheadname[13] = "AUDIOHED.";
 char        afilename[13] = "AUDIOT.";
 
-int32_t     *grstarts;     // array of offsets in egagraph, -1 for sparse
 int32_t     *audiostarts;  // array of offsets in audio / audiot
-
-huffnode    grhuffman[255];
 
 FILE        *audiofile;
 
@@ -38,27 +35,6 @@ int32_t     chunkcomplen,chunkexplen;
 
 byte        oldsoundmode;
 
-#ifdef THREEBYTEGRSTARTS
-//#define GRFILEPOS(c) (*(int32_t *)(((byte *)grstarts) + ((c) * 3)) & 0xffffff)
-int32_t GRFILEPOS (int c)
-{
-    int32_t value;
-    int offset;
-
-    offset = c * 3;
-
-    value = *(int32_t *)(((byte *)grstarts) + offset);
-
-    value &= 0x00ffffffl;
-
-    if (value == 0xffffffl)
-        value = -1;
-
-    return value;
-};
-#else
-#define GRFILEPOS(c) (grstarts[(c)])
-#endif
 
 /*
 =============================================================================
@@ -67,25 +43,6 @@ int32_t GRFILEPOS (int c)
 
 =============================================================================
 */
-
-
-/*
-============================
-=
-= CA_GetGrChunkLength
-=
-= Gets the length of an explicit length chunk (not tiles)
-= The file pointer is positioned so the compressed data can be read in next.
-=
-============================
-*/
-
-void CA_GetGrChunkLength (FILE *grfile, int chunk)
-{
-    fseek (grfile,GRFILEPOS(chunk),SEEK_SET);
-    fread (&chunkexplen,sizeof(chunkexplen),1,grfile);
-    chunkcomplen = GRFILEPOS(chunk + 1) - GRFILEPOS(chunk) - 4;
-}
 
 
 /*
@@ -314,9 +271,15 @@ void CA_RLEWexpand (word *source, word *dest, int32_t length, word rlewtag)
 
 void CA_SetupGrFile (void)
 {
-    char fname[13];
-    void *compseg;
-    FILE *file;
+    char     fname[13];
+    void     *compseg;
+    int      i;
+    int32_t  value;
+    int32_t  *grstarts;         // array of offsets in vgagraph, -1 for sparse
+    byte     *offsets,*ofsptr;
+    size_t   length,headersize;
+    FILE     *file;
+    huffnode *grhuffman;
 
 //
 // load vgadict (huffman dictionary for graphics files)
@@ -328,14 +291,16 @@ void CA_SetupGrFile (void)
     if (!file)
         CA_CannotOpen (fname);
 
-    fread (grhuffman,sizeof(grhuffman),1,file);
+    length = CA_GetFileLength(file);
+
+    grhuffman = SafeMalloc(length);
+
+    fread (grhuffman,length,1,file);
     fclose (file);
 
 //
 // load the data offsets from vgahead
 //
-    grstarts = SafeMalloc((NUMCHUNKS + 1) * FILEPOSSIZE);
-
     snprintf (fname,sizeof(fname),"%s%s",gheadname,extension);
 
     file = fopen(fname,"rb");
@@ -343,7 +308,36 @@ void CA_SetupGrFile (void)
     if (!file)
         CA_CannotOpen (fname);
 
-    fread (grstarts,(NUMCHUNKS + 1) * FILEPOSSIZE,1,file);
+    headersize = CA_GetFileLength(file) / FILEPOSSIZE;
+
+    if (headersize != NUMCHUNKS + 1)
+        Terminate (NULL,STR_BAD_VGAHEAD,fname,headersize,NUMCHUNKS + 1);
+
+    grstarts = SafeMalloc((NUMCHUNKS + 1) * sizeof(*grstarts));
+
+    offsets = SafeMalloc((NUMCHUNKS + 1) * FILEPOSSIZE);
+    ofsptr = offsets;
+
+    fread (ofsptr,(NUMCHUNKS + 1) * FILEPOSSIZE,1,file);
+
+    for (i = 0; i < NUMCHUNKS + 1; i++)
+    {
+        if (FILEPOSSIZE == 3)
+        {
+            value = ofsptr[0] | (ofsptr[1] << 8) | (ofsptr[2] << 16);
+
+            if (value == 0xffffff)
+                value = -1;
+
+            ofsptr += FILEPOSSIZE;
+        }
+        else
+            value = ReadLong(&ofsptr[i]);
+
+        grstarts[i] = value;
+    }
+
+    free (offsets);
 
     fclose (file);
 
@@ -362,20 +356,24 @@ void CA_SetupGrFile (void)
 //
     pictable = SafeMalloc(NUMPICS * sizeof(*pictable));
 
-    CA_GetGrChunkLength (file,STRUCTPIC);        // position file pointer
+    fseek (file,grstarts[STRUCTPIC],SEEK_SET);
+    fread (&chunkexplen,sizeof(chunkexplen),1,file);
+    chunkcomplen = grstarts[STRUCTPIC + 1] - grstarts[STRUCTPIC] - sizeof(chunkexplen);
 
     compseg = SafeMalloc(chunkcomplen);
     fread (compseg,chunkcomplen,1,file);
     CA_HuffExpand (compseg,(byte *)pictable,NUMPICS * sizeof(*pictable),grhuffman);
     free (compseg);
-    compseg = NULL;
 
 //
 // load in all the graphics chunks
 //
-    CA_CacheGrChunks (file);
+    CA_CacheGrChunks (file,grstarts,grhuffman);
 
     fclose (file);
+
+    free (grstarts);
+    free (grhuffman);
 }
 
 
@@ -550,9 +548,6 @@ void CA_Shutdown (void)
 
     free (audiostarts);
     audiostarts = NULL;
-
-    free (grstarts);
-    grstarts = NULL;
 }
 
 
@@ -759,7 +754,7 @@ void CA_DePlaneGrChunk (int chunk)
 ======================
 */
 
-void CA_ExpandGrChunk (int chunk, byte *source)
+void CA_ExpandGrChunk (int chunk, byte *source, huffnode *hufftable)
 {
     int32_t expanded;
 
@@ -787,10 +782,10 @@ void CA_ExpandGrChunk (int chunk, byte *source)
     else
     {
         //
-        // everything else has an explicit 4 byte size
+        // everything else has an explicit size
         //
         expanded = ReadLong(source);
-        source += 4;                   // skip over length
+        source += sizeof(expanded);           // skip over length
     }
 
     //
@@ -798,7 +793,7 @@ void CA_ExpandGrChunk (int chunk, byte *source)
     //
     grsegs[chunk] = SafeMalloc(expanded);
 
-    CA_HuffExpand (source,grsegs[chunk],expanded,grhuffman);
+    CA_HuffExpand (source,grsegs[chunk],expanded,hufftable);
 }
 
 
@@ -812,7 +807,7 @@ void CA_ExpandGrChunk (int chunk, byte *source)
 ======================
 */
 
-void CA_CacheGrChunks (FILE *grfile)
+void CA_CacheGrChunks (FILE *grfile, int32_t *offset, huffnode *hufftable)
 {
     int32_t pos,compressed;
     byte    *source;
@@ -826,24 +821,24 @@ void CA_CacheGrChunks (FILE *grfile)
         //
         // load the chunk into a buffer
         //
-        pos = GRFILEPOS(chunk);
+        pos = offset[chunk];
 
         if (pos < 0)       // $FFFFFFFF start is a sparse tile
             continue;
 
         next = chunk + 1;
 
-        while (GRFILEPOS(next) == -1)  // skip past any sparse tiles
+        while (offset[next] == -1)  // skip past any sparse tiles
             next++;
 
-        compressed = GRFILEPOS(next) - pos;
+        compressed = offset[next] - pos;
 
         fseek (grfile,pos,SEEK_SET);
 
         source = SafeMalloc(compressed);
         fread (source,compressed,1,grfile);
 
-        CA_ExpandGrChunk (chunk,source);
+        CA_ExpandGrChunk (chunk,source,hufftable);
 
         if (chunk >= STARTPICS && chunk < STARTEXTERNS)
             CA_DePlaneGrChunk (chunk);

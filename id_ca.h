@@ -8,16 +8,20 @@
 #define MAPS_PER_EPISODE 25  // TODO: 24?
 #define MAPS_WITH_STATS  20
 
-#define NUMMAPS    (NUM_EPISODES * MAPS_PER_EPISODE)
-#define MAPPLANES  3
+#define NUMMAPS          (NUM_EPISODES * MAPS_PER_EPISODE)
+#define MAPPLANES        3
 
 #define THREEBYTEGRSTARTS
 
 #ifdef THREEBYTEGRSTARTS
-#define FILEPOSSIZE 3
+#define FILEPOSSIZE      3
 #else
-#define FILEPOSSIZE 4
+#define FILEPOSSIZE      4
 #endif
+
+#define STR_BAD_VGAHEAD  "Blake4SDL was not compiled for these data files:\n"\
+                         "%s contains the wrong number of offsets (%d instead of %d)\n\n"\
+                         "Please check whether you are using the right files!"
 
 typedef struct
 {
@@ -56,13 +60,10 @@ extern  char        mfilename[13];
 extern  char        aheadname[13];
 extern  char        afilename[13];
 
-extern  int32_t     *grstarts;       // array of offsets in vgagraph, -1 for sparse
 extern  int32_t     *audiostarts;    // array of offsets in audio / audiot
 
 extern  FILE        *audiofile;
 extern  int32_t     chunkcomplen,chunkexplen;
-
-extern  huffnode    grhuffman[255];
 
 size_t  CA_GetFileLength (FILE *file);
 
@@ -75,7 +76,7 @@ int32_t CA_CacheAudioChunk (int chunk);
 void    CA_UncacheAudioChunk (int chunk);
 void    CA_LoadAllSounds (void);
 
-void    CA_CacheGrChunks (FILE *grfile);
+void    CA_CacheGrChunks (FILE *grfile, int32_t *offset, huffnode *hufftable);
 void    CA_CacheMap (int mapnum);
 
 void    CA_SetupAudioFile (void);
