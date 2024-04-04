@@ -7,10 +7,6 @@
 #include "3d_def.h"
 
 
-bool     useBounceOffset;
-fixed    bounceOffset;
-
-
 /*
 ===================
 =
@@ -233,7 +229,10 @@ void SimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int s
     shape = (compshape_t *)sline.source;
 
     xcenter = dispx - height;
-    ycenter = dispy - height;    // TODO: + bounceOffset / 2
+    ycenter = (dispy - height);
+
+    if (useBounceOffset)
+        ycenter += bounceOffset >> (FRACBITS + 1);
 
     screenscale = shape->leftpix * sline.stepscale;
 

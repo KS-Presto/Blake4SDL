@@ -65,13 +65,13 @@
 //
 // weapon bounce
 //
-#define wb_MaxPoint             ((fixed)10 << TILESHIFT)
-#define wb_MidPoint             ((fixed)6 << TILESHIFT)
-#define wb_MinPoint             ((fixed)2 << TILESHIFT)
+#define wb_MaxPoint             ((fixed)10 << FRACBITS)
+#define wb_MidPoint             ((fixed)6 << FRACBITS)
+#define wb_MinPoint             ((fixed)2 << FRACBITS)
 #define wb_MaxGoalDist          (wb_MaxPoint - wb_MidPoint)
 
-#define wb_MaxOffset            (wb_MaxPoint + ((fixed)2 << TILESHIFT))
-#define wb_MinOffset            (wb_MinPoint - ((fixed)2 << TILESHIFT))
+#define wb_MaxOffset            (wb_MaxPoint + ((fixed)2 << FRACBITS))
+#define wb_MinOffset            (wb_MinPoint - ((fixed)2 << FRACBITS))
 
 
 #define GD0 0x55
@@ -117,6 +117,8 @@ typedef struct
 
 fixed       bounceVel,bounceDest;
 int         bounceOk;
+bool        useBounceOffset;
+fixed       bounceOffset;
 
 unsigned    LastMsgPri;
 int         MsgTicsRemain;
@@ -4038,9 +4040,8 @@ void T_Player (objtype *obj)
         Cmd_Fire ();
 
     ControlMovement ();
-#ifdef NOTYET
     HandleWeaponBounce ();
-#endif
+
     player->tilex = player->x >> TILESHIFT;
     player->tiley = player->y >> TILESHIFT;
 }
@@ -4632,7 +4633,7 @@ void HandleWeaponBounce (void)
 {
     int bounceSpeed;
 
-    bounceSpeed = 90 - ((20 - viewsize) * 6);
+    bounceSpeed = ANG90 - ((20 - viewsize) * 6);
 
     if (bounceOk)
     {
@@ -4663,14 +4664,14 @@ void HandleWeaponBounce (void)
     {
         if (bounceOffset > wb_MidPoint)
         {
-            bounceOffset -= (fixed)2 << TILESHIFT;
+            bounceOffset -= wb_MinPoint;
 
             if (bounceOffset < wb_MidPoint)
                 bounceOffset = wb_MidPoint;
         }
         else if (bounceOffset < wb_MidPoint)
         {
-            bounceOffset += (fixed)2 << TILESHIFT;
+            bounceOffset += wb_MinPoint;
 
             if (bounceOffset > wb_MidPoint)
                 bounceOffset = wb_MidPoint;
