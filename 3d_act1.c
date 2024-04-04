@@ -1212,31 +1212,22 @@ void TryBlastDoor (int door)
 =
 = BlastNearDoors
 =
-= TODO: This looks dangerous
-=
 =====================
 */
 
 void BlastNearDoors (int tilex, int tiley)
 {
-    byte door;
-    byte *doorptr;
-    int  x,y;
-
-    doorptr = &tilemap[tilex][tiley];
+    int door;
+    int x,y;
 
     for (x = -1; x < 2; x++)
     {
-        for (y = -64; y < 128; y += 64)
+        for (y = -1; y < 2; y++)
         {
-            door = *(doorptr + x + y);
+            door = tilemap[tilex + x][tiley + y];
 
             if (door & 0x80)
-            {
-                door &= ~0x80;
-
-                TryBlastDoor (door);
-            }
+                TryBlastDoor (door & ~0x80);
         }
     }
 }
@@ -1647,7 +1638,7 @@ void MovePWalls (void)
         //
         // see if it should be pushed farther
         //
-        if (!pwalldist)  // TODO: heh, looks like they fixed the 3 move bug their own way
+        if (!pwalldist)
         {
             //
             // the block has been pushed two tiles
@@ -2013,6 +2004,7 @@ void CheckSpawnGoldstern (void)
         {
             //
             // see if we can spawn Dr. Goldstern
+            //
             tilex = GoldieList[GoldsternInfo.LastIndex].tilex;
             tiley = GoldieList[GoldsternInfo.LastIndex].tiley;
 

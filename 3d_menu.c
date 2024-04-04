@@ -382,9 +382,6 @@ void HelpPresenter (char *fname, bool continuekeys, int idcache, bool startmusic
     pi.shcolor = 0x00;
     pi.fontnumber = 4;
 
-    //
-    // TODO: not sure about this
-    //
     if (continuekeys)
         pi.infoline = " UP / DN - PAGES       ENTER - CONTINUES         ESC - EXITS";
     else
@@ -4055,9 +4052,7 @@ void ExitGame (void)
 void CheckForEpisodes (void)
 {
     struct stat statbuf;
-#ifdef NOTYET
-    int    i;
-#endif
+
 #if (GAME_VERSION != SHAREWARE_VERSION)
     if (stat("*.VSI",&statbuf))
         snprintf (extension,sizeof(extension),"VSI");
@@ -4067,22 +4062,7 @@ void CheckForEpisodes (void)
 #endif
     else
         Quit ("No Fire Strike data files found!");
-#if 0
-    //
-    // TODO: we just snprintf the extension onto the filename when opening
-    //
-    for (i = 0; i < mv_NUM_MOVIES; i++)
-        strcat (Movies[i].FName,extension);
 
-#ifdef ACTIVATE_TERMINAL
-    strcat (term_com_name,extension);
-    strcat (term_msg_name,extension);
-#endif
-    strcat (configname,extension);
-    strcat (savefilename,extension);
-    strcat (audioname,extension);
-    strcat (demoname,extension);
-#endif
 #ifdef DUAL_SWAP_FILES
     char altpagefilename[13];
 

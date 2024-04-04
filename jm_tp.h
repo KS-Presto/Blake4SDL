@@ -91,7 +91,6 @@ enum pisTypes
     pis_sprite,
     pis_scaled,
     pis_scwall,
-    pis_latchpic,
 };
 
 

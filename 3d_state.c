@@ -1427,7 +1427,15 @@ bool CheckLine (objtype *from_obj, objtype *to_obj)
 
     x2 = to_obj->x >> UNSIGNEDSHIFT;
     y2 = to_obj->y >> UNSIGNEDSHIFT;
-    xt2 = to_obj->tilex;    // TODO: why not x2/y2 >> UNSIGNEDSHIFT?
+
+    //
+    // KS: to_obj->tilex/y can be completely different to
+    // to_obj->x/y >> UNSIGNEDSHIFT because an actor's TILE
+    // coordinates jump around depending on the actor's destination.
+    // Checking x/y >> UNSIGNEDSHIFT should be a lot more accurate,
+    // test this
+    //
+    xt2 = to_obj->tilex;
     yt2 = to_obj->tiley;
 
     if (abs(xt2 - xt1) > 0)

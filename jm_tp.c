@@ -66,10 +66,6 @@
 // sprite animations will be difficult to implement unless all frames are
 // of the same dimensions.
 //
-// A shape of type "pis_latchpic" is assumed to already be loaded in latch
-// memory. No caching is performed on this type of shape! If a pic needs to
-// be cached, specify "pis_pic".
-//
 // You can comment-out a line by beginning the line with a semi-colon.
 // Commented lines are ignored by the parser. Do not comment-out the last
 // line of the file for this may cause harm to all things great and small!
@@ -1641,7 +1637,6 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
     switch (shapetype)
     {
         case pis_pic:
-        case pis_latchpic:
             x = (x + 7) & 0xFFF8;
             break;
     }
@@ -1686,7 +1681,6 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
             MegaSimpleScaleShape (x + 32,y + 32,64,shapenum,NO_SHADING);
             break;
 
-        case pis_latchpic:
         case pis_pic:
             VW_DrawPic (x,y,shapenum);
             break;
@@ -1796,7 +1790,6 @@ int TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype)
             break;
 
         case pis_pic:
-        case pis_latchpic:
             width = pictable[shapenum - STARTPICS].width;
             x2 = x1 + width - 1;
             y2 = y1 + (pictable[shapenum - STARTPICS].height) - 1;

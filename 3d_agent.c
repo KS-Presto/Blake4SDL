@@ -1460,7 +1460,7 @@ bool DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MsgType
     MsgTicsRemain = DisplayTime;
 
     if (MsgTicsRemain)
-        StatusDrawPic (0,40,BRI_LIGHTPIC);  // TODO: check this
+        StatusDrawPic (0,40,BRI_LIGHTPIC);
 
     if (strlen(Msg) > MSG_BUFFER_LEN)
         Quit ("Message \"%s\" is too long!",Msg);
@@ -1569,7 +1569,7 @@ void UpdateInfoAreaClock (void)
     {
         MsgTicsRemain -= tics;
 
-        if (MsgTicsRemain <= 0)    // TODO: we don't set it back to 0 here? maybe it's because pinball bonus...
+        if (MsgTicsRemain <= 0)
             DisplayNoMoMsgs ();
     }
 }
@@ -1911,7 +1911,6 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
             width = 37;
             break;
 
-        case pis_latchpic:  // TODO: make sure this is ok to merge
         case pis_pic:
             x = (x + 7) & 0xfff8;
             width = pictable[shapenum - STARTPICS].width;
@@ -2039,10 +2038,6 @@ void UpdateStatusBar (void)
 ======================
 =
 = ForceUpdateStatusBar
-=
-= Force Draw status bar onto ALL display pages
-=
-= TODO: this might not be needed now
 =
 ======================
 */
@@ -4312,8 +4307,7 @@ void RunBlakeRun (void)
     int     startx,starty,dx,dy;
     objtype *blake;
 
-    SpawnPatrol (en_blake,player->tilex,player->tiley,player->dir >> 1);
-    blake = lastobj;  // TODO: this is ugly; return it
+    blake = SpawnPatrol(en_blake,player->tilex,player->tiley,player->dir >> 1);
 
     //
     // Blake object starts one tile behind player object

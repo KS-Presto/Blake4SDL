@@ -323,9 +323,6 @@ void PollControls (void)
         controly = *demoptr++;
         tics = *demoptr++;
 
-        //
-        // TODO: we should call CalcTics first?
-        //
         while (GetTimeCount() - lasttimecount < tics)
             SDL_Delay (3);
 

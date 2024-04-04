@@ -842,7 +842,7 @@ void HitVertDoor (void)
             break;
 
         case dr_bio:
-            doorpage = L_BIO;    // TODO: L_BIO_SHADE was never used here even in AoG 1.0. bug or intended?
+            doorpage = L_BIO;    // KS: L_BIO_SHADE was never used here even in AoG 1.0. bug or intended?
             break;
 
         case dr_high_security:
@@ -1693,7 +1693,7 @@ void ThreeDRefresh (void)
 
     DrawPlayerWeapon (); // draw player's hands
 
-    DrawRadar ();       // TODO: check if we want this while fizzling
+    DrawRadar ();
 
 //
 // show screen and time last cycle
