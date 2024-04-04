@@ -1861,7 +1861,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                     if (drawplayerok && player->tilex == mx && player->tiley == my)
                     {
                         //
-                        // SHOW PLAYER
+                        // show player
                         //
                         color = PLAYER_COLOR;
                         drawplayerok = false;
@@ -1869,7 +1869,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                     else
                     {
                         //
-                        // SHOW TRAVELED
+                        // show traveled
                         //
                         if ((TravelTable[mx][my] & TT_TRAVELED) || (flags & OV_SHOWALL))
                         {
@@ -1885,18 +1885,23 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                             if (tile)
                             {
                                 //
-                                // SHOW DOORS
+                                // show doors
                                 //
                                 if (tile & 0x80)
                                 {
-                                    if (doorobjlist[door].lock != kt_none)
-                                        color = 0x18;                   // locked!
+                                    if ((tile & 0xc0) == 0xc0)
+                                        color = MAPPED_COLOR;
                                     else
                                     {
-                                        if (doorobjlist[door].action == dr_closed)
-                                            color = 0x58;               // closed!
+                                        if (doorobjlist[door].lock != kt_none)
+                                            color = 0x18;                   // locked!
                                         else
-                                            color = MAPPED_COLOR;       // floor!
+                                        {
+                                            if (doorobjlist[door].action == dr_closed)
+                                                color = 0x58;               // closed!
+                                            else
+                                                color = MAPPED_COLOR;       // floor!
+                                        }
                                     }
                                 }
                             }
@@ -1904,7 +1909,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                                 color = MAPPED_COLOR;                   // floor!
 
                             //
-                            // SHOW KEYS
+                            // show keys
                             //
                             if ((flags & OV_KEYS) && (TravelTable[mx][my] & TT_KEYS))
                                 color = 0xf3;
@@ -1914,22 +1919,22 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                                 obj = actorat[mx][my];
 
                                 //
-                                // SHOW ACTORS
+                                // show actors
                                 //
                                 if ((flags & OV_ACTORS) && ISPOINTER(obj) && !(obj->flags & FL_DEADGUY)
                                  && obj->obclass > deadobj && obj->obclass < SPACER1_OBJ)
                                     color = 0x10 + obj->obclass;
+                            }
 
-                                if (zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS))
-                                {
-                                    iconnum = MAPSPOT(mx,my,1);
+                            if (zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS))
+                            {
+                                iconnum = MAPSPOT(mx,my,1);
 
-                                    //
-                                    // SHOW PUSHWALLS
-                                    //
-                                    if ((flags & OV_PUSHWALLS) && iconnum == PUSHABLETILE)
-                                        color = 0x79;
-                                }
+                                //
+                                // show pushwalls
+                                //
+                                if ((flags & OV_PUSHWALLS) && iconnum == PUSHABLETILE)
+                                    color = 0x79;
                             }
                         }
                         else

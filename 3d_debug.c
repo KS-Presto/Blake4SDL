@@ -599,9 +599,6 @@ bool DebugKeys (void)
 #endif
     else if (Keyboard[sc_O])   // O = Show Push Walls
     {
-        //
-        // TODO: this doesn't seem to work
-        //
         US_CenterWindow (24,3);
 
         ExtraRadarFlags ^= OV_PUSHWALLS;
