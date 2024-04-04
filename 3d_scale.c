@@ -229,7 +229,7 @@ void SimpleScaleShape (int dispx, int dispy, int dispheight, int shapenum, int s
     shape = (compshape_t *)sline.source;
 
     xcenter = dispx - height;
-    ycenter = (dispy - height);
+    ycenter = dispy - height;
 
     if (useBounceOffset)
         ycenter += bounceOffset >> (FRACBITS + 1);

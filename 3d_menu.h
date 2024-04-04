@@ -221,8 +221,6 @@ void     CheckSecretMissions (void);
 void     DrawInstructions (int type);
 void     CacheMessage (int messagenum);
 void     TerminateString (char *pos);
-uint32_t CacheCompData (int itemnum, void **dest);
-bool     CheckForSpecialCode (int itemnum);
 
 void     DrawCursor (CP_iteminfo *item_i, CP_itemtype *items, int *y, int which, int basey, void (*routine)(int));
 void     EraseCursor (CP_iteminfo *item_i, CP_itemtype *items, int y, int which);

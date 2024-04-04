@@ -1692,19 +1692,7 @@ void PreDemo (void)
         VW_DrawPic (0,0,APOGEEPIC);
         VW_FadePaletteIn (0,255,palette,30);
 
-        //
-        // wait for end of fanfare
-        //
-#ifdef NOTYET
-        if (MusicMode == smm_AdLib)
-        {
-            IN_StartAck ();
-
-            while (!sqPlayedOnce && !IN_CheckAck());
-        }
-        else
-#endif
-            IN_UserInput (TickBase * 6);
+        IN_UserInput (TickBase * 6);
 
         SD_MusicOff ();
 
