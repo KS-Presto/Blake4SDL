@@ -74,6 +74,7 @@ void    VW_SetupVideo (void);
 void    VW_InitRndMask (void);
 void    VW_ConvertPalette (byte *srcpal, SDL_Color *destpal, int numcolors);
 void    VW_SetPalette (SDL_Color *palette);
+void    VW_GetPalette (SDL_Color *palette);
 void    VW_FadePaletteOut (int start, int end, int red, int green, int blue, int steps);
 void    VW_FadePaletteIn (int start, int end, SDL_Color *palette, int steps);
 void    VW_UpdateScreen (SDL_Surface *surface);

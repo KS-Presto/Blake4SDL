@@ -1340,11 +1340,7 @@ void ClearNClose (void)
 
 void CycleColors (void)
 {
-#ifdef NOTYET
     #define NUM_RANGES     5
-    #define CRNG_LOW       0xf0
-    #define CRNG_HIGH      0xfe
-    #define CRNG_SIZE      (CRNG_HIGH - CRNG_LOW + 1)
 
     static CycleInfo crange[NUM_RANGES] =
     {
@@ -1357,7 +1353,7 @@ void CycleColors (void)
 
     int       i;
     CycleInfo *c;
-    byte      cbuffer[CRNG_SIZE][3],temp[3];
+    SDL_Color cpalette[256],temp;
     int       first,last,numregs;
     bool      changes = false;
 
@@ -1369,18 +1365,18 @@ void CycleColors (void)
         {
             if (!changes)
             {
-                VW_GetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+                VW_GetPalette (cpalette);
 
                 changes = true;
             }
 
-            first = c->firstreg - CRNG_LOW;
+            first = c->firstreg;
             numregs = c->lastreg - c->firstreg;    // is one less than in range
             last = first + numregs;
 
-            memcpy (temp,cbuffer[last],sizeof(temp));
-            memmove (cbuffer[first + 1],cbuffer[first],numregs * 3);
-            memcpy (cbuffer[first],temp,sizeof(temp));
+            temp = cpalette[last];
+            memmove (&cpalette[first + 1],&cpalette[first],numregs * sizeof(*cpalette));
+            cpalette[first] = temp;
 
             c->delay_count = c->init_delay;
         }
@@ -1389,10 +1385,9 @@ void CycleColors (void)
     }
 
     if (changes)
-        VW_SetPalette (CRNG_LOW,CRNG_SIZE,(byte *)cbuffer);
+        VW_SetPalette (cpalette);
     else
         VW_WaitVBL (1);
-#endif
 }
 
 
