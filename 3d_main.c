@@ -1729,6 +1729,7 @@ void PreDemo (void)
         {
             for (i = 0; i < 60 && !DebugOk; i++)
             {
+                IN_ProcessEvents ();
                 VW_WaitVBL (1);
 
                 if (Keyboard[sc_LShift] && Keyboard[sc_RShift])
