@@ -60,7 +60,7 @@ void VW_Startup (void)
     int      w,h;
     uint32_t flags = 0;
 
-    if (screen.flags & SC_FULLSCREEN)
+    if (!param_windowed && (screen.flags & SC_FULLSCREEN))
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     else
     {
@@ -952,13 +952,6 @@ bool VW_FizzleFade (int x1, int y1, int width, int height, int frames, bool abor
 
         frame++;
         Delay (frame - GetTimeCount());        // don't go too fast
-#ifdef NOTYET
-        // TODO: no idea what this is for
-        CalcTics ();
-
-        if (!(frame & 3))
-            ForceUpdateStatusBar ();
-#endif
     }
 
     return false;

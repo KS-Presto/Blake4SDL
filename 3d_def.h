@@ -14,8 +14,6 @@
 
 #define MSG_BUFFER_LEN      150     // max length of info area messages
 
-#define BETA_CODE           "NEWGAME"
-
 #define PLAYTEMP_FILE       "PLAYTEMP"
 #define OLD_PLAYTEMP_FILE   "OLDPTEMP"
 
@@ -205,7 +203,7 @@
 #define OFF_SWITCH              57          // OFF Wall Switch -
 #define WINTIGGERTILE           157         // Win Tile
 #define NUMBERCHARS             9
-#define BLOCKTILE               64     // TODO: check if 64 conflicts with anything else
+#define BLOCKTILE               MAXWALLTILES
 
 #define START_TEXTURES          125         // Start of Textures - (Also LAST_WALL_TILE NUM)
 #define NUM_TILES               PMSpriteStart
@@ -1335,14 +1333,10 @@ typedef struct
 
 #define TITLE_LOOP_MUSIC    PLOT_MUS
 
-#define CANT_PLAY_TXT "\n"                 \
-                      "ERROR: Insufficient disk space.\n"                  \
-                      "Try deleting some files from your hard disk.\n\n"
-
 extern  char      tempPath[MAX_DEST_PATH_LEN + 15];
 
 extern  levelinfo default_level[MAPS_PER_EPISODE];
-extern  int       starting_level,debug_value,starting_episode,starting_difficulty;
+extern  int       starting_level,starting_episode,starting_difficulty;
 
 extern  int       lastmap_tilex,lastmap_tiley;
 extern  char      str[256],error[256];
@@ -1355,6 +1349,8 @@ extern  bool      ShowQuickMsg;
 
 extern  byte      colormap[16896];
 
+extern  bool      param_demorecord;
+extern  bool      param_windowed;
 extern  int       param_samplerate;
 extern  int       param_audiobuffer;
 extern  int       param_joystickindex;
@@ -1367,7 +1363,6 @@ void     LoadAccessCodes (void);
 void     AlignPlayerInElevator (void);
 void     HelpScreens (void);
 void     OrderingInfo (void);
-int      scan_atoi (char *s);
 void     AlignPlayerOnTransporter (void);
 
 bool     DoMovie (int movie, SDL_Color *palette);
@@ -1375,12 +1370,6 @@ void     SaveLevel (int levelnum);
 void     LoadLevel (int levelnum);
 bool     SaveTheGame (FILE *file, const char *description);
 bool     LoadTheGame (FILE *file);
-int32_t  ChecksumFile (const char *file, int32_t checksum);
-void     BadChecksum (void);
-void     InvalidLevels (void);
-void     CheckValidity (const char *file, int32_t valid_checksum);
-void     UnauthorizedLevels (void);
-void     ShowChecksums (void);
 
 bool     LevelInPlaytemp (int levelnum);
 void     InitPlaytemp (void);

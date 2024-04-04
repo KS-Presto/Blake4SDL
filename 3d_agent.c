@@ -2406,7 +2406,7 @@ bool ClipMove (objtype *obj, fixed xmove, fixed ymove)
     if (TryMove(obj,PLAYERSIZE))
         return false;
 
-#if !defined(BETA_TEST) && defined(IN_DEVELOPMENT)
+#ifdef IN_DEVELOPMENT
     if (!(gamestate.flags & GS_CLIP_WALLS) && obj == player)
         return true;
 #endif

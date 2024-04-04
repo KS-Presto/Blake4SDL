@@ -38,11 +38,9 @@
 //
 // debugging stuff
 //
-#define DEBUG_VALUE
 //#define TECH_SUPPORT_VERSION
 //#define IN_DEVELOPMENT
 //#define TRACK_ENEMY_COUNT
-//#define BETA_TEST
 //#define DEBUG_STATICS
 
 //
@@ -76,7 +74,5 @@
 #define ID_CACHE_CREDITS
 
 //#define SKIP_TITLE_AND_CREDITS
-#define SKIP_CHECKSUMS
-//#define SHOW_CHECKSUM
 
 #endif

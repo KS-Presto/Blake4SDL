@@ -572,7 +572,6 @@ bool DebugKeys (void)
         return true;
     }
 #ifdef IN_DEVELOPMENT
-#ifndef BETA_TEST
     else if (Keyboard[sc_N])   // N = no clip
     {
         US_CenterWindow (18,3);
@@ -589,7 +588,6 @@ bool DebugKeys (void)
 
         return true;
     }
-#endif
     else if (Keyboard[sc_T])   // T = shape test
     {
         ShapeTest ();
@@ -782,14 +780,12 @@ bool DebugKeys (void)
         return true;
     }
 #ifdef IN_DEVELOPMENT
-#ifndef BETA_TEST
     else if (Keyboard[sc_Y])
     {
         GivePoints (100000,false);
 
         return true;
     }
-#endif
 #endif
     if (gamestate.flags & GS_LIGHTING)   // Shading adjustments
     {

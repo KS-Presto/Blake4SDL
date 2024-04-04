@@ -15,29 +15,6 @@
 =============================================================================
 */
 
-#if GAME_VERSION == SHAREWARE_VERSION
-
-#define AUDIOT_CHECKSUM     0xfff87142
-#define MAPTEMP_CHECKSUM    0x000370c9
-#define VGAGRAPH_CHECKSUM   0xffffde44
-#define DIZFILE_CHECKSUM    0x00000879
-
-#elif GAME_VERSION == MISSIONS_1_THR_3
-
-#define AUDIOT_CHECKSUM     0xfff87142
-#define MAPTEMP_CHECKSUM    0x00084f1f
-#define VGAGRAPH_CHECKSUM   0xffffde44
-#define DIZFILE_CHECKSUM    0x00000879
-
-#else
-
-#define AUDIOT_CHECKSUM     0xfff912c9
-#define MAPTEMP_CHECKSUM    0x00107739
-#define VGAGRAPH_CHECKSUM   0xffff6c9a
-#define DIZFILE_CHECKSUM    0x00000879
-
-#endif
-
 #define MAX_DEST_PATH_LEN       30
 #define LZH_WORK_BUFFER_SIZE    8192
 
@@ -46,14 +23,10 @@ void    *lzh_work_buffer;
 int32_t checksum;
 
 int     starting_episode,starting_level,starting_difficulty;
-int     debug_value;
 
 char    destPath[MAX_DEST_PATH_LEN + 1];
 char    tempPath[MAX_DEST_PATH_LEN + 15];
 
-#ifdef BETA_TEST
-char    bc_buffer[] = BETA_CODE;
-#endif
 char    str[256],error[256];
 char    configname[13] = "CONFIG.";
 
@@ -65,8 +38,10 @@ bool    ShowQuickMsg;
 #ifdef IN_DEVELOPMENT
 int     democount,jim;
 #endif
-int     param_samplerate = 44100;
-int     param_audiobuffer = 2048;
+bool    param_demorecord;
+bool    param_windowed;
+int     param_samplerate;
+int     param_audiobuffer;
 int     param_joystickindex;
 int     param_joystickhat = -1;
 
@@ -1278,7 +1253,7 @@ void CleanUpDoors_N_Actors (void)
                 //
                 check = actorat[x][y];
 
-                if (ISPOINTER(check) && check < &objlist[MAXACTORS])  // TODO: buffer overflow
+                if (ISPOINTER(check))
                 {
                     //
                     // found an actor
@@ -1577,37 +1552,15 @@ void InitGame (void)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
         Quit ("Unable to init SDL: %s\n",SDL_GetError());
 
-#if defined(IN_DEVELOPMENT) || defined(GEORGE_CHEAT) || defined(SHOW_CHECKSUM)
-    if (MS_CheckParm("checksum"))
-    {
-        ShowChecksums ();
-        Quit (NULL);
-    }
-#endif
     VW_Startup ();
     CA_Startup ();
     IN_Startup ();
     PM_Startup ();
     SD_Startup ();
-//
-// TODO: skip checks for now
-//
-#if 0
+#ifdef NOTYET
     //
     // any problems with this version of the game?
     //
-#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
-    if (!MS_CheckParm("nochex"))
-#endif
-
-#ifndef SKIP_CHECKSUMS
-        CheckValidity ("MAPTEMP.",MAPTEMP_CHECKSUM);
-
-#if GAME_VERSION != SHAREWARE_VERSION
-    if (ChecksumFile("FILE_ID.DIZ",0) != DIZFILE_CHECKSUM)
-        gamestate.flags |= GS_BAD_DIZ_FILE;
-#endif
-#endif
     if (CheckForSpecialCode(POWERBALLTEXT))
 #ifdef IN_DEVELOPMENT
         DebugOk = true;
@@ -1625,7 +1578,7 @@ void InitGame (void)
 #endif
 #ifdef IN_DEVELOPMENT
     //
-    // clear monocrome
+    // clear monochrome
     //
     VW_ClearScreen (0);
 #endif
@@ -1734,7 +1687,7 @@ void PreDemo (void)
     int       i;
     SDL_Color palette[256];
 
-#if defined(TECH_SUPPORT_VERSION)
+#ifdef TECH_SUPPORT_VERSION
     fontnumber = 4;
     SetFontColor (0,15 * 3);
     CenterWindow (26,7);
@@ -1744,49 +1697,6 @@ void PreDemo (void)
     SD_PlaySound (INFORMDEATH2SND);  // Nooooo!
     IN_UserInput (TickBase * 20);
     SD_StopDigitized ();
-
-#elif defined(BETA_TEST)
-
-    bool param = false;
-    char buffer[15] = {0};
-
-    for (i = 1; i < argc; i++)
-    {
-        switch (US_CheckParm(argv[i],MainStrs))
-        {
-            case 13:
-                param = true;
-                break;
-        }
-    }
-
-    if (!param)
-    {
-        fontnumber = 4;
-        CenterWindow (26,7);
-        US_Print (EnterBetaCode);
-        VW_UpdateScreen (screen.buffer);
-        SetFontColor (0,15 * 3);
-        US_LineInput (24 * 8,92,buffer,buffer,true,14,100);
-
-        if (stricmp(buffer,bc_buffer))
-            Quit("Bad beta code!");
-    }
-#endif
-#if 0  // TODO: skip this for now
-#if GAME_VERSION == SHAREWARE_VERSION
-#if defined(IN_DEVELOPMENT) || defined(GEORGE_CHEAT)
-    if (!MS_CheckParm("nochex"))
-#endif
-    {
-#ifndef SKIP_CHECKSUMS
-        CheckValidity("MAPTEMP.",MAPTEMP_CHECKSUM);
-#endif
-    }
-#elif !defined(SKIP_CHECKSUMS)
-    if (ChecksumFile("FILE_ID.DIZ",0) != DIZFILE_CHECKSUM)
-        gamestate.flags |= GS_BAD_DIZ_FILE;
-#endif
 #endif
     if (!(gamestate.flags & GS_NOWAIT))
     {
@@ -1974,9 +1884,7 @@ void DemoLoop (void)
             // demo
             //
 #ifdef DEMOS_ENABLED
-#ifdef IN_DEVELOPMENT
-            if (!MS_CheckParm("recdemo"))
-#endif
+            if (!param_demorecord)
                 PlayDemo (LastDemo++ % 6);
 
             if (playstate == ex_abort)
@@ -2009,12 +1917,10 @@ void DemoLoop (void)
         CA_UncacheAudioChunk (STARTMUSIC + TITLE_LOOP_MUSIC);
 
         VW_FadeOut ();
-#ifdef NOTYET
 #ifdef DEMOS_EXTERN
-        if (MS_CheckParm("recdemo"))
+        if (param_demorecord)
             RecordDemo ();
         else
-#endif
 #endif
         {
 #if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
@@ -2079,82 +1985,176 @@ void DrawCreditsPage (void)
 =====================
 */
 
-//
-// Scans for a digit and converts it to an integer
-//
-int scan_atoi (char *s)
-{
-    while (*s && !isdigit(*s))
-        s++;
-
-    return atoi(s);
-}
-
 void CheckParameters (int argc, char *argv[])
 {
-    int  i;
-    char *arg;
-    screen.flags |= SC_FULLSCREEN;
+    const char *header = "Blake4SDL pre-release\n"
+                         "Original Blake Stone by JAM Productions\n"
+                         "Usage: Blake4SDL [options]\n"
+                         "See Options.txt for help\n\n";
+
+    const char *cinfo = "Planet Strike\n"
+                        "Copyright (c) 1993 - JAM Productions, Inc.\n"
+                        "All rights reserved.\n";
+
+    int    i;
+    size_t len;
+    char   *arg,*helpstr;
+
+    param_samplerate = 44100;
+    param_audiobuffer = 2048;
+
+    error[0] = '\0';
+    str[0] = '\0';
 
     for (i = 1; i < argc; i++)
     {
+        if (*error || *str)
+            break;
+
         arg = argv[i];
 
-        if (!strcmp(arg,"q"))
+        if (!strcmp(arg,"--q"))
             gamestate.flags |= GS_QUICKRUN;
-        else if (!strcmp(arg,"nowait"))
+        else if (!strcmp(arg,"--nowait"))
             gamestate.flags |= GS_NOWAIT;
-        else if (!strcmp(arg,"l"))
+#if defined(IN_DEVELOPMENT) || defined(TECH_SUPPORT_VERSION)
+        else if (!strcmp(arg,"--l"))
         {
-            gamestate.flags |= GS_STARTLEVEL;
-            starting_level = scan_atoi(argv[i]);
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The l option is missing the level argument!");
+            else
+            {
+                gamestate.flags |= GS_STARTLEVEL;
+                starting_level = atoi(argv[i]);
+            }
         }
-        else if (!strcmp(arg,"e"))
+        else if (!strcmp(arg,"--e"))
         {
-            gamestate.flags |= GS_STARTLEVEL;
-            starting_episode = scan_atoi(argv[i]) - 1;
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The e option is missing the level argument!");
+            else
+            {
+                gamestate.flags |= GS_STARTLEVEL;
+                starting_episode = atoi(argv[i]) - 1;
+            }
         }
-        else if (!strcmp(arg,"version"))
+        else if (!strcmp(arg,"--d"))
         {
-#ifdef NOTYET
-            fprint (cinfo_text);
-            printf ("\n     Version: %s\nCOMPILE DATE: %s\n\n",_VERSION_,__DATE__);
-            exit (0);
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The d option is missing the difficulty argument!");
+            else
+            {
+                gamestate.flags |= GS_STARTLEVEL;
+                starting_difficulty = atoi(argv[i]) - 1;
+            }
+        }
 #endif
-        }
-        else if (!strcmp(arg,"system"))
-        {
-#ifdef NOTYET
-            ShowSystem ();
-            exit (0);
+        else if (!strcmp(arg,"--version"))
+            snprintf (str,sizeof(str),"%s\nVersion: %s\nCompile date: %s\n\n",cinfo,_VERSION_,__DATE__);
+#ifdef DEMOS_EXTERN
+        else if (!strcmp(arg,"--recdemo"))
+            param_demorecord = true;
 #endif
-        }
-        else if (!strcmp(arg,"dval"))
-        {
-#ifdef IN_DEVELOPMENT
-#ifdef DEBUG_VALUE
-            debug_value = scan_atoi(argv[i]);
-#endif
-#endif
-        }
-        else if (!strcmp(arg,"tics"))
+        else if (!strcmp(arg,"--tics"))
             gamestate.flags |= GS_TICS_FOR_SCORE;
-        //else if (!strcmp(arg,"mem"))
-            //gamestate.flags |= GS_MEM_FOR_SCORE;
-        else if (!strcmp(arg,"powerball"))
-            PowerBall = 1;
-        else if (!strcmp(arg,"music"))
+        else if (!strcmp(arg,"--powerball"))
+            PowerBall = true;
+        else if (!strcmp(arg,"--music"))
             gamestate.flags |= GS_MUSIC_TEST;
-        else if (!strcmp(arg,"d"))
-        {
-            gamestate.flags |= GS_STARTLEVEL;
-            starting_difficulty = scan_atoi(argv[i]) - 1;
-        }
-        else if (!strcmp(arg,"radar"))
+        else if (!strcmp(arg,"--radar"))
             gamestate.flags |= GS_SHOW_OVERHEAD;
-        else if (!strcmp(arg,"windowed"))
-            screen.flags &= ~SC_FULLSCREEN;
+        else if (!strcmp(arg,"--windowed"))
+            param_windowed = true;
+        else if (!strcmp(arg,"--extravbls"))
+        {
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The extravbls option is missing the vbls argument!");
+            else
+            {
+                extravbls = atoi(argv[i]);
+
+                if (extravbls < 0)
+                    extravbls = -extravbls;
+                else if (extravbls > 8)
+                    snprintf (error,sizeof(error),"Maximum extravbls value is 8!");
+            }
+        }
+        else if (!strcmp(arg,"--joystick"))
+        {
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The joystick option is missing the index argument!");
+            else
+                param_joystickindex = atoi(argv[i]);
+        }
+        else if (!strcmp(arg,"--joystickhat"))
+        {
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The joystickhat option is missing the index argument!");
+            else
+                param_joystickhat = atoi(argv[i]);
+        }
+        else if (!strcmp(arg,"--samplerate"))
+        {
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The samplerate option is missing the rate argument!");
+            else
+                param_samplerate = atoi(argv[i]);
+        }
+        else if (!strcmp(arg,"--audiobuffer"))
+        {
+            i++;
+
+            if (i >= argc || !isdigit(*argv[i]))
+                snprintf (error,sizeof(error),"The audiobuffer option is missing the size argument!");
+            else
+                param_audiobuffer = atoi(argv[i]);
+        }
+        else
+            snprintf (error,sizeof(error),"Invalid parameter(s)!");
     }
+
+    if (*error || *str)
+    {
+        if (*error)
+        {
+            len = strlen(header) + strlen(error) + 1;
+            helpstr = SafeMalloc(len);
+
+            snprintf (helpstr,len,"%s%s",header,error);
+
+            Error (helpstr);
+        }
+        else
+        {
+            len = strlen(header) + strlen(str) + 1;
+            helpstr = SafeMalloc(len);
+
+            snprintf (helpstr,len,"%s%s",header,str);
+
+            Help (helpstr);
+        }
+
+        free (helpstr);
+
+        exit (*error != '\0');
+    }
+
+    if (param_samplerate != 44100 && param_audiobuffer == 2048)
+        param_audiobuffer = 2048 / (44100 / param_samplerate);
 }
 
 
@@ -2169,8 +2169,9 @@ void CheckParameters (int argc, char *argv[])
 void InitDestPath (void)
 {
     struct stat statbuf;
-    int    len;
-    char   *str;
+    int         len;
+    const char  *str;
+    char        *buffer;
 
     str = getenv("APOGEECD");
 
@@ -2181,15 +2182,18 @@ void InitDestPath (void)
         if (len > MAX_DEST_PATH_LEN)
             Quit ("APOGEECD path too long!");
 
-        snprintf (destPath,sizeof(destPath),str);
+        buffer = SafeMalloc(len + 1);
+        snprintf (buffer,len + 1,str);
 
-        if (str[len - 1] == '\\')
-            str[len - 1] = '\0';
+        if (buffer[len] == '\\')
+            buffer[len] = '\0';
 
-        if (stat(str,&statbuf))
+        if (stat(buffer,&statbuf))
             Quit ("APOGEECD directory not found!");
 
-        snprintf (destPath,sizeof(destPath),"%s\\",str);
+        snprintf (destPath,sizeof(destPath),"%s\\",buffer);
+
+        free (buffer);
     }
     else
         *destPath = '\0';
@@ -2220,6 +2224,9 @@ void MakeDestPath (const char *file)
 
 int main (int argc, char *argv[])
 {
+    //
+    // TODO: check if the file exists first and that we're allowed to delete it
+    //
     MakeDestPath (PLAYTEMP_FILE);
     remove (tempPath);
 
