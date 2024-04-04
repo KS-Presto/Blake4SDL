@@ -1557,25 +1557,7 @@ void InitGame (void)
     IN_Startup ();
     PM_Startup ();
     SD_Startup ();
-#ifdef NOTYET
-    //
-    // any problems with this version of the game?
-    //
-    if (CheckForSpecialCode(POWERBALLTEXT))
-#ifdef IN_DEVELOPMENT
-        DebugOk = true;
-#else
-        PowerBall = true;
-#endif
-    if (CheckForSpecialCode(TICSTEXT))
-        gamestate.flags |= GS_TICS_FOR_SCORE;
 
-    if (CheckForSpecialCode(MUSICTEXT))
-        gamestate.flags |= GS_MUSIC_TEST;
-
-    if (CheckForSpecialCode(RADARTEXT))
-        gamestate.flags |= GS_SHOW_OVERHEAD;
-#endif
 #ifdef IN_DEVELOPMENT
     //
     // clear monochrome
@@ -2064,11 +2046,17 @@ void CheckParameters (int argc, char *argv[])
         else if (!strcmp(arg,"--tics"))
             gamestate.flags |= GS_TICS_FOR_SCORE;
         else if (!strcmp(arg,"--powerball"))
+#ifdef IN_DEVELOPMENT
+            DebugOk = true;
+#else
             PowerBall = true;
+#endif
         else if (!strcmp(arg,"--music"))
             gamestate.flags |= GS_MUSIC_TEST;
+#ifdef IN_DEVELOPMENT
         else if (!strcmp(arg,"--radar"))
             gamestate.flags |= GS_SHOW_OVERHEAD;
+#endif
         else if (!strcmp(arg,"--windowed"))
             param_windowed = true;
         else if (!strcmp(arg,"--extravbls"))
