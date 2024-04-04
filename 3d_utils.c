@@ -119,10 +119,10 @@ void Help (const char *string)
 ===================
 */
 
-uint16_t ReadShort (void *ptr)
+unsigned ReadShort (const void *ptr)
 {
-    byte     *data;
-    uint16_t value;
+    const byte *data;
+    unsigned   value;
 
     data = ptr;
 
@@ -140,10 +140,10 @@ uint16_t ReadShort (void *ptr)
 ===================
 */
 
-uint32_t ReadLong (void *ptr)
+uint32_t ReadLong (const void *ptr)
 {
-    byte     *data;
-    uint32_t value;
+    const byte *data;
+    uint32_t   value;
 
     data = ptr;
 

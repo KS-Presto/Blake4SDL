@@ -79,8 +79,6 @@
 #include "3d_def.h"
 
 
-//#define DRAW_TO_FRONT
-
 //
 // string array table is a quick, easy and expandable way to print
 // any number of strings in a text file using the ^DS codes
@@ -510,8 +508,6 @@ enum
 piAnimInfo      piAnimList[TP_MAX_ANIMS];
 byte            TPscan;
 
-
-//static char pb[MAX_PB];
 static int      old_fontnumber;
 static int      length;
 
@@ -656,10 +652,6 @@ void TP_Presenter (PresenterInfo *pinfo)
     //VW_Hlin (xl - TP_MARGIN,xh + (TP_MARGIN * 2),yh + TP_MARGIN,255);
     //VW_Vlin (yl - TP_MARGIN,yh + (TP_MARGIN * 2),xl - TP_MARGIN,255);
 
-#ifdef DRAW_TO_FRONT
-    VW_UpdateScreen ();
-    bufferofs = displayofs;
-#endif
     while (flags & fl_presenting)
     {
         if (*first_ch == TP_CONTROL_CHAR)
@@ -685,116 +677,23 @@ void TP_Presenter (PresenterInfo *pinfo)
 
     pi->cur_x = cur_x;
     pi->cur_y = cur_y;
-
-#ifdef DRAW_TO_FRONT
-    displayofs = bufferofs;
-    bufferofs += SCREENSIZE;
-    if (bufferofs > PAGE3START)
-        bufferofs = PAGE1START;
-#endif
 }
 
 
 /*
 ====================
 =
-= TP_WrapText
+= TP_NewLine
 =
 ====================
 */
 
-void TP_WrapText (void)
+void TP_NewLine (void)
 {
-    int  last_x;
     int  oldc;
     int  width,height;
-    word w,h;
     byte *dest;
-    char *last_ch;
 
-    flags &= ~fl_startofline;
-
-    stemp = TP_LineCommented(first_ch);
-
-    if (stemp)
-    {
-        first_ch += stemp;
-        return;
-    }
-
-    //
-    // parse script until one of the following:
-    //
-    // 1) text extends beyond right margin
-    // 2) NULL termination is reached
-    // 3) TP_RETURN_CHAR is reached
-    // 4) TP_CONTROL_CHAR is reached
-    //
-    scan_x = cur_x;
-    scan_ch = first_ch;
-
-    while (scan_x + font->width[(byte)*scan_ch] <= xh && *scan_ch && *scan_ch != TP_RETURN_CHAR && *scan_ch != TP_CONTROL_CHAR)
-        scan_x += font->width[(byte)*scan_ch++];
-
-    //
-    // if 'text extends beyond right margin', scan backwards for a SPACE
-    //
-    if (scan_x + font->width[(byte)*scan_ch] > xh)
-    {
-        last_x = scan_x;
-        last_ch = scan_ch;
-
-        while (scan_ch != first_ch && *scan_ch != ' ' && *scan_ch != TP_RETURN_CHAR)
-            scan_x -= font->width[(byte)*scan_ch--];
-
-        if (scan_ch == first_ch)
-        {
-            if (cur_x != xl)
-                goto tp_newline;
-
-            scan_ch = last_ch;
-            scan_x = last_x;
-        }
-    }
-
-    //
-    // print current line
-    //
-    temp = *scan_ch;
-    *scan_ch = '\0';
-
-    if (justify_mode == jm_right && !(flags & fl_center))
-    {
-        VW_MeasureString (first_ch,&w,&h);
-
-        cur_x = xh - w + 1;
-
-        if (cur_x < xl)
-            cur_x = xl;
-    }
-
-    px = cur_x;
-    py = cur_y;
-
-    //
-    // TODO: what is this for?
-    length = scan_ch - first_ch + 1;    // USL_DrawString only works with
-    // if (length > MAX_PB)                   //
-    //  TP_ERROR(TP_PRESENTER_LONG_TEXT);   //
-    // _fmemcpy(pb,first_ch,length);      // near pointers...
-
-    if (*first_ch != TP_RETURN_CHAR)
-    {
-        if (pi->print_delay)
-            TP_SlowPrint (first_ch,pi->print_delay);
-        else
-            TP_Print (first_ch,false);
-    }
-
-    *scan_ch = temp;
-    first_ch = scan_ch;
-
-tp_newline:
     flags &= ~fl_center;
 
     //
@@ -882,6 +781,105 @@ tp_newline:
 /*
 ====================
 =
+= TP_WrapText
+=
+====================
+*/
+
+void TP_WrapText (void)
+{
+    int  last_x;
+    word w,h;
+    char *last_ch;
+
+    flags &= ~fl_startofline;
+
+    stemp = TP_LineCommented(first_ch);
+
+    if (stemp)
+    {
+        first_ch += stemp;
+        return;
+    }
+
+    //
+    // parse script until one of the following:
+    //
+    // 1) text extends beyond right margin
+    // 2) NULL termination is reached
+    // 3) TP_RETURN_CHAR is reached
+    // 4) TP_CONTROL_CHAR is reached
+    //
+    scan_x = cur_x;
+    scan_ch = first_ch;
+
+    while (scan_x + font->width[(byte)*scan_ch] <= xh && *scan_ch && *scan_ch != TP_RETURN_CHAR && *scan_ch != TP_CONTROL_CHAR)
+        scan_x += font->width[(byte)*scan_ch++];
+
+    //
+    // if 'text extends beyond right margin', scan backwards for a SPACE
+    //
+    if (scan_x + font->width[(byte)*scan_ch] > xh)
+    {
+        last_x = scan_x;
+        last_ch = scan_ch;
+
+        while (scan_ch != first_ch && *scan_ch != ' ' && *scan_ch != TP_RETURN_CHAR)
+            scan_x -= font->width[(byte)*scan_ch--];
+
+        if (scan_ch == first_ch)
+        {
+            if (cur_x != xl)
+            {
+                TP_NewLine ();
+
+                return;
+            }
+
+            scan_ch = last_ch;
+            scan_x = last_x;
+        }
+    }
+
+    //
+    // print current line
+    //
+    temp = *scan_ch;
+    *scan_ch = '\0';
+
+    if (justify_mode == jm_right && !(flags & fl_center))
+    {
+        VW_MeasureString (first_ch,&w,&h);
+
+        cur_x = xh - w + 1;
+
+        if (cur_x < xl)
+            cur_x = xl;
+    }
+
+    px = cur_x;
+    py = cur_y;
+
+    length = scan_ch - first_ch + 1;
+
+    if (*first_ch != TP_RETURN_CHAR)
+    {
+        if (pi->print_delay)
+            TP_SlowPrint (first_ch,pi->print_delay);
+        else
+            TP_Print (first_ch,false);
+    }
+
+    *scan_ch = temp;
+    first_ch = scan_ch;
+
+    TP_NewLine ();
+}
+
+
+/*
+====================
+=
 = TP_HandleCodes
 =
 ====================
@@ -907,10 +905,7 @@ void TP_HandleCodes (void)
     while (*first_ch == TP_CONTROL_CHAR)
     {
         first_ch++;
-#ifndef TP_CASE_SENSITIVE
-        *first_ch = toupper(*first_ch);
-        *(first_ch + 1) = toupper(*(first_ch + 1));
-#endif
+
         code = ReadShort(first_ch);
 
         first_ch += 2;
@@ -1419,7 +1414,7 @@ void TP_HandleCodes (void)
 
                 old_first_ch = first_ch + 2;
 
-                first_ch = (char *)piStringTable[disp_str_num];
+                first_ch = piStringTable[disp_str_num];
 
                 if (first_ch)
                 {
@@ -1470,9 +1465,7 @@ void TP_HandleCodes (void)
             //
             case TP_CNVT_CODE('E','P'):
                 VW_UpdateScreen (screen.buffer);
-#ifdef DRAW_TO_FRONT
-                bufferofs = displayofs;
-#endif
+
                 if (screen.flags & SC_FADED)
                     VW_FadeIn ();
 
@@ -1489,9 +1482,6 @@ void TP_HandleCodes (void)
 
                     TP_AnimatePage (numanims);
                     VW_UpdateScreen (screen.buffer);
-#ifdef DRAW_TO_FRONT
-                    bufferofs = displayofs;
-#endif
                     IN_ReadControl (&ci);
 
                     if (Keyboard[sc_PgUp])
@@ -1815,8 +1805,8 @@ int TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype)
 
     if (flags & fl_boxshape)
     {
-        x1 -= 1 + TP_640x200;
-        x2 += 1 + TP_640x200;
+        x1--;
+        x2++;
         y1--;
         y2++;
 
@@ -1831,12 +1821,12 @@ int TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype)
 
     if (flags & fl_shadowpic)
     {
-        x2 += 1 + TP_640x200;
+        x2++;
         y2++;
 
         if (x1 >= 0 && y1 >= 0)
         {
-            VW_Hlin (x1 + 1 + TP_640x200,x2,y2,shcolor);
+            VW_Hlin (x1 + 1,x2,y2,shcolor);
             VW_Vlin (y1 + 1,y2,x2,shcolor);
         }
     }
@@ -1867,32 +1857,23 @@ void TP_PurgeAllGfx (void)
 =
 = TP_CachePage
 =
-= TODO: all chunks are cached on startup, so none of this should be needed now
-=
 ====================
 */
 
-void TP_CachePage (char *script)
+void TP_CachePage (const char *script)
 {
-#if 0
     int  code;
     bool end_of_page = false;
     int  numanims = 0;
 
     while (!end_of_page)
     {
-        stemp = TP_LineCommented(script);
-
-        while (stemp)
+        for (stemp = TP_LineCommented(script); stemp; stemp = TP_LineCommented(script))
             script += stemp;
 
         switch (*script++)
         {
             case TP_CONTROL_CHAR:
-#ifndef TP_CASE_SENSITIVE
-                *script = toupper(*script);
-                *(script + 1) = toupper(*(script + 1));
-#endif
                 code = ReadShort(script);
 
                 script += 2;
@@ -1917,7 +1898,6 @@ void TP_CachePage (char *script)
                 break;
         }
     }
-#endif
 
     if (pi->flags & TPF_CACHE_NO_GFX)
         return;
@@ -1934,7 +1914,7 @@ void TP_CachePage (char *script)
 ====================
 */
 
-unsigned TP_VALUE (char *ptr, int num_nybbles)
+unsigned TP_VALUE (const char *str, int num_nybbles)
 {
     int      ch,nybble,shift;
     unsigned value = 0;
@@ -1943,7 +1923,7 @@ unsigned TP_VALUE (char *ptr, int num_nybbles)
     {
         shift = 4 * (num_nybbles - nybble - 1);
 
-        ch = *ptr++;
+        ch = *str++;
 
         if (isxdigit(ch))
         {
@@ -1990,7 +1970,7 @@ void TP_JumpCursor (void)
 ====================
 */
 
-void TP_Print (char *str, bool singlechar)
+void TP_Print (const char *str, bool singlechar)
 {
     char buf[2] = {0,0};
 
@@ -2037,7 +2017,7 @@ void TP_Print (char *str, bool singlechar)
 ====================
 */
 
-bool TP_SlowPrint (char *str, int delay)
+bool TP_SlowPrint (const char *str, int delay)
 {
     int     oldc;
     int     oldx,oldy;
@@ -2056,7 +2036,7 @@ bool TP_SlowPrint (char *str, int delay)
             fontcolor = bgcolor;
             px = oldx = last_cur_x;
             py = oldy = last_cur_y;
-            TP_Print("@",true);
+            TP_Print ("@",true);
 
             px = oldx;
             py = oldy;
@@ -2133,7 +2113,7 @@ bool TP_SlowPrint (char *str, int delay)
 ====================
 */
 
-int32_t TP_LoadScript (char *filename, PresenterInfo *pi, int idcache)
+int32_t TP_LoadScript (const char *filename, PresenterInfo *pi, int idcache)
 {
     int32_t size;
     char    *p;
@@ -2143,10 +2123,10 @@ int32_t TP_LoadScript (char *filename, PresenterInfo *pi, int idcache)
         pi->id_cache = idcache;
         pi->scriptstart = grsegs[idcache];
 
-        p = strstr((char *)grsegs[idcache],"^XX");
+        p = strstr((char *)grsegs[idcache],int_xx);
 
         if (!p)
-            Quit ("Can't find the ^XX doc terminator string!");
+            Quit ("Can't find the %s doc terminator string!",int_xx);
 
         size = p - (char *)grsegs[idcache];
     }
@@ -2160,7 +2140,7 @@ int32_t TP_LoadScript (char *filename, PresenterInfo *pi, int idcache)
             return 0;
     }
 
-    pi->script[0] = pi->scriptstart;  // TODO: this may not be correct
+    pi->script[0] = pi->scriptstart;
     pi->script[0][size + 4] = 0;      // last byte is trashed!
     pi->flags |= TPF_CACHED_SCRIPT;
 
@@ -2223,10 +2203,6 @@ void TP_InitScript (PresenterInfo *pi)
         switch (*script++)
         {
             case TP_CONTROL_CHAR:
-#ifndef TP_CASE_SENSITIVE
-                *script = toupper(*script);
-                *(script + 1) = toupper(*(script + 1));
-#endif
                 code = ReadShort(script);
 
                 script += 2;
@@ -2239,7 +2215,6 @@ void TP_InitScript (PresenterInfo *pi)
                         Quit ("Too many pages in presenter!");
                 }
                 break;
-
 #if 0
             case '\r':
                 if (*script == '\n')
@@ -2344,9 +2319,9 @@ void TP_CacheIn (int type, int chunk)
 ====================
 */
 
-int TP_LineCommented (char *string)
+int TP_LineCommented (const char *string)
 {
-    char *str = string;
+    const char *str = string;
 
     //
     // if a line starts with a semi-colon, the entire line is considered a

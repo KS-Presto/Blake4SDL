@@ -11,7 +11,7 @@
 ===================
 */
 
-void IO_WriteFile (char *filename, void *source, int32_t length)
+void IO_WriteFile (const char *filename, void *source, int32_t length)
 {
     FILE *file;
 
@@ -37,7 +37,7 @@ void IO_WriteFile (char *filename, void *source, int32_t length)
 ===================
 */
 
-int32_t IO_LoadFile (char *filename, void **dest)
+int32_t IO_LoadFile (const char *filename, void **dest)
 {
     FILE       *file;
     const char *id = "JAMP";

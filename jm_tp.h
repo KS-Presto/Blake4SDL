@@ -6,10 +6,6 @@
 
 #define PI_MAX_NUM_DISP_STRS    1   // num display str ptrs allocated for text presenter
 
-#define TP_CASE_SENSITIVE           // ctrl codes are case sensitive
-
-#define TP_640x200              0   // is presenter in 640 x 200 mode?
-
 #define TP_RETURN_CHAR          '\r'
 #define TP_CONTROL_CHAR         '^'
 
@@ -66,18 +62,18 @@
 
 typedef struct
 {
-    uint16_t flags,gflags;
-    char     *script[TP_MAX_PAGES];
-    void     *scriptstart;
-    int16_t  numpages,pagenum;
-    uint16_t xl,yl,xh,yh;
-    byte     fontnumber;
-    byte     bgcolor,ltcolor,dkcolor,shcolor;
-    uint16_t cur_x,cur_y;
-    int8_t   print_delay;
-    byte     highlight_color,fontcolor;
-    int16_t  id_cache;
-    char     *infoline;
+    uint16_t   flags,gflags;
+    char       *script[TP_MAX_PAGES];
+    void       *scriptstart;
+    int16_t    numpages,pagenum;
+    uint16_t   xl,yl,xh,yh;
+    byte       fontnumber;
+    byte       bgcolor,ltcolor,dkcolor,shcolor;
+    uint16_t   cur_x,cur_y;
+    int8_t     print_delay;
+    byte       highlight_color,fontcolor;
+    int16_t    id_cache;
+    const char *infoline;
 } PresenterInfo;
 
 
@@ -134,7 +130,7 @@ typedef struct
 extern  piShapeInfo piShapeTable[];
 extern  piAnimInfo  piAnimTable[];
 extern  piAnimInfo  piAnimList[TP_MAX_ANIMS];
-extern  char        *piStringTable[PI_MAX_NUM_DISP_STRS];  // TODO: const?
+extern  char        *piStringTable[PI_MAX_NUM_DISP_STRS];
 extern  byte        TPscan;
 
 
@@ -142,19 +138,19 @@ void        TP_Presenter (PresenterInfo *pi);
 void        TP_WrapText (void);
 void        TP_HandleCodes (void);
 int         TP_DrawShape (int x, int y, int shapenum, int type);
-unsigned    TP_VALUE (char *ptr, int num_nybbles);
-int32_t     TP_LoadScript (char *filename, PresenterInfo *pi, int idcache);
+unsigned    TP_VALUE (const char *str, int num_nybbles);
+int32_t     TP_LoadScript (const char *filename, PresenterInfo *pi, int idcache);
 void        TP_FreeScript (PresenterInfo *pi, int idcache);
 void        TP_InitScript (PresenterInfo *pi);
 void        TP_AnimatePage (int numanims);
 int         TP_BoxAroundShape (int x1, int y1, int shapenum, int shapetype);
 void        TP_JumpCursor (void);
-void        TP_Print (char *str, bool singlechar);
-bool        TP_SlowPrint (char *str, int delay);
+void        TP_Print (const char *str, bool singlechar);
+bool        TP_SlowPrint (const char *str, int delay);
 void        TP_PurgeAllGfx (void);
-void        TP_CachePage (char *script);
+void        TP_CachePage (const char *script);
 void        TP_CacheIn (int type, int chunk);
-int         TP_LineCommented (char *s);
+int         TP_LineCommented (const char *string);
 void        TP_PrintPageNumber (void);
 
 #endif

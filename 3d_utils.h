@@ -17,7 +17,7 @@ int      Random (int max);
 void     Error (const char *string);
 void     Help (const char *string);
 
-uint16_t ReadShort (void *ptr);
-uint32_t ReadLong (void *ptr);
+unsigned ReadShort (const void *ptr);
+uint32_t ReadLong (const void *ptr);
 
 #endif
