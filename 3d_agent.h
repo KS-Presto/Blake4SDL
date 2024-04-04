@@ -20,9 +20,6 @@ extern  int         FirstGenInfMsg,TotalGenInfMsgs;
 extern  int         LastInfoAttacker;
 extern  int         LastInfoAttacker_Cloaked;
 
-extern  char        term_com_name[];
-extern  char        term_msg_name[];
-
 extern  atkinf_t    attackinfo[NUMWEAPONS][4];
 
 extern  int         shootdelta;
@@ -117,7 +114,6 @@ int      DrawShape (int x, int y, int shapenum, int shapetype);
 
 void     AnimatePage (void);
 
-void     ActivateTerminal (bool skiplink);
 void     TerminalPrint (const char *msg, bool FastPrint);
 void     FloorCheat (unsigned RadarFlags);
 bool     Interrogate (objtype *obj);
@@ -131,8 +127,6 @@ void     GiveToken (int tokens);
 
 void     TakePlasmaDetonator (int count);
 void     GivePlasmaDetonator (int count);
-
-void     LoadTerminalCommands (void);
 
 void     ActivateWallSwitch (unsigned iconnum, int x, int y);
 int      UpdateBarrierTable (int x, int y, bool OnOff);
