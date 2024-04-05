@@ -41,6 +41,7 @@ fixed       sintable[ANG450],*costable;
 //
 fixed       focallength;                    // distance behind viewx/y for center of projection
 int         viewwidth,viewheight;
+int         baseviewwidth,baseviewheight;
 int         centerx,centery;
 
 
@@ -59,7 +60,6 @@ fixed       viewx,viewy;        // the focal point
 int         viewangle;
 fixed       viewsin,viewcos;
 
-int         viewscreenx,viewscreeny;
 
 //
 // ray tracing variables
@@ -1029,7 +1029,7 @@ int CalcRotate (objtype *obj, int viewx)
     // this isn't exactly correct, as it should vary by a trig value,
     // but it is close enough with only eight rotations
     //
-    viewangle = player->angle + ((centerx - viewx) / 8);
+    viewangle = player->angle + ((centerx - viewx) / ((8 * viewwidth) / screen.basewidth));
 
     if (dir == nodir)
         dir = obj->trydir & 127;
@@ -1253,7 +1253,7 @@ void DrawPlayerWeapon (void)
         {
             useBounceOffset = true;
 
-            SimpleScaleShape (centerx,c_table[20 - viewsize],v_table[20 - viewsize],shapenum,NO_SHADING);
+            SimpleScaleShape (centerx,c_table[20 - viewsize] * screen.scale,v_table[20 - viewsize] * screen.scale,shapenum,NO_SHADING);
 
             useBounceOffset = false;
         }
@@ -1707,8 +1707,8 @@ void ThreeDRefresh (void)
 
         screen.flags &= ~SC_FIZZLEIN;
         fizzlex = fizzley = 0;
-        fizzlewidth = viewwidth;
-        fizzleheight = viewheight;
+        fizzlewidth = baseviewwidth;
+        fizzleheight = baseviewheight;
 
         lasttimecount = GetTimeCount();  // don't make a big tic count
     }
@@ -1771,7 +1771,7 @@ void DrawRadar (void)
         UpdateRadarGauge ();
     }
 
-    ShowOverhead (192 - viewscreenx,156 - viewscreeny,16,zoom,flags);
+    ShowOverhead (192 - baseviewscreenx,156 - baseviewscreeny,16,zoom,flags);
 }
 
 
@@ -1796,6 +1796,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
     unsigned iconnum;
     fixed    lmx,lmy,baselmx,baselmy;
     fixed    psin,pcos;
+    int      zoomwidth;
     int      rx,ry,mx,my;
     int      i,rndindex;
     bool     drawplayerok = true;
@@ -1812,6 +1813,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
     }
 
     zoom = 1 << zoom;
+    zoomwidth = zoom;
     radius /= zoom;
 
 //
@@ -1826,6 +1828,13 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
 //
 // calculate starting destination address
 //
+    if (screen.scale > 1)
+    {
+        bx *= screen.scale;
+        by *= screen.scale;
+        zoomwidth *= screen.scale;
+    }
+
     basedest = vbuf + ylookup[by] + bx;
 
 //
@@ -1946,9 +1955,9 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
             //
             // display pixels for this quadrant and add x/y increments
             //
-            for (i = 0; i < zoom; i++)
+            for (i = 0; i < zoomwidth; i++)
             {
-                memset (dest,color,zoom);
+                memset (dest,color,zoomwidth);
 
                 dest += screen.buffer->pitch;
             }
@@ -1960,6 +1969,6 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
         baselmx += psin;
         baselmy += pcos;
 
-        basedest += zoom;
+        basedest += zoomwidth;
     }
 }

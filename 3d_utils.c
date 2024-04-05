@@ -58,6 +58,25 @@ void *safe_malloc (size_t size, const char *file, uint32_t line)
 /*
 ===================
 =
+= CustomAssert
+=
+===================
+*/
+
+void CustomAssert (bool cond, const char *file, uint32_t line, const char *string)
+{
+    if (!cond)
+    {
+        snprintf (str,sizeof(str),file);
+        snprintf (error,sizeof(error),"Assertion failed: %s\nFile: %s Line: %u",string,basename(str),line);
+        Terminate (NULL,error);
+    }
+}
+
+
+/*
+===================
+=
 = Random
 =
 ===================

@@ -18,8 +18,11 @@
 typedef struct screenstruct
 {
     int16_t      width,height;
+    int16_t      basewidth,baseheight;
+    int16_t      heightoffset;
+    int8_t       scale;
     int          bits;
-    uint32_t     flags;
+    uint16_t     flags;
     const char   *title;
 
     SDL_Window   *window;
@@ -63,7 +66,7 @@ extern  uint32_t     *ylookup;
 
 extern  int          fontcolor,backcolor;
 extern  int          fontnumber;
-extern  int16_t      px,py;
+extern  int          px,py;
 
 extern  SDL_Color    gamepal[256];
 
@@ -86,6 +89,7 @@ void    VW_DrawMPic (int x, int y, int chunk);
 void    VW_DePlaneVGA (byte *source, int width, int height);
 void    VW_MemToScreen (byte *source, int width, int height, int x, int y);
 void    VW_ScreenToMem (byte *dest, int width, int height, int x, int y);
+void    VW_ScreenToScreen (int width, int height, int x, int y, int srcofs, int destofs);
 void    VW_Bar (int x, int y, int width, int height, int color);
 void    VW_MeasureString (const char *string, word *width, word *height);
 void    VW_DrawString (const char *string);

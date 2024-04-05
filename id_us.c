@@ -315,8 +315,8 @@ void US_ResetWindow (int heightofs)
 {
     WindowX = 0;
     WindowY = 0;
-    WindowW = screen.width;
-    WindowH = screen.height - heightofs;
+    WindowW = screen.basewidth;
+    WindowH = screen.baseheight - heightofs;
 }
 
 

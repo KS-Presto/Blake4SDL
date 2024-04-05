@@ -48,6 +48,7 @@ extern  int16_t     *wallheight;
 //
 extern  fixed       focallength;
 extern  int         viewwidth,viewheight;
+extern  int         baseviewwidth,baseviewheight;
 extern  int         centerx,centery;
 
 //

@@ -38,7 +38,7 @@
 // text "InfoArea" defines
 //
 #define INFOAREA_X              3
-#define INFOAREA_Y              (200 - STATUSLINES + 3)
+#define INFOAREA_Y              (screen.baseheight - STATUSLINES + 3)
 #define INFOAREA_W              109
 #define INFOAREA_H              37
 
@@ -479,7 +479,7 @@ void ControlMovement (void)
 =============================================================================
 */
 
-#define StatusDrawPic(x,y,pic)    VW_DrawPic ((x),(y) + (200 - STATUSLINES),(pic))
+#define StatusDrawPic(x,y,pic)    VW_DrawPic ((x),(y) + (screen.baseheight - STATUSLINES),(pic))
 
 
 /*
@@ -1034,7 +1034,7 @@ void DrawAmmoNum (void)
     fontcolor = 0x9D;
 
     PrintX = 252;
-    PrintY = 200 - STATUSLINES + 38;
+    PrintY = screen.baseheight - STATUSLINES + 38;
 
 #if 0
     switch (gamestate.weapon)
@@ -3403,8 +3403,10 @@ void LoadOverheadChunk (int tpNum)
 void SaveOverheadChunk (int tpNum)
 {
     FILE    *file;
+    int     x,y;
     int32_t buffersize;
     int32_t cksize;
+    byte    *source,*dest;
     char    chunk[5];
 
     //
@@ -3424,9 +3426,22 @@ void SaveOverheadChunk (int tpNum)
     DeleteChunk (file,chunk);
 
     //
-    // prepare buffer
+    // fill buffer with un-scaled image
     //
-    VW_ScreenToMem (ov_buffer,mapwidth,mapheight,TOV_X,TOV_Y);
+    source = VW_LockSurface(screen.buffer);
+
+    if (!source)
+        Quit ("Unable to lock surface: %S\n",SDL_GetError());
+
+    source += ylookup[TOV_Y * screen.scale] + (TOV_X * screen.scale);
+
+    for (y = 0; y < mapheight; y++)
+    {
+        dest = ov_buffer + (y << MAPSHIFT);
+
+        for (x = 0; x < mapwidth; x++)
+            *dest++ = source[ylookup[y * screen.scale] + (x * screen.scale)];
+    }
 
     buffersize = mapwidth * mapheight;
     cksize = buffersize + sizeof(statsInfoType);
@@ -3478,8 +3493,8 @@ void DisplayTeleportName (int tpNum, bool locked)
 
     VW_MeasureString (s,&w,&h);
 
+    px = (screen.basewidth / 2) - (w / 2);
     py = 103;
-    px = 160 - (w / 2);
 
     VW_Bar  (54,101,212,9,0x52);
     ShPrint (s,0,false);

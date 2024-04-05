@@ -356,7 +356,7 @@ void HelpPresenter (char *fname, bool continuekeys, int idcache, bool startmusic
     //
     // change view size to max (scaler clips shapes on smaller views)
     //
-    oldwidth = viewwidth / 16;
+    oldwidth = baseviewwidth / 16;
 
     if (oldwidth != FULL_VIEW_WIDTH)
         SetViewSize (FULL_VIEW_WIDTH);
@@ -642,7 +642,7 @@ int CP_CheckQuick (int scan)
         // end game
         //
         case sc_F7:
-            WindowH = 160;
+            WindowH = MaxY - 8;
 
             if (Confirm(ENDGAMESTR))
             {
@@ -650,7 +650,7 @@ int CP_CheckQuick (int scan)
                 pickquick = gamestate.lives = 0;
             }
 
-            WindowH = 200;
+            WindowH = screen.baseheight;
             fontnumber = 4;
             return 1;
 
@@ -736,7 +736,7 @@ int CP_CheckQuick (int scan)
                 ExitGame ();
 
             refreshscreen = false;
-            WindowH = 200;
+            WindowH = screen.baseheight;
             fontnumber = 4;
 
             return 1;
@@ -1943,9 +1943,12 @@ int CP_Control (int blank)
 
 void DrawMousePos (void)
 {
-    VW_Bar (74,92,160,8,HIGHLIGHT_BOX_COLOR);
-    DrawOutline (73,91,161,9,ENABLED_TEXT_COLOR,ENABLED_TEXT_COLOR);
-    VW_Bar (74 + (16 * mouseadjustment),92,16,8,HIGHLIGHT_TEXT_COLOR);
+    int width = screen.basewidth / 2;
+    int height = 8;
+
+    VW_Bar (74,92,width,height,HIGHLIGHT_BOX_COLOR);
+    DrawOutline (73,91,width + 1,height + 1,ENABLED_TEXT_COLOR,ENABLED_TEXT_COLOR);
+    VW_Bar (74 + (16 * mouseadjustment),92,width / 10,height,HIGHLIGHT_TEXT_COLOR);
 }
 
 
@@ -2074,7 +2077,7 @@ void DrawCtlScreen (void)
     DrawInstructions (IT_STANDARD);
 
     WindowX = 0;
-    WindowW = 320;
+    WindowW = screen.basewidth;
     SetFontColor (TEXTCOLOR,BKGDCOLOR);
 
     if (JoystickPresent)
@@ -2925,7 +2928,7 @@ int CP_ChangeView (int blank)
 
     US_ResetWindow (0);
 
-    newview = oldview = lastview = viewwidth / 16;
+    newview = oldview = lastview = baseviewwidth / 16;
 
     DrawChangeView (oldview);
 
@@ -3099,7 +3102,7 @@ void SetupControlPanel (void)
 {
     fontnumber = 2;
 
-    WindowH = 200;
+    WindowH = screen.baseheight;
 
     if (!ingame)
         CA_LoadAllSounds ();
@@ -3538,8 +3541,8 @@ void DrawMenu (CP_iteminfo *item_i, CP_itemtype *items)
     WindowX = PrintX = item_i->x + item_i->indent;
     WindowY = PrintY = item_i->y;
 
-    WindowW = 320;
-    WindowH = 200;
+    WindowW = screen.basewidth;
+    WindowH = screen.baseheight;
 
     for (i = 0; i < item_i->amount; i++)
     {
@@ -3709,7 +3712,7 @@ void Message (const char *string)
     if (w + 10 > mw)
         mw = w + 10;
 
-    x = 160 - (mw / 2);
+    x = (screen.basewidth / 2) - (mw / 2);
     y = (WindowH / 2) - (h / 2);
 
     //

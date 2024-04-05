@@ -5,12 +5,13 @@
 
 
 #define  SafeMalloc(s)   safe_malloc ((s),__FILE__,__LINE__)
-
+#define  Assert(c,s)     CustomAssert ((c),__FILE__,__LINE__,(s))
 
 fixed    FixedMul (fixed a, fixed b);
 fixed    FixedDiv (fixed a, fixed b);
 
 void     *safe_malloc (size_t size, const char *file, uint32_t line);
+void     CustomAssert (bool cond, const char *file, uint32_t line, const char *string);
 
 int      Random (int max);
 

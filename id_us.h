@@ -9,8 +9,8 @@
 #define _ID_US_H_
 
 
-#define MaxX         320
-#define MaxY         160
+#define MaxX         screen.basewidth
+#define MaxY         (screen.baseheight - STATUSLINES + 8)
 
 #define MaxHighName  57
 #define MaxScores    10

@@ -180,7 +180,7 @@ void ShowMap (void)
     if (!vbuf)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    ShowOverhead (160 - 32,py,32,0,OV_ACTORS | OV_SHOWALL | OV_KEYS | OV_PUSHWALLS);
+    ShowOverhead ((screen.basewidth / 2) - 32,py,32,0,OV_ACTORS | OV_SHOWALL | OV_KEYS | OV_PUSHWALLS);
 
     VW_UnlockSurface (screen.buffer);
     vbuf = NULL;
@@ -211,7 +211,7 @@ void ShapeTest (void)
     int      v1,v2;
     int      sound;
     int      oldviewheight;
-    uint32_t l;
+    uint32_t l,oldflags;
     byte     *addr;
 
     US_CenterWindow (20,16);
@@ -252,17 +252,24 @@ void ShapeTest (void)
                 if (!vbuf)
                     Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-                postx = (screen.width / 2) - (TEXTURESIZE / 2);
+                postx = (screen.width / 2) - ((TEXTURESIZE * screen.scale) / 2);
                 postsource = addr;
 
                 oldviewheight = viewheight;
                 viewheight = screen.height;        // no clipping
                 centery = viewheight / 2;
 
-                for (x = 0; x < TEXTURESIZE; x++, postx++, postsource += TEXTURESIZE)
+                oldflags = gamestate.flags;
+                gamestate.flags &= ~GS_LIGHTING;   // no shading
+
+                for (x = 0; x < TEXTURESIZE * screen.scale; x++, postx++)
                 {
-                    wallheight[postx] = 256;
+                    wallheight[postx] = 256 * screen.scale;
+
                     ScalePost ();
+
+                    if ((x % screen.scale) == screen.scale - 1)
+                        postsource += TEXTURESIZE;
                 }
 
                 VW_UnlockSurface (screen.buffer);
@@ -270,6 +277,9 @@ void ShapeTest (void)
 
                 viewheight = oldviewheight;
                 centery = viewheight / 2;
+
+                if (oldflags & GS_LIGHTING)
+                    gamestate.flags |= GS_LIGHTING;
             }
             else if (i < PMSoundStart)
             {
@@ -285,13 +295,19 @@ void ShapeTest (void)
                 viewheight = screen.height;
                 centery = viewheight / 2;
 
-                SimpleScaleShape (screen.width / 2,centery,64,i - PMSpriteStart,NO_SHADING);
+                oldflags = gamestate.flags;
+                gamestate.flags &= ~GS_LIGHTING;
+
+                SimpleScaleShape (screen.width / 2,centery,64 * screen.scale,i - PMSpriteStart,NO_SHADING);
 
                 VW_UnlockSurface (screen.buffer);
                 vbuf = NULL;
 
                 viewheight = oldviewheight;
                 centery = viewheight / 2;
+
+                if (oldflags & GS_LIGHTING)
+                    gamestate.flags |= GS_LIGHTING;
             }
             else if (i == ChunksInFile - 1)
             {

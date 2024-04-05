@@ -113,16 +113,12 @@ void ShutdownMovie (void)
 
 void Movie_DrawSeg (byte *source, int offset, int length)
 {
-    byte *dest;
+    int x,y;
 
-    dest = VW_LockSurface(screen.buffer);
+    x = offset % screen.basewidth;
+    y = offset / screen.basewidth;
 
-    if (!dest)
-        Quit ("Unable to lock surface: %s\n",SDL_GetError());
-
-    memcpy (dest + offset,source,length);
-
-    VW_UnlockSurface (screen.buffer);
+    VW_MemToScreen (source,length,1,x,y);
 }
 
 

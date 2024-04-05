@@ -20,6 +20,7 @@ unsigned        ceilingcolor,floorcolor;
 
 int             viewsize;
 int             viewscreenx,viewscreeny;
+int             baseviewscreenx,baseviewscreeny;
 int             fizzlewidth,fizzleheight;
 int             fizzlex,fizzley;
 unsigned        screenofs;
@@ -2095,7 +2096,7 @@ void SetupGameLevel (void)
                 }
             }
 
-            if (tile < 64 || icon == PUSHABLETILE)
+            if (tile < MAXWALLTILES || icon == PUSHABLETILE)
                 TravelTable[x][y] |= TT_TRAVELED;
         }
     }
@@ -2375,10 +2376,13 @@ void SetViewSize (int size)
 {
     int width,height;
 
+    if (size < 6 || size > 20)
+        Quit ("Invalid view size!");
+
     viewsize = size;
 
-    width = ((size << 4) * screen.width) / 320;
-    height = (((size << 4) * HEIGHTRATIO) * screen.height) / 200;
+    width = ((size << 4) * screen.width) / screen.basewidth;
+    height = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
 
     viewwidth = width & ~15;                  // must be divisible by 16
     viewheight = height & ~1;                 // must be even
@@ -2392,9 +2396,14 @@ void SetViewSize (int size)
     else
     {
         viewscreenx = (screen.width - viewwidth) >> 1;
-        viewscreeny = ((screen.height - (STATUSLINES - TOP_STRIP_HEIGHT)) - viewheight) >> 1;
+        viewscreeny = ((screen.height - ((STATUSLINES - TOP_STRIP_HEIGHT) * screen.scale)) - viewheight) >> 1;
         screenofs = ylookup[viewscreeny] + viewscreenx;
     }
+
+    baseviewwidth = (viewwidth / screen.scale) & ~15;
+    baseviewheight = (viewheight / screen.scale) & ~1;
+    baseviewscreenx = viewscreenx / screen.scale;
+    baseviewscreeny = viewscreeny / screen.scale;
 
 //
 // calculate trace angles and projection constants
@@ -2415,20 +2424,29 @@ void ShowViewSize (int size)
 {
     int oldwidth,oldheight;
 
+    if (size < 6 || size > 20)
+        Quit ("Invalid view size!");
+
     oldwidth = viewwidth;
     oldheight = viewheight;
 
-    viewwidth = ((size << 4) * screen.width) / 320;
-    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / 200;
+    viewwidth = ((size << 4) * screen.width) / screen.basewidth;
+    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
     centerx = viewwidth / 2;
 
-    VW_Bar (0,TOP_STRIP_HEIGHT,320,200 - STATUSLINES - TOP_STRIP_HEIGHT,BORDER_MED_COLOR);
+    baseviewwidth = viewwidth / screen.scale;
+    baseviewheight = viewheight / screen.scale;
+
+    VW_Bar (0,TOP_STRIP_HEIGHT,screen.basewidth,screen.baseheight - STATUSLINES - TOP_STRIP_HEIGHT,BORDER_MED_COLOR);
 
     DrawPlayBorder ();
 
     viewheight = oldheight;
     viewwidth = oldwidth;
     centerx = viewwidth / 2;
+
+    baseviewwidth = viewwidth / screen.scale;
+    baseviewheight = viewheight / screen.scale;
 }
 
 
@@ -2446,16 +2464,16 @@ void DrawPlayBorder (void)
 
     if (viewwidth == screen.width)
     {
-        VW_Bar (0,TOP_STRIP_HEIGHT,320,200 - STATUSLINES - TOP_STRIP_HEIGHT,0);
+        VW_Bar (0,TOP_STRIP_HEIGHT,screen.basewidth,screen.baseheight - STATUSLINES - TOP_STRIP_HEIGHT,0);
 
         return;
     }
 
-    xl = 160 - centerx;
-    yl = (200 - STATUSLINES + TOP_STRIP_HEIGHT - viewheight) / 2;
+    xl = (screen.basewidth / 2) - (baseviewwidth / 2);
+    yl = (screen.baseheight - STATUSLINES + TOP_STRIP_HEIGHT - baseviewheight) / 2;
 
-    BevelBox (0,TOP_STRIP_HEIGHT,320,200 - STATUSLINES - TOP_STRIP_HEIGHT,BORDER_HI_COLOR,BORDER_MED_COLOR,BORDER_LO_COLOR);
-    BevelBox (xl - 1,yl - 1,viewwidth + 2,viewheight + 2,BORDER_LO_COLOR,0,BORDER_HI_COLOR);
+    BevelBox (0,TOP_STRIP_HEIGHT,screen.basewidth,screen.baseheight - STATUSLINES - TOP_STRIP_HEIGHT,BORDER_HI_COLOR,BORDER_MED_COLOR,BORDER_LO_COLOR);
+    BevelBox (xl - 1,yl - 1,baseviewwidth + 2,baseviewheight + 2,BORDER_LO_COLOR,0,BORDER_HI_COLOR);
 }
 
 
@@ -2472,9 +2490,9 @@ void DrawPlayBorder (void)
 void BMAmsg (const char *msg)
 {
     #define BMAx1 0             // outer bevel
-    #define BMAy1 152
-    #define BMAw1 320
-    #define BMAh1 48
+    #define BMAy1 (screen.baseheight - STATUSLINES)
+    #define BMAw1 screen.basewidth
+    #define BMAh1 STATUSLINES
 
     #define BMAx2 (BMAx1 + 7)   // inner bevel
     #define BMAy2 (BMAy1 + 4)
@@ -2538,6 +2556,8 @@ void BMAmsg (const char *msg)
 = CacheBMAmsg
 =
 = Caches in a message number and displays it using BMAmsg
+=
+= TODO: make this safe
 =
 ===================
 */
@@ -2653,7 +2673,7 @@ void ShadowPrintLocationText (int type)
 
     VW_MeasureString (s,&w,&h);
 
-    px = 160 - (w / 2);
+    px = (screen.basewidth / 2) - (w / 2);
 
     ShPrint (s,0,false);
 }
@@ -2703,7 +2723,7 @@ void DrawPlayScreen (bool InitInfoMsg)
 
     DrawPlayBorder ();
 
-    VW_DrawPic (0,200 - STATUSLINES,STATUSBARPIC);
+    VW_DrawPic (0,screen.baseheight - STATUSLINES,STATUSBARPIC);
     VW_DrawPic (0,0,TOP_STATUSBARPIC);
 
     ShadowPrintLocationText (sp_normal);
@@ -2745,7 +2765,7 @@ void DrawWarpIn (void)
     WindowH = 8;
     fontnumber = 2;
 
-    VW_DrawPic (0,200 - STATUSLINES,STATUSBARPIC);
+    VW_DrawPic (0,screen.baseheight - STATUSLINES,STATUSBARPIC);
     VW_DrawPic (0,0,TOP_STATUSBARPIC);
 
     ShadowPrintLocationText (sp_normal);
@@ -2753,7 +2773,7 @@ void DrawWarpIn (void)
 
     SD_PlaySound (WARPINSND);
 
-    SetupFizzlein (viewscreenx,viewscreeny,viewwidth,viewheight);
+    SetupFizzlein (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight);
 }
 
 
@@ -2787,8 +2807,8 @@ void Warped (void)
     IN_ClearKeysDown ();
     SD_PlaySound (WARPINSND);
 
-    VW_Bar (viewscreenx,viewscreeny,viewwidth,viewheight,0);
-    VW_FizzleFade (viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
+    VW_Bar (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight,0);
+    VW_FizzleFade (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight,70,false);
 
     IN_UserInput (100);
     SD_WaitSoundDone ();
@@ -3007,7 +3027,7 @@ void PlayDemo (int demonumber)
     DrawPlayScreen (true);
     LoadPlanes ();
 #ifdef NOTYET
-    SetupFizzlein (viewscreenx,viewscreeny,viewwidth,viewheight);
+    SetupFizzlein (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight);
     //screen.flags |= SC_FIZZLEIN;
 #endif
     PlayLoop ();
@@ -3052,8 +3072,8 @@ void Died (void)
     IN_ClearKeysDown ();
     FinishPaletteShifts ();
 
-    VW_Bar (viewscreenx,viewscreeny,viewwidth,viewheight,0x17);
-    VW_FizzleFade (viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
+    VW_Bar (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight,0x17);
+    VW_FizzleFade (baseviewscreenx,baseviewscreeny,baseviewwidth,baseviewheight,70,false);
 
     if (demoplayback)
         return;

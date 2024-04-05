@@ -26,6 +26,7 @@ extern  gametype        gamestate;
 extern  unsigned        ceilingcolor,floorcolor;
 extern  int             viewsize;
 extern  int             viewscreenx,viewscreeny;
+extern  int             baseviewscreenx,baseviewscreeny;
 extern  int             fizzlewidth,fizzleheight;
 extern  int             fizzlex,fizzley;
 extern  unsigned        screenofs;

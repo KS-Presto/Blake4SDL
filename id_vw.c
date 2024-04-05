@@ -3,6 +3,18 @@
 #include "3d_def.h"
 
 
+//
+// Uncomment the following line if you get destination out of bounds
+// assertion errors and want to ignore them during debugging
+//
+
+//#define IGNORE_BAD_DEST
+
+#ifdef IGNORE_BAD_DEST
+#undef Assert
+#define Assert(x,s)     if (!(x)) return
+#endif
+
 #define RGB(r,g,b)    { ((r) * 255) / 63, ((g) * 255) / 63, ((b) * 255) / 63, SDL_ALPHA_OPAQUE }
 
 screen_t     screen;
@@ -10,7 +22,7 @@ pictabletype *pictable;
 
 uint32_t     *ylookup;
 
-int16_t      px,py;
+int          px,py;
 int          fontcolor,backcolor;
 int          fontnumber;
 
@@ -81,8 +93,6 @@ void VW_Startup (void)
 
     if (!screen.window)
         Quit ("Unable to create window: %s\n",SDL_GetError());
-
-    SDL_SetWindowMinimumSize (screen.window,w,h);
 
     VW_SetupVideo ();
     VW_InitRndMask ();
@@ -171,6 +181,13 @@ void VW_SetupVideo (void)
 
     for (i = 0; i < screen.height; i++)
         ylookup[i] = i * screen.buffer->pitch;
+
+    screen.scale = w / 320;
+    screen.basewidth = w / screen.scale;
+    screen.baseheight = h / screen.scale;
+    screen.heightoffset = (screen.baseheight % 200) / 2;
+
+    SDL_SetWindowMinimumSize (screen.window,screen.basewidth,screen.baseheight);
 }
 
 
@@ -433,6 +450,16 @@ void VW_Plot (int x, int y, int color)
 {
     byte *dest;
 
+    if (screen.scale > 1)
+    {
+        VW_Bar (x,y,1,1,color);
+        return;
+    }
+
+    Assert (x >= 0 && x <= screen.width
+           && y >= 0 && y <= screen.height,
+           "Destination rectangle out of bounds!");
+
     dest = VW_LockSurface(screen.buffer);
 
     if (!dest)
@@ -455,6 +482,18 @@ void VW_Plot (int x, int y, int color)
 void VW_Bar (int x, int y, int width, int height, int color)
 {
     byte *dest;
+
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x + width <= screen.width
+           && y >= 0 && y + height <= screen.height,
+           "Destination rectangle out of bounds!");
 
     dest = VW_LockSurface(screen.buffer);
 
@@ -538,28 +577,56 @@ void VW_DePlaneVGA (byte *source, int width, int height)
 =
 = VW_MemToScreen
 =
-= Draws a block of data to the screen.
+= Draws a block of data to the screen
 =
 =================
 */
 
 void VW_MemToScreen (byte *source, int width, int height, int x, int y)
 {
-    byte *dest;
+    int   w,h;
+    int   srcwidth;
+    fixed frac,fracstep;
+    byte  *basedest,*dest,*src;
 
-    dest = VW_LockSurface(screen.buffer);
+    srcwidth = width;
 
-    if (!dest)
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x + width <= screen.width
+         && y >= 0 && y + height <= screen.height,
+         "Destination rectangle out of bounds!");
+
+    basedest = VW_LockSurface(screen.buffer);
+
+    if (!basedest)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    dest += ylookup[y] + x;
+    basedest += ylookup[y] + x;
 
-    while (height--)
+    fracstep = 0xffffffff / (screen.scale << FRACBITS);
+
+    for (h = 0; h < height; h++)
     {
-         memcpy (dest,source,width);
+        src = &source[(h / screen.scale) * srcwidth];
+        dest = basedest;
 
-         dest += screen.buffer->pitch;
-         source += width;
+        w = width;
+        frac = fracstep;
+
+        while (w--)
+        {
+            *dest++ = src[frac >> FRACBITS];
+            frac += fracstep;
+        }
+
+        basedest += screen.buffer->pitch;
     }
 
     VW_UnlockSurface (screen.buffer);
@@ -571,15 +638,31 @@ void VW_MemToScreen (byte *source, int width, int height, int x, int y)
 =
 = VW_MaskMemToScreen
 =
-= Draws a masked block of data to the screen.
+= Draws a masked block of data to the screen
 =
 =================
 */
 
 void VW_MaskMemToScreen (byte *source, int width, int height, int x, int y, int mask)
 {
-    byte *src,*dest,*basedest;
-    int  w,h;
+    int   w,h;
+    int   srcwidth,color;
+    fixed frac,fracstep;
+    byte  *basedest,*dest,*src;
+
+    srcwidth = width;
+
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x + width <= screen.width
+         && y >= 0 && y + height <= screen.height,
+         "Destination rectangle out of bounds!");
 
     basedest = VW_LockSurface(screen.buffer);
 
@@ -588,19 +671,28 @@ void VW_MaskMemToScreen (byte *source, int width, int height, int x, int y, int 
 
     basedest += ylookup[y] + x;
 
-    for (w = width; w; w--)
+    fracstep = 0xffffffff / (screen.scale << FRACBITS);
+
+    for (h = 0; h < height; h++)
     {
-        src = source++;
-        dest = basedest++;
+        src = &source[(h / screen.scale) * srcwidth];
+        dest = basedest;
 
-        for (h = height; h; h--)
+        w = width;
+        frac = fracstep;
+
+        while (w--)
         {
-            if (*src != mask)
-                *dest = *src;
+            color = src[frac >> FRACBITS];
 
-            src += width;
-            dest += screen.buffer->pitch;
+            if (color != mask)
+                *dest = color;
+
+            dest++;
+            frac += fracstep;
         }
+
+        basedest += screen.buffer->pitch;
     }
 
     VW_UnlockSurface (screen.buffer);
@@ -620,6 +712,18 @@ void VW_MaskMemToScreen (byte *source, int width, int height, int x, int y, int 
 void VW_ScreenToMem (byte *dest, int width, int height, int x, int y)
 {
     byte *source;
+
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x + width <= screen.width
+         && y >= 0 && y + height <= screen.height,
+         "Destination rectangle out of bounds!");
 
     source = VW_LockSurface(screen.buffer);
 
@@ -643,7 +747,51 @@ void VW_ScreenToMem (byte *dest, int width, int height, int x, int y)
 /*
 =================
 =
+= VW_ScreenToScreen
+=
+= Moves a block of screen pixels in the screen buffer
+=
+= Only vertical offsets currently supported
+=
+= KS: I'm unable to find a definite confirmation that
+= SDL_BlitSurface can safely work with overlapping regions,
+= but it seems to work alright.
+=
+=================
+*/
+
+void VW_ScreenToScreen (int width, int height, int x, int y, int srcofs, int destofs)
+{
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        srcofs *= screen.scale;
+        destofs *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x + width <= screen.width
+         && y + destofs >= 0 && y + destofs + height <= screen.height
+         && y + srcofs >= 0 && y + srcofs + height <= screen.height,
+         "Destination rectangle out of bounds!");
+
+    SDL_Rect srcrect = {x,y + srcofs,width,height};
+    SDL_Rect destrect = {x,y + destofs,width,height};
+
+    SDL_BlitSurface (screen.buffer,&srcrect,screen.buffer,&destrect);
+}
+
+
+/*
+=================
+=
 = VW_DrawString
+=
+= Only the starting bounds are checked here, so be
+= sure that the caller handles the string going off
+= the right edge of the screen!
 =
 =================
 */
@@ -651,43 +799,63 @@ void VW_ScreenToMem (byte *dest, int width, int height, int x, int y)
 void VW_DrawString (const char *string)
 {
     fontstruct *font;
-    int        width,step,height,h;
+    int        x,y;
+    int        h,step;
+    int        width,height;
     byte       *source,*basedest,*dest;
     byte       ch;
 
     font = (fontstruct *)grsegs[STARTFONT + fontnumber];
+
+    x = px;
+    y = py;
     height = font->height;
+
+    if (screen.scale > 1)
+    {
+        x *= screen.scale;
+        y *= screen.scale;
+        height *= screen.scale;
+    }
+
+    Assert (x >= 0 && x <= screen.width
+           && y >= 0 && y + height <= screen.height,
+           "Destination rectangle out of bounds!");
 
     basedest = VW_LockSurface(screen.buffer);
 
     if (!basedest)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    basedest += ylookup[py] + px;
+    basedest += ylookup[y];
 
     for (ch = (byte)*string; ch; ch = (byte)*string)
     {
-        width = step = font->width[ch];
         source = (byte *)font + font->location[ch];
+
+        width = step = font->width[ch];
+        px += width;
 
         while (width--)
         {
-            dest = basedest++;
+            dest = basedest + x;
 
             for (h = 0; h < height; h++)
             {
-                if (source[h * step])
-                    *dest = fontcolor;
+                if (source[(h / screen.scale) * step])
+                    memset (dest,fontcolor,screen.scale);
 
                 dest += screen.buffer->pitch;
             }
 
             source++;
-            px++;
+            x += screen.scale;
         }
 
         string++;
     }
+
+    VW_UnlockSurface (screen.buffer);
 }
 
 
@@ -859,6 +1027,14 @@ bool VW_FizzleFade (int x1, int y1, int width, int height, int frames, bool abor
 
     if (!frames)
         Quit ("0 frames!");
+
+    if (screen.scale > 1)
+    {
+        x1 *= screen.scale;
+        y1 *= screen.scale;
+        width *= screen.scale;
+        height *= screen.scale;
+    }
 
     rndval = 1;
     pixperframe = (width * height) / frames;

@@ -1703,8 +1703,8 @@ void ShowQuickInstructions (void)
 
     WindowX = 0;
     WindowY = 16;
-    WindowW = 320;
-    WindowH = 168;
+    WindowW = screen.basewidth;
+    WindowH = (screen.baseheight - STATUSLINES) + WindowY;
 
     CacheMessage (QUICK_INFO1_TEXT);
 

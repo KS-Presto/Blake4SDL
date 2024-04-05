@@ -691,8 +691,8 @@ void LoadLevel (int levelnum)
 
         WindowX = 0;
         WindowY = 16;
-        WindowW = 320;
-        WindowH = 168;
+        WindowW = screen.basewidth;
+        WindowH = (screen.baseheight - STATUSLINES) + WindowY;
 
         CacheMessage (BADINFO_TEXT);
 
@@ -980,8 +980,8 @@ bool LoadTheGame (FILE *file)
 
         WindowX = 0;
         WindowY = 16;
-        WindowW = 320;
-        WindowH = 168;
+        WindowW = screen.basewidth;
+        WindowH = (screen.baseheight - STATUSLINES) + WindowY;
 
         CacheMessage (BADSAVEGAME_TEXT);
         SD_PlaySound (NOWAYSND);
@@ -1824,7 +1824,7 @@ void DemoLoop (void)
             //
             // KS: change it to be abortable? heh heh
             //
-            VW_FizzleFade (0,0,320,200,70,false);
+            VW_FizzleFade (0,0,screen.basewidth,screen.baseheight,70,false);
 
             IN_UserInput (TickBase * 2);
 
