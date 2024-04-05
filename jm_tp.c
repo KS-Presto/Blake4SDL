@@ -513,8 +513,8 @@ static unsigned flags;
 
 static int      bgcolor,ltcolor,dkcolor,shcolor;
 static int      anim_bgcolor = -1;
-static uint16_t xl,yl,xh,yh;
-static uint16_t cur_x,cur_y,last_cur_x,last_cur_y;
+static int      xl,yl,xh,yh;
+static int      cur_x,cur_y,last_cur_x,last_cur_y;
 
 static char     *first_ch;
 static char     *scan_ch,temp;
@@ -558,7 +558,7 @@ void TP_Presenter (PresenterInfo *pinfo)
 
     flags |= fl_clearscback;
 
-    if ((pi->flags & TPF_USE_CURRENT) && pi->cur_x != 0xffff && pi->cur_y != 0xffff)
+    if ((pi->flags & TPF_USE_CURRENT) && pi->cur_x != -1 && pi->cur_y != -1)
     {
         if (pi->flags & TPF_SHOW_CURSOR)
         {
@@ -686,9 +686,8 @@ void TP_Presenter (PresenterInfo *pinfo)
 
 void TP_NewLine (void)
 {
-    int  oldc;
-    int  width,height;
-    byte *dest;
+    int oldc;
+    int width,height;
 
     flags &= ~fl_center;
 
@@ -736,22 +735,14 @@ void TP_NewLine (void)
         if ((pi->flags & TPF_SCROLL_REGION) && cur_y + (font->height * 2) > yh)
         {
             //
-            // copy the rectangle below the first line
+            // copy the rectangle below the first line and draw it
+            // at the top of the rectangle, clearing whatever was on
+            // the last line
             //
             width = xh - xl + 1;
             height = (yh - yl + 1) - font->height + is_shadowed;
 
-            dest = SafeMalloc(width * height);
-
-            VW_ScreenToMem (dest,width,height,xl,yl + font->height + is_shadowed);
-
-            //
-            // draw it starting at the top of the rectangle
-            // and clear the last line
-            //
-            VW_MemToScreen (dest,width,height,xl,yl);
-
-            free (dest);
+            VW_ScreenToScreen (width,height,xl,yl,font->height + is_shadowed,0);
 
             VW_Bar (cur_x,cur_y,width + (TP_MARGIN * 2),yh - cur_y + 1,bgcolor);
 
@@ -890,7 +881,7 @@ void TP_HandleCodes (void)
     piShapeInfo *shape;
     int         i,shapenum;
     int         code,length;
-    int         oldbgcolor;
+    int         pos,oldbgcolor;
     unsigned    temp;
     char        *s,*old_first_ch;
     char        c;
@@ -1014,9 +1005,18 @@ void TP_HandleCodes (void)
                 }
 
                 //
-                // KS: ick... this is disgusting
+                // make sure we don't go out of bounds
                 //
-                cur_x += ((uint16_t)((xh - cur_x + 1) - length)) / 2;
+                pos = ((xh - cur_x + 1) - length) / 2;
+
+                if (pos < 0)
+                    pos = -pos;
+
+                cur_x += pos;
+
+                if (cur_x >= screen.basewidth)
+                    cur_x = screen.basewidth - 1;
+
                 flags |= fl_center;
 
                 if (pi->flags & TPF_SHOW_CURSOR)
