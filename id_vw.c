@@ -198,8 +198,6 @@ void VW_SetupVideo (void)
 
                         PALETTE OPS
 
-            To avoid snow, do a WaitVBL BEFORE calling these
-
 =============================================================================
 */
 
@@ -454,6 +452,8 @@ void VW_UnlockSurface (SDL_Surface *surface)
 
 void VW_SetBufferOffset (unsigned offset)
 {
+    offset *= screen.scale;
+
     Assert (offset < screen.baseheight,"Invalid buffer offset!");
 
     screen.bufferofs = ylookup[offset];
