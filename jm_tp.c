@@ -1380,12 +1380,12 @@ void TP_HandleCodes (void)
                 else
                     TP_Print (TP_MORE_TEXT,false);
 
-                LastScan = 0;    // TODO: IN_ClearKeysDown?
+                LastScan = sc_None;
 
                 do
                 {
                     IN_ReadControl (&ci);
-                } while (!ci.button0 && !ci.button1 && !ci.button2 && !ci.button3 && ci.dir == dir_None && !LastScan);
+                } while (!ci.button0 && !ci.button1 && !ci.button2 && !ci.button3 && ci.dir == dir_None && LastScan == sc_None);
 
                 cur_x = xl;
                 VW_Bar (cur_x,cur_y,xh - xl + 1 + (TP_MARGIN * 2),font->height + is_shadowed,bgcolor);
@@ -1967,7 +1967,7 @@ void TP_Print (const char *str, bool singlechar)
 {
     char buf[2] = {0,0};
 
-    LastScan = 0;    // TODO: IN_ClearKeysDown?
+    LastScan = sc_None;
 
     last_cur_x = cur_x;
     last_cur_y = cur_y;
@@ -1997,7 +1997,7 @@ void TP_Print (const char *str, bool singlechar)
     cur_x = px;
     cur_y = py;
 
-    if ((pi->flags & TPF_ABORTABLE) && LastScan)
+    if ((pi->flags & TPF_ABORTABLE) && LastScan != sc_None)
         flags &= ~fl_presenting;
 }
 
@@ -2070,17 +2070,19 @@ bool TP_SlowPrint (const char *str, int delay)
         //
         if (!aborted)
         {
-            LastScan = 0;    // TODO: IN_ClearKeysDown?
+            LastScan = sc_None;
             lasttimecount = GetTimeCount();
 
             do
             {
+                IN_ProcessEvents ();
+
                 VW_WaitVBL (1);
                 CycleColors ();
 
                 if (pi->flags & TPF_ABORTABLE)
                 {
-                    if ((pi->flags & TPF_ABORTABLE) && LastScan)
+                    if ((pi->flags & TPF_ABORTABLE) && LastScan != sc_None)
                     {
                         aborted = true;
                         break;
