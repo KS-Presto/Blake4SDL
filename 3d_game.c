@@ -23,7 +23,7 @@ int             viewscreenx,viewscreeny;
 int             baseviewscreenx,baseviewscreeny;
 int             fizzlewidth,fizzleheight;
 int             fizzlex,fizzley;
-unsigned        screenofs;
+unsigned        viewscreenofs;
 
 fargametype     gamestuff;
 gametype        gamestate;
@@ -2382,7 +2382,7 @@ void SetViewSize (int size)
     viewsize = size;
 
     width = ((size << 4) * screen.width) / screen.basewidth;
-    height = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    height = ((((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight) + (screen.heightoffset * 2);
 
     viewwidth = width & ~15;                  // must be divisible by 16
     viewheight = height & ~1;                 // must be even
@@ -2392,12 +2392,12 @@ void SetViewSize (int size)
     normalshade = (((viewwidth * 9) >> 4) - 3) / normalshadediv;
 
     if (viewheight == screen.height)
-        viewscreenx = viewscreeny = screenofs = 0;
+        viewscreenx = viewscreeny = viewscreenofs = 0;
     else
     {
         viewscreenx = (screen.width - viewwidth) >> 1;
         viewscreeny = ((screen.height - ((STATUSLINES - TOP_STRIP_HEIGHT) * screen.scale)) - viewheight) >> 1;
-        screenofs = ylookup[viewscreeny] + viewscreenx;
+        viewscreenofs = ylookup[viewscreeny] + viewscreenx;
     }
 
     baseviewwidth = (viewwidth / screen.scale) & ~15;
@@ -2431,7 +2431,7 @@ void ShowViewSize (int size)
     oldheight = viewheight;
 
     viewwidth = ((size << 4) * screen.width) / screen.basewidth;
-    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    viewheight = ((((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight) + (screen.heightoffset * 2);
     centerx = viewwidth / 2;
 
     baseviewwidth = viewwidth / screen.scale;
@@ -3281,6 +3281,8 @@ void GameLoop (void)
     bool       died;
     SDL_Color  endingpal[256];
 
+    VW_SetBufferOffset (0);    // draw a full screen while in the 3D renderer
+
     SD_StopDigitized ();
     SetFontColor (0,15);
     DrawPlayScreen (true);
@@ -3352,7 +3354,7 @@ void GameLoop (void)
 
         if (died)
         {
-            WindowY = 188;
+            WindowY = screen.baseheight - 12;
 
             LoadLevelUpdate (1,1);
 
@@ -3408,7 +3410,7 @@ void GameLoop (void)
                 ClearNClose ();
                 DrawTopInfo (sp_loading);
                 DisplayPrepingMsg (prep_msg);
-                WindowY = 181;
+                WindowY = screen.baseheight - 19;
                 LS_current = 1;
                 LS_total = 38;
                 StartMusic ();
@@ -3442,6 +3444,8 @@ void GameLoop (void)
                         break;    // more lives left
                     }
 
+                    VW_SetBufferOffset (screen.heightoffset);
+
                     LoseScreen ();
                 }
 
@@ -3451,7 +3455,7 @@ void GameLoop (void)
                 snprintf (MainMenu[MM_VIEW_SCORES].string,sizeof(MainMenu[MM_VIEW_SCORES].string),"HIGH SCORES");
 
                 if (playstate == ex_victorious)
-                    ThreeDRefresh ();    // TODO: is this really needed?
+                    ThreeDRefresh ();
 
                 SD_StopDigitized ();
 
@@ -3467,6 +3471,7 @@ void GameLoop (void)
                 }
 
                 VW_FadeOut ();
+                ClearMenuBorders ();
 
                 snprintf (Score,sizeof(Score),"%d",gamestate.score);
                 piStringTable[0] = Score;

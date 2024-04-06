@@ -100,7 +100,7 @@ void DisplayPrepingMsg (const char *text)
 // set thermometer boundaries
 //
     WindowX = 36;
-    WindowY = 188;
+    WindowY = screen.baseheight - 12;
     WindowW = 260;
     WindowH = 32;
 
@@ -153,7 +153,7 @@ void LoadLevelUpdate (int current, int total)
 
 void DrawLevelTransition (void)
 {
-    WindowY = 188;
+    WindowY = screen.baseheight - 12;
 
     if (!(gamestate.flags & GS_QUICKRUN))
         VW_FadeIn ();

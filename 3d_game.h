@@ -29,7 +29,7 @@ extern  int             viewscreenx,viewscreeny;
 extern  int             baseviewscreenx,baseviewscreeny;
 extern  int             fizzlewidth,fizzleheight;
 extern  int             fizzlex,fizzley;
-extern  unsigned        screenofs;
+extern  unsigned        viewscreenofs;
 extern  int             mapwidth,mapheight;
 
 extern  int             LS_current,LS_total;

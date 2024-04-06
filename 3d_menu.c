@@ -542,8 +542,6 @@ void ControlPanel (ScanCode scan)
 
 void DrawMainMenu (void)
 {
-    ClearMenuBorders ();
-
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
     ClearMenuScreen ();
@@ -683,6 +681,7 @@ int CP_CheckQuick (int scan)
             {
                 VW_FadeOut ();
 
+                ClearMenuBorders ();
                 StartCPMusic (MENUSONG);
 
                 pickquick = CP_SaveGame(0);
@@ -715,6 +714,7 @@ int CP_CheckQuick (int scan)
             {
                 VW_FadeOut ();
 
+                ClearMenuBorders ();
                 StartCPMusic(MENUSONG);
 
                 pickquick = CP_LoadGame(0);
@@ -840,8 +840,6 @@ int CP_NewGame (int blank)
 
         if (!Breifing(BT_INTRO,episode))
             break;
-
-        ClearMenuBorders ();
 
         VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
     }
@@ -1073,8 +1071,6 @@ int CP_GameOptions (int blank)
 
 void DrawGopMenu (void)
 {
-    ClearMenuBorders ();
-
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
     ClearMenuScreen ();
@@ -1512,20 +1508,19 @@ void DrawAllSoundLights (int which)
 
 void DrawLSAction (int which)
 {
-    int total[] = {19,19};
-
     VW_FadeOut ();
+    VW_SetBufferOffset (0);         // this is a 3D renderer screen
 
     DrawTopInfo (sp_loading + which);
     DrawPlayBorder ();
     DisplayPrepingMsg (LOADSAVE_GAME_MSG[which]);
 
     if (which)
-        LoadLevelUpdate (1,1);    // GFX: bar is full when saving
+        LoadLevelUpdate (1,1);      // GFX: bar is full when saving
 
     LS_current = 1;
-    LS_total = total[which];
-    WindowY = 181;
+    LS_total = 19;
+    WindowY = screen.baseheight - 19;
 }
 
 
@@ -2927,6 +2922,8 @@ int CP_ChangeView (int blank)
 
     US_ResetWindow (0);
 
+    VW_SetBufferOffset (0);    // this is a 3D renderer screen
+
     newview = oldview = lastview = baseviewwidth / 16;
 
     DrawChangeView (oldview);
@@ -2981,6 +2978,7 @@ int CP_ChangeView (int blank)
         {
             SD_PlaySound (ESCPRESSEDSND);
             MenuFadeOut ();
+            ClearMenuBorders ();
 
             return blank;
         }
@@ -2996,6 +2994,7 @@ int CP_ChangeView (int blank)
 
     ShootSnd ();
     MenuFadeOut ();
+    ClearMenuBorders ();
 
     return blank;
 }
@@ -3067,8 +3066,12 @@ void ClearMenuBorders (void)
 {
     if (screen.heightoffset)
     {
+        VW_SetBufferOffset (0);    // draw to a full screen
+
         VW_Bar (0,0,screen.basewidth,screen.heightoffset,BLACK);
-        VW_Bar (0,screen.baseheight,screen.basewidth,screen.heightoffset,BLACK);
+        VW_Bar (0,screen.baseheight - screen.heightoffset,screen.basewidth,screen.heightoffset,BLACK);
+
+        VW_SetBufferOffset (screen.heightoffset);
     }
 }
 
@@ -3115,6 +3118,8 @@ void DrawOutline (int x, int y, int w, int h, int color1, int color2)
 
 void SetupControlPanel (void)
 {
+    ClearMenuBorders ();
+
     fontnumber = 2;
 
     WindowH = screen.baseheight;

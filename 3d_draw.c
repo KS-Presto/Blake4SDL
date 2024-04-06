@@ -1240,6 +1240,7 @@ void DrawPlayerWeapon (void)
 {
     int v_table[15] = {88,82,78,64,62,61,57,54,51,48,44,42,40,36,32};
     int c_table[15] = {88,85,81,80,75,70,64,59,55,50,44,39,34,28,24};
+    int ycenter,vheight;
     int shapenum;
 
     if (playstate == ex_victorious)
@@ -1252,8 +1253,10 @@ void DrawPlayerWeapon (void)
         if (shapenum)
         {
             useBounceOffset = true;
+            ycenter = (c_table[20 - viewsize] * screen.scale) + screen.heightoffset;
+            vheight = (v_table[20 - viewsize] * screen.scale) + (screen.heightoffset * 2);
 
-            SimpleScaleShape (centerx,c_table[20 - viewsize] * screen.scale,v_table[20 - viewsize] * screen.scale,shapenum,NO_SHADING);
+            SimpleScaleShape (centerx,ycenter,vheight,shapenum,NO_SHADING);
 
             useBounceOffset = false;
         }
@@ -1639,6 +1642,9 @@ void ThreeDRefresh (void)
     UpdateInfoAreaClock ();
     UpdateStatusBar ();
 
+    if (screen.bufferofs)
+        Quit ("Screen buffer offset must be 0 while 3D rendering!");
+
 //
 // get the screenbuffer pointer and offset it to draw to the viewport
 //
@@ -1647,7 +1653,7 @@ void ThreeDRefresh (void)
     if (!vbuf)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
-    vbuf += screenofs;
+    vbuf += viewscreenofs;
 
     Setup3DView ();
 
@@ -1771,7 +1777,7 @@ void DrawRadar (void)
         UpdateRadarGauge ();
     }
 
-    ShowOverhead (192 - baseviewscreenx,156 - baseviewscreeny,16,zoom,flags);
+    ShowOverhead (192 - baseviewscreenx,(screen.baseheight - 44) - baseviewscreeny,16,zoom,flags);
 }
 
 

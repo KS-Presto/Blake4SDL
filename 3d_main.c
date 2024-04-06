@@ -506,7 +506,7 @@ void LoadLevel (int levelnum)
     byte      *temp,*ptr;
     char      chunk[5];
 
-    WindowY = 181;
+    WindowY = screen.baseheight - 19;
     gamestuff.level[levelnum].locked = false;
 
     mod = gamestate.mapon % SHADEDIV;
@@ -756,7 +756,7 @@ void SaveLevel (int levelnum)
     unsigned  gflags = gamestate.flags;
     byte      *temp,*ptr;
 
-    WindowY = 181;
+    WindowY = screen.baseheight - 19;
 
     //
     // make sure floor stats are saved
@@ -1734,7 +1734,7 @@ void PreDemo (void)
         //
         // PC-13
         //
-        VW_ClearScreen (0x14);
+        VW_Bar (0,0,screen.basewidth,screen.baseheight - (screen.heightoffset * 2),0x14);
         VW_DrawPic (0,64,PC13PIC);
         VW_FadeIn ();
 
@@ -1765,8 +1765,6 @@ void DemoLoop (void)
 #endif
     bool      breakit;
     SDL_Color titlepal[256];
-
-    ClearMenuBorders ();
 
     while (1)
     {

@@ -691,6 +691,8 @@ void CheckKeys (void)
             US_ResetWindow (STATUSLINES);
             ControlPanel (scan);
 
+            VW_SetBufferOffset (0);    // going back to the 3D renderer
+
             if (refreshscreen)
             {
                 oldloadedgame = loadedgame;

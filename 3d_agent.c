@@ -1229,7 +1229,7 @@ void DrawRadarGauge (void)
 {
     int zoom;
 
-    DrawLedStrip (235,155,gamestate.radar_leds,NUM_AMMO_SEGS);
+    DrawLedStrip (235,screen.baseheight - 45,gamestate.radar_leds,NUM_AMMO_SEGS);
 
     if (gamestate.rpower)
         zoom = gamestate.rzoom;
@@ -3088,6 +3088,7 @@ int InputFloor (void)
 
     SD_StopDigitized ();
     VW_FadeOut ();
+    ClearMenuBorders ();
 
     VW_DrawPic (0,0,TELEPORTBACKTOPPIC);
     VW_DrawPic (0,12 * 8,TELEPORTBACKBOTPIC);
@@ -3106,6 +3107,8 @@ int InputFloor (void)
 
     if (!vbuf)
         Quit ("Unable to lock surface: %s\n",SDL_GetError());
+
+    vbuf += screen.bufferofs;
 
     ShowOverhead (TOV_X,TOV_Y,32,0,RADAR_FLAGS);
 
@@ -3291,6 +3294,8 @@ int InputFloor (void)
             if (!vbuf)
                 Quit ("Unable to lock surface: %s\n",SDL_GetError());
 
+            vbuf += screen.bufferofs;
+
             ShowOverhead (TOV_X,TOV_Y,32,-1,RADAR_FLAGS);
 
             VW_UnlockSurface (screen.buffer);
@@ -3311,6 +3316,7 @@ int InputFloor (void)
     }
 
     VW_FadeOut ();
+    VW_SetBufferOffset (0);    // back to 3D renderer
 
     free (ov_buffer);
     ov_buffer = NULL;
@@ -3433,7 +3439,7 @@ void SaveOverheadChunk (int tpNum)
     if (!source)
         Quit ("Unable to lock surface: %S\n",SDL_GetError());
 
-    source += ylookup[TOV_Y * screen.scale] + (TOV_X * screen.scale);
+    source += screen.bufferofs + ylookup[TOV_Y * screen.scale] + (TOV_X * screen.scale);
 
     for (y = 0; y < mapheight; y++)
     {

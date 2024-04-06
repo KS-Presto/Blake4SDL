@@ -23,6 +23,7 @@ typedef struct screenstruct
     int8_t       scale;
     int          bits;
     uint16_t     flags;
+    uint32_t     bufferofs;
     const char   *title;
 
     SDL_Window   *window;
@@ -83,6 +84,7 @@ void    VW_FadePaletteIn (int start, int end, SDL_Color *palette, int steps);
 void    VW_UpdateScreen (SDL_Surface *surface);
 void    *VW_LockSurface (SDL_Surface *surface);
 void    VW_UnlockSurface (SDL_Surface *surface);
+void    VW_SetBufferOffset (unsigned offset);
 void    VW_DrawTile8 (int x, int y, int tile);
 void    VW_DrawPic (int x, int y, int chunk);
 void    VW_DrawMPic (int x, int y, int chunk);
