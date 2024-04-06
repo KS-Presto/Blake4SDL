@@ -208,6 +208,7 @@ void     ControlPanel (ScanCode scan);
 void     DrawMenu (CP_iteminfo *item_i, CP_itemtype *items);
 int      HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int));
 void     ClearMenuScreen (void);
+void     ClearMenuBorders (void);
 void     DrawWindow (int x, int y, int w, int h, int wcolor);
 void     DrawOutline (int x, int y, int w, int h, int color1, int color2);
 void     WaitKeyUp (void);

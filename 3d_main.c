@@ -1766,6 +1766,8 @@ void DemoLoop (void)
     bool      breakit;
     SDL_Color titlepal[256];
 
+    ClearMenuBorders ();
+
     while (1)
     {
         playstate = ex_title;

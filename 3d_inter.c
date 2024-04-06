@@ -184,6 +184,7 @@ void DrawHighScores (void)
     word      w,h;
     HighScore *s;
 
+    ClearMenuBorders ();
     ClearMenuScreen ();
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
     DrawMenuTitle ("HIGH SCORES");
@@ -295,8 +296,8 @@ void CheckHighScore (int32_t score, int other)
         DrawInstructions (IT_ENTER_HIGHSCORE);
         SetFontColor (HIGHLIGHT_TEXT_COLOR,TERM_BACK_COLOR);
 
-        PrintY = 68 + (SCORE_Y_SPACING * n);
         PrintX = 45;
+        PrintY = 68 + (SCORE_Y_SPACING * n);
         usecustomcursor = true;
         CustomCursor = TermCursor;
 

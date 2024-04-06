@@ -542,6 +542,8 @@ void ControlPanel (ScanCode scan)
 
 void DrawMainMenu (void)
 {
+    ClearMenuBorders ();
+
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
     ClearMenuScreen ();
@@ -784,7 +786,6 @@ int CP_ViewScores (int blank)
     fontnumber = 4;
     StartCPMusic (ROSTER_MUS);
     DrawHighScores ();
-    VW_UpdateScreen (screen.buffer);
     MenuFadeIn ();
     fontnumber = 1;
 
@@ -839,6 +840,8 @@ int CP_NewGame (int blank)
 
         if (!Breifing(BT_INTRO,episode))
             break;
+
+        ClearMenuBorders ();
 
         VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
     }
@@ -951,8 +954,6 @@ void DrawNewEpisode (void)
 
     DrawEpisodePic (NewEitems.curpos);
 
-    VW_UpdateScreen (screen.buffer);
-
     MenuFadeIn ();
     WaitKeyUp ();
 }
@@ -986,8 +987,6 @@ void DrawNewGame (void)
     px = 48;
     py += 6;
     ShPrint ("            MORE, STRONGER ENEMIES",TERM_SHADOW_COLOR,false);
-
-    VW_UpdateScreen (screen.buffer);
 
     MenuFadeIn ();
     WaitKeyUp ();
@@ -1074,6 +1073,8 @@ int CP_GameOptions (int blank)
 
 void DrawGopMenu (void)
 {
+    ClearMenuBorders ();
+
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
     ClearMenuScreen ();
@@ -1219,7 +1220,7 @@ void DrawAllSwitchLights (int which)
             if (SwitchItems.cursor.on)
             {
                 if (i == which)   // is the cursor sitting on this pic?
-                    shape +=2;
+                    shape += 2;
             }
 
             switch (i)
@@ -1689,8 +1690,6 @@ void DrawLoadSaveScreen (int loadsave)
     fontnumber = 4;
     DrawMenu (&LSItems,&LSMenu[0]);
 
-    VW_UpdateScreen (screen.buffer);
-
     MenuFadeIn ();
     WaitKeyUp ();
 }
@@ -1738,6 +1737,7 @@ void PrintLSEntry (int w,int color)
 int CP_SaveGame (int quick)
 {
     FILE           *file;
+    int            x,y;
     int            which,exit = 0;
     char           name[13],input[GAME_DESCRIPTION_LEN + 1];
     CustomCursor_t TermCursor = {'@',0,HIGHLIGHT_TEXT_COLOR,2};
@@ -1809,11 +1809,14 @@ int CP_SaveGame (int quick)
 
             fontnumber = 2;
 
-            VW_Bar (LSM_X + LSItems.indent + 1,LSM_Y + (which * LSItems.y_spacing) - 1,LSM_W - LSItems.indent - 1,7,HIGHLIGHT_BOX_COLOR);
+            x = LSM_X + LSItems.indent + 1;
+            y = LSM_Y + (which * LSItems.y_spacing) - 1;
+
+            VW_Bar (x,y,LSM_W - LSItems.indent - 1,7,HIGHLIGHT_BOX_COLOR);
             SetFontColor (HIGHLIGHT_TEXT_COLOR,HIGHLIGHT_BOX_COLOR);
             VW_UpdateScreen (screen.buffer);
 
-            if (US_LineInput(LSM_X + LSItems.indent + 2,LSM_Y + (which * LSItems.y_spacing),input,input,true,GAME_DESCRIPTION_LEN,LSM_W - LSItems.indent - 10))
+            if (US_LineInput(x + 1,y + 1,input,input,true,GAME_DESCRIPTION_LEN,LSM_W - LSItems.indent - 10))
             {
                 SaveGamesAvail[which] = true;
 
@@ -1837,7 +1840,7 @@ int CP_SaveGame (int quick)
             }
             else
             {
-                VW_Bar (LSM_X + LSItems.indent + 1,LSM_Y + (which * LSItems.y_spacing) - 1,LSM_W - LSItems.indent - 1,7,TERM_BACK_COLOR);
+                VW_Bar (x,y,LSM_W - LSItems.indent - 1,7,TERM_BACK_COLOR);
                 PrintLSEntry (which,HIGHLIGHT_TEXT_COLOR);
                 VW_UpdateScreen (screen.buffer);
                 SD_PlaySound (ESCPRESSEDSND);
@@ -1979,8 +1982,6 @@ void DrawMouseSens (void)
 
     DrawMousePos ();
 
-    VW_UpdateScreen (screen.buffer);
-
     MenuFadeIn ();
 }
 
@@ -2110,7 +2111,6 @@ void DrawCtlScreen (void)
     //
     // pick first available spot
     //
-
     if (CtlItems.curpos < 0 || !CtlMenu[CtlItems.curpos].active)
     {
         for (i = 0; i < CtlItems.amount; i++)
@@ -2706,7 +2706,6 @@ void DrawCustomScreen (void)
         }
     }
 
-    VW_UpdateScreen (screen.buffer);
     MenuFadeIn ();
 }
 
@@ -3019,8 +3018,6 @@ void DrawChangeView (int view)
 
     CacheBMAmsg (CHANGEVIEW_TEXT);
 
-    VW_UpdateScreen (screen.buffer);
-
     MenuFadeIn ();
 }
 
@@ -3055,6 +3052,24 @@ int CP_Quit (int blank)
 void ClearMenuScreen (void)
 {
     VW_Bar (SCREEN_X,SCREEN_Y,SCREEN_W,SCREEN_H,TERM_BACK_COLOR);
+}
+
+
+/*
+===================
+=
+= ClearMenuBorders
+=
+===================
+*/
+
+void ClearMenuBorders (void)
+{
+    if (screen.heightoffset)
+    {
+        VW_Bar (0,0,screen.basewidth,screen.heightoffset,BLACK);
+        VW_Bar (0,screen.baseheight,screen.basewidth,screen.heightoffset,BLACK);
+    }
 }
 
 
@@ -3457,7 +3472,7 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int))
 =
 = EraseCursor
 =
-= Erase gun & de-highlight string
+= Erase cursor & de-highlight string
 =
 ===================
 */
@@ -3476,7 +3491,7 @@ void EraseCursor (CP_iteminfo *item_i, CP_itemtype *items, int y, int which)
 =
 = DrawCursor
 =
-= Draw gun at new position
+= Draw cursor at new position
 =
 ===================
 */
@@ -3913,7 +3928,6 @@ void ShowPromo (void)
     //
     MenuFadeOut ();
     VW_DrawPic (0,0,PROMO1PIC);
-    VW_UpdateScreen (screen.buffer);
     MenuFadeIn ();
     IN_UserInput (TickBase * 20);
 
@@ -3922,7 +3936,6 @@ void ShowPromo (void)
     //
     MenuFadeOut ();
     VW_DrawPic (0,0,PROMO2PIC);
-    VW_UpdateScreen (screen.buffer);
     MenuFadeIn ();
     IN_UserInput (TickBase * 20);
 
