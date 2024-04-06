@@ -1179,7 +1179,7 @@ void UpdateAmmoMsg (void)
 
 void DrawAmmoGauge (void)
 {
-    DrawLedStrip (243,155,gamestate.ammo_leds,NUM_AMMO_SEGS);
+    DrawLedStrip (243,screen.baseheight - 45,gamestate.ammo_leds,NUM_AMMO_SEGS);
 }
 
 
