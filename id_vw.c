@@ -185,7 +185,7 @@ void VW_SetupVideo (void)
     screen.scale = w / 320;
     screen.basewidth = w / screen.scale;
     screen.baseheight = h / screen.scale;
-    screen.heightoffset = (screen.baseheight % 200) / 2;
+    screen.heightoffset = ((screen.baseheight % 200) / 2) * screen.scale;
 
     VW_SetBufferOffset (screen.heightoffset);
 
@@ -452,8 +452,6 @@ void VW_UnlockSurface (SDL_Surface *surface)
 
 void VW_SetBufferOffset (unsigned offset)
 {
-    offset *= screen.scale;
-
     Assert (offset < screen.baseheight,"Invalid buffer offset!");
 
     screen.bufferofs = ylookup[offset];
