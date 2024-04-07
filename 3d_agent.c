@@ -1896,7 +1896,8 @@ char *HandleControlCodes (char *first_ch)
 
 int DrawShape (int x, int y, int shapenum, int shapetype)
 {
-    int width,shade;
+    int width,height;
+    int clip,shade;
 
     //width = TP_BoxAroundShape(x,y,shapenum,shapetype);
 
@@ -1908,9 +1909,20 @@ int DrawShape (int x, int y, int shapenum, int shapetype)
     switch (shapetype)
     {
         case pis_scaled:
-            VW_Bar (x,y,37,37,InfoAreaSetup.backgr_color);
-            MegaSimpleScaleShape (x + 20,y + 19,37,shapenum,shade);
             width = 37;
+            height = 37;
+
+            VW_Bar (x,y,width,height,InfoAreaSetup.backgr_color);
+
+            y += 19;
+
+            clip = (INFOAREA_Y + INFOAREA_H) - (height / 2);
+
+            if (y >= clip)
+                y = clip - 1;
+
+            MegaSimpleScaleShape ((x + 19) * screen.scale,y * screen.scale,height * screen.scale,shapenum,shade);
+
             break;
 
         case pis_pic:
