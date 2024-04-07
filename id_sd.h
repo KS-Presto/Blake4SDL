@@ -120,8 +120,6 @@ extern  globalsound_t channelSoundPos[MIX_CHANNELS];
 
 extern  bool          sqActive;
 
-extern  bool          AdLibPresent;
-extern  bool          SoundBlasterPresent;
 extern  bool          SoundPositioned;
 extern  int           SoundMode;
 extern  int           DigiMode;
@@ -151,8 +149,8 @@ void    SD_MusicOn (void);
 void    SD_FadeOutMusic (void);
 int     SD_MusicOff (void);
 bool    SD_MusicPlaying (void);
-bool    SD_SetSoundMode (int mode);
-bool    SD_SetMusicMode (int mode);
+void    SD_SetSoundMode (int mode);
+void    SD_SetMusicMode (int mode);
 int     SD_SoundPlaying (void);
 
 void    SD_SetDigiDevice (int mode);

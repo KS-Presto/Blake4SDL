@@ -1467,7 +1467,6 @@ extern  char  ExtraMan[];
 extern  char  OneMillion[];
 extern  char  TenMillion[];
 
-extern  char  NoAdLibCard[];
 extern  char  MusicOn[];
 extern  char  MusicOff[];
 extern  char  SoundOn[];

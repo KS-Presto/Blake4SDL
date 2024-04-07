@@ -1415,15 +1415,6 @@ void DrawSoundMenu (void)
     DrawMenuTitle ("SOUND SETTINGS");
     DrawInstructions (IT_STANDARD);
 
-    if (!AdLibPresent && !SoundBlasterPresent)
-        SndMenu[2].active = SndMenu[10].active = SndMenu[11].active = AT_DISABLED;
-
-    if (!SoundBlasterPresent)
-    {
-        SndMenu[5].active = AT_DISABLED;
-        SndMenu[7].active = AT_DISABLED;
-    }
-
     fontnumber = 4;
 
     SetFontColor (DISABLED_TEXT_COLOR,TERM_BACK_COLOR);

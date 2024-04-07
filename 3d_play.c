@@ -493,6 +493,8 @@ void CheckKeys (void)
         {
             if (SoundMode != sdm_Off || DigiMode != sds_Off)
             {
+                savedsoundmode = SoundMode;
+
                 if (SoundMode != sdm_Off)
                 {
                     SD_WaitSoundDone ();
@@ -510,16 +512,8 @@ void CheckKeys (void)
             else
             {
                 SD_StopDigitized ();
-
-                if (SoundBlasterPresent || AdLibPresent)
-                    SD_SetSoundMode (sdm_AdLib);
-                else
-                    SD_SetSoundMode (sdm_PC);
-
-                if (SoundBlasterPresent)
-                    SD_SetDigiDevice (sds_SoundBlaster);
-                else
-                    SD_SetDigiDevice (sds_Off);
+                SD_SetSoundMode (savedsoundmode);
+                SD_SetDigiDevice (sds_SoundBlaster);
 
                 CA_LoadAllSounds ();
 
@@ -844,13 +838,7 @@ void CheckMusicToggle (void)
 #endif
             )
         {
-            if (!AdLibPresent)
-            {
-                DISPLAY_TIMED_MSG (NoAdLibCard,MP_BONUS,MT_GENERAL);
-                SD_PlaySound (NOWAYSND);
-                return;
-            }
-            else if (MusicMode != smm_Off)
+            if (MusicMode != smm_Off)
             {
                 SD_SetMusicMode (smm_Off);
                 //

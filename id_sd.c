@@ -38,8 +38,6 @@ Mix_Chunk     *SoundChunks[LASTSOUND];
 globalsound_t channelSoundPos[MIX_CHANNELS];
 
 bool          SD_Started;
-bool          AdLibPresent;
-bool          SoundBlasterPresent,SBProPresent;
 bool          SoundPositioned;
 int           SoundMode;
 int           MusicMode;
@@ -548,23 +546,12 @@ void SD_ChannelFinished (int channel)
 
 void SD_SetDigiDevice (int mode)
 {
-    bool devicepresent;
-
     if (mode == DigiMode)
         return;
 
     SD_StopDigitized ();
 
-    devicepresent = true;
-
-    if (mode == sds_SoundBlaster)
-    {
-        if (!SoundBlasterPresent)
-            devicepresent = false;
-    }
-
-    if (devicepresent)
-        DigiMode = mode;
+    DigiMode = mode;
 }
 
 
@@ -834,33 +821,24 @@ void SD_StartDevice (void)
 ====================
 */
 
-bool SD_SetSoundMode (int mode)
+void SD_SetSoundMode (int mode)
 {
-    bool result = false;
-    word tableoffset;
+    unsigned tableoffset;
 
     SD_StopSound ();
-
-    if (mode == sdm_AdLib && !AdLibPresent)
-        mode = sdm_PC;
 
     switch (mode)
     {
         case sdm_Off:
             tableoffset = STARTADLIBSOUNDS;
-            result = true;
             break;
 
         case sdm_PC:
             tableoffset = STARTPCSOUNDS;
-            result = true;
             break;
 
         case sdm_AdLib:
             tableoffset = STARTADLIBSOUNDS;
-
-            if (AdLibPresent)
-                result = true;
             break;
 
         default:
@@ -869,7 +847,7 @@ bool SD_SetSoundMode (int mode)
 
     SoundTable = &audiosegs[tableoffset];
 
-    if (result && mode != SoundMode)
+    if (mode != SoundMode)
     {
         SD_ShutDevice ();
 
@@ -877,8 +855,6 @@ bool SD_SetSoundMode (int mode)
 
         SD_StartDevice ();
     }
-
-    return result;
 }
 
 
@@ -892,26 +868,14 @@ bool SD_SetSoundMode (int mode)
 ====================
 */
 
-bool SD_SetMusicMode (int mode)
+void SD_SetMusicMode (int mode)
 {
     SD_FadeOutMusic ();
 
     while (SD_MusicPlaying())
         SDL_Delay (5);
 
-    switch (mode)
-    {
-        case smm_Off:
-            MusicMode = mode;
-            break;
-
-        case smm_AdLib:
-            if (AdLibPresent)
-                MusicMode = mode;
-            break;
-    }
-
-    return (MusicMode == mode);
+    MusicMode = mode;
 }
 
 
@@ -1061,9 +1025,6 @@ void SD_Startup (void)
 
     Mix_HookMusic (SD_IMFMusicPlayer,0);
     Mix_ChannelFinished (SD_ChannelFinished);
-
-    AdLibPresent = true;
-    SoundBlasterPresent = true;
 
     alTimeCount = 0;
 

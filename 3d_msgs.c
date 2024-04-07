@@ -88,11 +88,6 @@ char noeat_msg1[] = "\r\r    CAN'T EAT NOW,"
 //
 //---------------------------------------------------------------------------
 
-char NoAdLibCard[] =    "^FC57\r       MUSIC:\r"
-                        "^FCA6  YOU DON'T HAVE AN\r"
-                        "  ADLIB COMPATABLE\r"
-                        "     SOUND CARD.";
-
 char MusicOn[] =    "^FC57\r\r        MUSIC:\r"
                     "^FCA6   BACKGROUND MUSIC\r"
                     "        IS XXXX";
