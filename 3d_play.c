@@ -109,8 +109,8 @@ bool            demorecord,demoplayback;
 int8_t          *demoptr,*lastdemoptr;
 int8_t          *demobuffer;
 #if (GAME_VERSION != SHAREWARE_VERSION) || defined(GEORGE_CHEAT)
-byte            jam_buff_cmp[] = {sc_J,sc_A,sc_M};
-byte            jam_buff[sizeof(jam_buff_cmp)];
+ScanCode        jam_buff_cmp[3] = {sc_J,sc_A,sc_M};
+ScanCode        jam_buff[sizeof(jam_buff_cmp)];
 #endif
 
 const char      *PAUSED_MSG = "^ST1^CEGame Paused\r^CEPress any key to resume.^XX";
