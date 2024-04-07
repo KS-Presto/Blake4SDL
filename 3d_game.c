@@ -2382,7 +2382,8 @@ void SetViewSize (int size)
     viewsize = size;
 
     width = ((size << 4) * screen.width) / screen.basewidth;
-    height = ((((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight) + (screen.heightoffset * 2);
+    height = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    height += (screen.heightoffset * 2) * screen.scale;
 
     viewwidth = width & ~15;                  // must be divisible by 16
     viewheight = height & ~1;                 // must be even
@@ -2431,7 +2432,8 @@ void ShowViewSize (int size)
     oldheight = viewheight;
 
     viewwidth = ((size << 4) * screen.width) / screen.basewidth;
-    viewheight = ((((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight) + (screen.heightoffset * 2);
+    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    viewheight += (screen.heightoffset * 2) * screen.scale;
     centerx = viewwidth / 2;
 
     baseviewwidth = viewwidth / screen.scale;

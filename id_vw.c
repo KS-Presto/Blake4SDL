@@ -185,7 +185,7 @@ void VW_SetupVideo (void)
     screen.scale = w / 320;
     screen.basewidth = w / screen.scale;
     screen.baseheight = h / screen.scale;
-    screen.heightoffset = ((screen.baseheight % 200) / 2) * screen.scale;
+    screen.heightoffset = (screen.baseheight % 200) / 2;
 
     VW_SetBufferOffset (screen.heightoffset);
 
@@ -452,7 +452,9 @@ void VW_UnlockSurface (SDL_Surface *surface)
 
 void VW_SetBufferOffset (unsigned offset)
 {
-    Assert (offset < screen.baseheight,"Invalid buffer offset!");
+    offset *= screen.scale;
+
+    Assert (offset < screen.height,"Invalid buffer offset!");
 
     screen.bufferofs = ylookup[offset];
 }
@@ -782,6 +784,8 @@ void VW_ScreenToMem (byte *dest, int width, int height, int x, int y)
 
 void VW_ScreenToScreen (int width, int height, int x, int y, int srcofs, int destofs)
 {
+    int heightofs = screen.heightoffset;
+
     if (screen.scale > 1)
     {
         x *= screen.scale;
@@ -790,6 +794,7 @@ void VW_ScreenToScreen (int width, int height, int x, int y, int srcofs, int des
         destofs *= screen.scale;
         width *= screen.scale;
         height *= screen.scale;
+        heightofs *= screen.scale;
     }
 
     Assert (x >= 0 && x + width <= screen.width
@@ -797,8 +802,8 @@ void VW_ScreenToScreen (int width, int height, int x, int y, int srcofs, int des
          && y + srcofs >= 0 && y + srcofs + height <= screen.height
          && width > 0 && height > 0,"Destination rectangle out of bounds!");
 
-    SDL_Rect srcrect = {x,y + srcofs + screen.heightoffset,width,height};
-    SDL_Rect destrect = {x,y + destofs + screen.heightoffset,width,height};
+    SDL_Rect srcrect = {x,y + srcofs + heightofs,width,height};
+    SDL_Rect destrect = {x,y + destofs + heightofs,width,height};
 
     SDL_BlitSurface (screen.buffer,&srcrect,screen.buffer,&destrect);
 }
