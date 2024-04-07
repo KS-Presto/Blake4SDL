@@ -564,7 +564,7 @@ void LoadLevel (int levelnum)
     int       oldwx,oldwy,oldww,oldwh;
     int       oldpx,oldpy;
     word      actornum,laststatobjnum;
-    word      *maptable;
+    word      *maptable,*map;
     unsigned  count;
     byte      *temp,*ptr;
     char      chunk[5];
@@ -793,6 +793,22 @@ void LoadLevel (int levelnum)
     // check for strange door and actor combos
     //
     CleanUpDoors_N_Actors ();
+
+    //
+    // clear any pushwall icons that were already used
+    //
+    map = mapsegs[1];
+
+    for (y = 0; y < mapheight; y++)
+    {
+        for (x = 0; x < mapwidth; x++)
+        {
+            if (*map == PUSHABLETILE)
+                *map = 0;
+
+            map++;
+        }
+    }
 }
 
 
