@@ -72,7 +72,7 @@ void VW_Startup (void)
     int      w,h;
     uint32_t flags = 0;
 
-    if (!param_windowed && (screen.flags & SC_FULLSCREEN))
+    if (screen.flags & SC_FULLSCREEN)
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     else
     {
@@ -84,8 +84,8 @@ void VW_Startup (void)
 
     x = SDL_WINDOWPOS_CENTERED;
     y = SDL_WINDOWPOS_CENTERED;
-    w = screen.width = 320;
-    h = screen.height = 200;
+    w = screen.width;
+    h = screen.height;
 
     screen.title = "Blake4SDL";
 
@@ -141,11 +141,20 @@ void VW_SetupVideo (void)
     int      i;
     int      w,h;
     uint32_t a,r,g,b;
-    uint32_t flags;
+    uint32_t flags = 0;
 
     w = screen.width;
     h = screen.height;
-    flags = SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED;
+
+    if (!(screen.flags & SC_HWACCEL))
+        flags |= SDL_RENDERER_SOFTWARE;
+    else
+    {
+        flags |= SDL_RENDERER_ACCELERATED;
+
+        if (screen.flags & SC_VSYNC)
+            flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
 
     screen.renderer = SDL_CreateRenderer(screen.window,-1,flags);
 

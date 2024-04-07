@@ -1077,6 +1077,19 @@ void SD_Startup (void)
 
     SD_SetupDigi ();
 
+    if (savedsoundmode == -1)
+        savedsoundmode = sdm_AdLib;
+
+    if (savedmusicmode == -1)
+        savedmusicmode = smm_AdLib;
+
+    if (saveddigimode == -1)
+        saveddigimode = sds_SoundBlaster;
+
+    SD_SetMusicMode (savedmusicmode);
+    SD_SetSoundMode (savedsoundmode);
+    SD_SetDigiDevice (saveddigimode);
+
     SD_Started = true;
 }
 

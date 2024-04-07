@@ -1342,6 +1342,7 @@ extern  int       lastmap_tilex,lastmap_tiley;
 extern  char      str[256],error[256];
 extern  char      configname[13];
 
+extern  int       savedsoundmode,savedmusicmode,saveddigimode;
 extern  int       mouseadjustment;
 
 extern  bool      ForceLoadDefault;

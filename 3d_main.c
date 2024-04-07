@@ -30,6 +30,7 @@ char    tempPath[MAX_DEST_PATH_LEN + 15];
 char    str[256],error[256];
 char    configname[13] = "CONFIG.";
 
+int     savedsoundmode = -1,savedmusicmode = -1,saveddigimode = -1;
 int     mouseadjustment;
 
 bool    ForceLoadDefault;
@@ -63,6 +64,75 @@ void    DrawCreditsPage (void);
 void    ShowPromo (void);
 
 bool    LevelInPlaytemp (int levelnum);
+
+
+/*
+===================
+=
+= SetupDisplayDefaults
+=
+= Setup best display options according to the drivers
+=
+===================
+*/
+
+void SetupDisplayDefaults (void)
+{
+    int              i,n;
+    uint32_t         flags;
+    SDL_DisplayMode  dm;
+    SDL_RendererInfo ri;
+
+    if (!screen.width)
+    {
+        if (SDL_GetDesktopDisplayMode(0,&dm))
+            Quit ("Unable to get desktop display mode: %s\n",SDL_GetError());
+
+        screen.width = dm.w;
+
+        if (screen.width % 320)
+        {
+            screen.width += 320;
+            screen.width -= screen.width % 320;
+        }
+
+        screen.height = (200 * screen.width) / 320;
+    }
+
+    n = SDL_GetNumRenderDrivers();
+
+    if (n < 0)
+        Quit ("Unable to get render drivers: %s\n",SDL_GetError());
+    else if (!n)
+        Quit ("No render drivers available!");
+
+    //
+    // look for a renderer with hardware acceleration
+    // a software fallback will be used only as a last resort
+    //
+    for (i = 0; i < n; i++)
+    {
+        flags = 0;
+
+        if (SDL_GetRenderDriverInfo(i,&ri))
+            Quit ("Unable to get render driver info: %s\n",SDL_GetError());
+
+        if (ri.flags & SDL_RENDERER_ACCELERATED)
+        {
+            flags |= SC_HWACCEL;
+
+            if (ri.flags & SDL_RENDERER_PRESENTVSYNC)
+                flags |= SC_VSYNC;
+
+            break;
+        }
+    }
+
+    if (!param_windowed)
+        flags |= SC_FULLSCREEN | SC_INPUTGRABBED;
+
+    screen.flags |= flags;
+}
 
 
 /*
@@ -103,6 +173,10 @@ void WriteConfig (void)
 
         fwrite (&gamestate.flags,sizeof(gamestate.flags),1,file);
 
+        fwrite (&screen.width,sizeof(screen.width),1,file);
+        fwrite (&screen.height,sizeof(screen.height),1,file);
+        fwrite (&screen.flags,sizeof(screen.flags),1,file);
+
         fclose (file);
     }
 }
@@ -120,9 +194,8 @@ void ReadConfig (void)
 {
     FILE     *file;
     char     fname[13];
-    int      sd,sm,sds;
     bool     configfound = false;
-    unsigned flags = gamestate.flags;
+    uint16_t flags = gamestate.flags;
 
     snprintf (fname,sizeof(fname),"%s%s",configname,extension);
 
@@ -135,9 +208,9 @@ void ReadConfig (void)
         //
         fread (Scores,sizeof(Scores),1,file);
 
-        fread (&sd,sizeof(sd),1,file);
-        fread (&sm,sizeof(sm),1,file);
-        fread (&sds,sizeof(sds),1,file);
+        fread (&savedsoundmode,sizeof(savedsoundmode),1,file);
+        fread (&savedmusicmode,sizeof(savedmusicmode),1,file);
+        fread (&saveddigimode,sizeof(saveddigimode),1,file);
 
         fread (&mouseenabled,sizeof(mouseenabled),1,file);
         fread (&joystickenabled,sizeof(joystickenabled),1,file);
@@ -156,21 +229,30 @@ void ReadConfig (void)
 
         gamestate.flags |= flags;               // must "OR", some flags are already set
 
-        fclose (file);
-
-        if (sd == sdm_AdLib && (!AdLibPresent || !SoundBlasterPresent))
+        //
+        // skip over the screen resolution variables if we already have a width set
+        //
+        if (screen.width)
+            fseek (file,sizeof(screen.width) + sizeof(screen.height),SEEK_CUR);
+        else
         {
-            sd = sdm_PC;
-            sd = smm_Off;
+            fread (&screen.width,sizeof(screen.width),1,file);
+            fread (&screen.height,sizeof(screen.height),1,file);
         }
 
-        if (sds == sds_SoundBlaster && !SoundBlasterPresent)
-            sds = sds_Off;
+        fread (&screen.flags,sizeof(screen.flags),1,file);
+
+        fclose (file);
 
         if (!MousePresent)
             mouseenabled = false;
         if (!JoystickPresent)
             joystickenabled = false;
+
+        if (param_windowed)
+            screen.flags &= ~(SC_FULLSCREEN | SC_INPUTGRABBED);
+
+        screen.flags &= ~(SC_FADED | SC_FIZZLEIN);
 
         MainMenu[6].active = AT_ENABLED;
         MainItems.curpos = 0;
@@ -183,22 +265,6 @@ void ReadConfig (void)
         //
         // no config file, so select by hardware
         //
-        if (SoundBlasterPresent || AdLibPresent)
-        {
-            sd = sdm_AdLib;
-            sm = smm_AdLib;
-        }
-        else
-        {
-            sd = sdm_PC;
-            sm = smm_Off;
-        }
-
-        if (SoundBlasterPresent)
-            sds = sds_SoundBlaster;
-        else
-            sds = sds_Off;
-
         if (MousePresent)
             mouseenabled = true;
 
@@ -214,11 +280,8 @@ void ReadConfig (void)
 #else
         gamestate.flags |= GS_LIGHTING;
 #endif
+        SetupDisplayDefaults ();
     }
-
-    SD_SetMusicMode (sm);
-    SD_SetSoundMode (sd);
-    SD_SetDigiDevice (sds);
 }
 
 
@@ -1547,6 +1610,8 @@ void InitGame (void)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
         Quit ("Unable to init SDL: %s\n",SDL_GetError());
 
+    ReadConfig ();
+
     VW_Startup ();
     CA_Startup ();
     IN_Startup ();
@@ -1560,8 +1625,6 @@ void InitGame (void)
     VW_ClearScreen (0);
 #endif
     InitDigiMap ();
-
-    ReadConfig ();
 
     Init3DRenderer ();
 }
@@ -2043,6 +2106,20 @@ void CheckParameters (int argc, char *argv[])
 #endif
         else if (!strcmp(arg,"--windowed"))
             param_windowed = true;
+        else if (!strcmp(arg,"--res"))
+        {
+            if (i + 2 >= argc || !isdigit(*argv[i + 1]) || !isdigit(*argv[i + 2]))
+                snprintf (error,sizeof(error),"The res option needs the width and/or the height argument!");
+            else
+            {
+                screen.width = atoi(argv[++i]);
+                screen.height = atoi(argv[++i]);
+                screen.scale = screen.width / 320;
+
+                if ((screen.width % 320) || (screen.height != 200 * screen.scale && screen.height != 240 * screen.scale))
+                    snprintf (error,sizeof(error),"Screen size must be a multiple of 320x200 or 320x240!");
+            }
+        }
         else if (!strcmp(arg,"--extravbls"))
         {
             i++;
