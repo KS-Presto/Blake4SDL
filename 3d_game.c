@@ -2369,6 +2369,8 @@ void SetupFizzlein (int x, int y, int width, int height)
 =
 = SetViewSize
 =
+= Height MUST be even before scaling
+=
 ===================
 */
 
@@ -2382,11 +2384,11 @@ void SetViewSize (int size)
     viewsize = size;
 
     width = ((size << 4) * screen.width) / screen.basewidth;
-    height = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    height = (((int)((size << 4) * HEIGHTRATIO) & ~1) * screen.height) / screen.baseheight;
     height += (screen.heightoffset * 2) * screen.scale;
 
     viewwidth = width & ~15;                  // must be divisible by 16
-    viewheight = height & ~1;                 // must be even
+    viewheight = height;
     centerx = viewwidth / 2;
     centery = viewheight / 2;
     shootdelta = viewwidth / 10;
@@ -2401,8 +2403,8 @@ void SetViewSize (int size)
         viewscreenofs = ylookup[viewscreeny] + viewscreenx;
     }
 
-    baseviewwidth = (viewwidth / screen.scale) & ~15;
-    baseviewheight = (viewheight / screen.scale) & ~1;
+    baseviewwidth = viewwidth / screen.scale;
+    baseviewheight = viewheight / screen.scale;
     baseviewscreenx = viewscreenx / screen.scale;
     baseviewscreeny = viewscreeny / screen.scale;
 
@@ -2432,7 +2434,7 @@ void ShowViewSize (int size)
     oldheight = viewheight;
 
     viewwidth = ((size << 4) * screen.width) / screen.basewidth;
-    viewheight = (((size << 4) * HEIGHTRATIO) * screen.height) / screen.baseheight;
+    viewheight = (((int)((size << 4) * HEIGHTRATIO) & ~1) * screen.height) / screen.baseheight;
     viewheight += (screen.heightoffset * 2) * screen.scale;
     centerx = viewwidth / 2;
 
