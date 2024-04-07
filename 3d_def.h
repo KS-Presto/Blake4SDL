@@ -1467,10 +1467,8 @@ extern  char  ExtraMan[];
 extern  char  OneMillion[];
 extern  char  TenMillion[];
 
-extern  char  MusicOn[];
-extern  char  MusicOff[];
-extern  char  SoundOn[];
-extern  char  SoundOff[];
+extern  const char  *MusicOn;
+extern  const char  *SoundOn;
 
 extern  char  pd_dropped[];
 extern  char  pd_nomore[];

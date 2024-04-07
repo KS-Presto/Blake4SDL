@@ -432,7 +432,6 @@ void CheckKeys (void)
     static bool Plus_KeyReleased;
     static bool Minus_KeyReleased;
     static bool I_KeyReleased;
-    static bool S_KeyReleased;
 
     if ((screen.flags & SC_FADED) || demoplayback)  // don't do anything with a faded screen
         return;
@@ -459,6 +458,7 @@ void CheckKeys (void)
     }
 #endif
     CheckMusicToggle ();
+    CheckSoundToggle ();
 
     if (gamestate.rpower)
     {
@@ -486,49 +486,6 @@ void CheckKeys (void)
         else
             Minus_KeyReleased = true;
     }
-
-    if (Keyboard[sc_S])
-    {
-        if (S_KeyReleased)
-        {
-            if (SoundMode != sdm_Off || DigiMode != sds_Off)
-            {
-                savedsoundmode = SoundMode;
-
-                if (SoundMode != sdm_Off)
-                {
-                    SD_WaitSoundDone ();
-                    SD_SetSoundMode (sdm_Off);
-                }
-
-                if (DigiMode != sds_Off)
-                    SD_SetDigiDevice (sds_Off);
-
-                //
-                // TODO: eww
-                //
-                memcpy ((char *)&SoundOn[55],"OFF.",4);
-            }
-            else
-            {
-                SD_StopDigitized ();
-                SD_SetSoundMode (savedsoundmode);
-                SD_SetDigiDevice (sds_SoundBlaster);
-
-                CA_LoadAllSounds ();
-
-                //
-                // TODO: eww x2
-                //
-                memcpy ((char *)&SoundOn[55],"ON. ",4);
-            }
-
-            DISPLAY_TIMED_MSG (SoundOn,MP_BONUS,MT_GENERAL);
-            S_KeyReleased = false;
-        }
-    }
-    else
-        S_KeyReleased = true;
 
     if (Keyboard[sc_Enter])
     {
@@ -829,6 +786,9 @@ void CheckKeys (void)
 void CheckMusicToggle (void)
 {
     static bool M_KeyReleased;
+    size_t      len;
+    const char  *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
+    char        buffer[strlen(MusicOn) + 1];
 
     if (Keyboard[sc_M])
     {
@@ -839,29 +799,88 @@ void CheckMusicToggle (void)
             )
         {
             if (MusicMode != smm_Off)
-            {
                 SD_SetMusicMode (smm_Off);
-                //
-                // TODO: eww x3
-                //
-                memcpy ((char *)&MusicOn[58],"OFF.",4);
-            }
             else
             {
                 SD_SetMusicMode (smm_AdLib);
                 StartMusic ();
-                //
-                // TODO: eww x4
-                //
-                memcpy ((char *)&MusicOn[58],"ON. ",4);
             }
 
-            DISPLAY_TIMED_MSG (MusicOn,MP_BONUS,MT_GENERAL);
+            snprintf (buffer,sizeof(buffer),MusicOn);
+
+            len = strlen(buffer) - strlen(strend);
+
+            if (strncmp(&buffer[len],strend,strlen(strend)))
+                Quit ("MusicOn string MUST end with \"%s\"!",strend);
+
+            snprintf (&buffer[len],sizeof(buffer) - len,togglestr[MusicMode != smm_Off]);
+
+            DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
             M_KeyReleased = false;
         }
     }
     else
         M_KeyReleased = true;
+}
+
+
+/*
+=====================
+=
+= CheckSoundToggle
+=
+=====================
+*/
+
+void CheckSoundToggle (void)
+{
+    static bool S_KeyReleased;
+    size_t      len;
+    const char  *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
+    char        buffer[strlen(SoundOn) + 1];
+
+    if (Keyboard[sc_S])
+    {
+        if (S_KeyReleased)
+        {
+            if (SoundMode != sdm_Off || DigiMode != sds_Off)
+            {
+                savedsoundmode = SoundMode;
+
+                if (SoundMode != sdm_Off)
+                {
+                    SD_WaitSoundDone ();
+                    SD_SetSoundMode (sdm_Off);
+                }
+
+                if (DigiMode != sds_Off)
+                    SD_SetDigiDevice (sds_Off);
+            }
+            else
+            {
+                SD_StopDigitized ();
+                SD_SetSoundMode (savedsoundmode);
+                SD_SetDigiDevice (sds_SoundBlaster);
+
+                CA_LoadAllSounds ();
+            }
+
+            snprintf (buffer,sizeof(buffer),SoundOn);
+
+            len = strlen(buffer) - strlen(strend);
+
+            if (strncmp(&buffer[len],strend,strlen(strend)))
+                Quit ("SoundOn string MUST end with \"%s\"!",strend);
+
+            snprintf (&buffer[len],sizeof(buffer) - len,togglestr[SoundMode != sdm_Off]);
+
+            DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
+
+            S_KeyReleased = false;
+        }
+    }
+    else
+        S_KeyReleased = true;
 }
 
 #ifdef DUAL_SWAP_FILES

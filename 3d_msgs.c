@@ -88,13 +88,13 @@ char noeat_msg1[] = "\r\r    CAN'T EAT NOW,"
 //
 //---------------------------------------------------------------------------
 
-char MusicOn[] =    "^FC57\r\r        MUSIC:\r"
-                    "^FCA6   BACKGROUND MUSIC\r"
-                    "        IS XXXX";
+const char *MusicOn = "^FC57\r\r        MUSIC:\r"
+                      "^FCA6   BACKGROUND MUSIC\r"
+                      "        IS XXXX";
 
-char SoundOn[] =    "^FC57\r\r       SOUNDS:\r"
-                    "^FCA6   SOUND EFFECTS\r"
-                    "       ARE XXXX";
+const char *SoundOn = "^FC57\r\r       SOUNDS:\r"
+                      "^FCA6   SOUND EFFECTS\r"
+                      "       ARE XXXX";
 
 
 char ekg_heartbeat_enabled[] =  "\r\r     EKG HEART BEAT\r"

@@ -107,5 +107,6 @@ void    PlayLoop (void);
 void    ChangeSwapFiles (bool display);
 void    OpenPageFile (void);
 void    CheckMusicToggle (void);
+void    CheckSoundToggle (void);
 
 #endif

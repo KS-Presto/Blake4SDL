@@ -2138,9 +2138,11 @@ unsigned static_health[][3] =
 
 void GetBonus (statobj_t *check)
 {
-    bool givepoints;
-    int  shapenum,keynum;
-    int  ammo;
+    bool       givepoints;
+    int        shapenum,keynum;
+    int        ammo;
+    size_t     len;
+    const char *strunits = " UNITS)";
 
     givepoints = false;
     shapenum = -1;
@@ -2203,20 +2205,23 @@ void GetBonus (statobj_t *check)
             break;
 
         case bo_clip:
-            if (gamestate.ammo == MAX_AMMO)
-                return;
-
-            GiveAmmo (8);
-            bonus_msg7[45] = '8';    // TODO: sus
-            break;
-
         case bo_clip2:
             if (gamestate.ammo == MAX_AMMO)
                 return;
 
-            ammo = 1 + (US_RndT() & 7);
-            bonus_msg7[45] = '0' + ammo;
+            if (check->itemnumber == bo_clip2)
+                ammo = 1 + (US_RndT() & 7);
+            else
+                ammo = 8;
+
             GiveAmmo (ammo);
+
+            len = strlen(bonus_msg7) - strlen(strunits);
+
+            if (strncmp(&bonus_msg7[len],strunits,strlen(strunits)))
+                Quit ("bonus_msg7 string MUST end with \"%s\"!",strunits);
+
+            bonus_msg7[len - 1] = '0' + ammo;    // overwite char BEFORE the matched sub-string
             break;
 
         case bo_plasma_detonator:
