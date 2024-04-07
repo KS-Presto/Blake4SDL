@@ -1126,6 +1126,9 @@ void DrawScaleds (void)
         if (!visptr->shapenum)
             continue;           // no shape
 
+        if (!obj->tilex || !obj->tiley || obj->tilex >= mapwidth - 1 || obj->tiley >= mapheight - 1)
+            continue;           // don't bother with actors on the map edges
+
         visspot = &spotvis[obj->tilex][obj->tiley];
         tilespot = &tilemap[obj->tilex][obj->tiley];
 
