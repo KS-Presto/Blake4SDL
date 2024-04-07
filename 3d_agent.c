@@ -65,13 +65,13 @@
 //
 // weapon bounce
 //
-#define wb_MaxPoint             ((fixed)10 << FRACBITS)
-#define wb_MidPoint             ((fixed)6 << FRACBITS)
-#define wb_MinPoint             ((fixed)2 << FRACBITS)
+#define wb_MaxPoint             (((fixed)10 << FRACBITS) * screen.scale)
+#define wb_MidPoint             (((fixed)6 << FRACBITS) * screen.scale)
+#define wb_MinPoint             (((fixed)2 << FRACBITS) * screen.scale)
 #define wb_MaxGoalDist          (wb_MaxPoint - wb_MidPoint)
 
-#define wb_MaxOffset            (wb_MaxPoint + ((fixed)2 << FRACBITS))
-#define wb_MinOffset            (wb_MinPoint - ((fixed)2 << FRACBITS))
+#define wb_MaxOffset            (wb_MaxPoint + (((fixed)2 << FRACBITS) * screen.scale))
+#define wb_MinOffset            (wb_MinPoint - (((fixed)2 << FRACBITS) * screen.scale))
 
 
 #define GD0 0x55
@@ -4660,7 +4660,7 @@ void HandleWeaponBounce (void)
     {
         if (bounceOffset < bounceDest)
         {
-            bounceVel += (sintable[bounceSpeed] + 1) >> 1;
+            bounceVel += ((sintable[bounceSpeed] + 1) >> 1) * screen.scale;
             bounceOffset += bounceVel;
 
             if (bounceOffset > bounceDest)
@@ -4671,7 +4671,7 @@ void HandleWeaponBounce (void)
         }
         else if (bounceOffset > bounceDest)
         {
-            bounceVel -= sintable[bounceSpeed] >> 2;
+            bounceVel -= (sintable[bounceSpeed] >> 2) * screen.scale;
             bounceOffset += bounceVel;
 
             if (bounceOffset < bounceDest)

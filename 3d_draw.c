@@ -1253,8 +1253,8 @@ void DrawPlayerWeapon (void)
         if (shapenum)
         {
             useBounceOffset = true;
-            ycenter = (c_table[20 - viewsize] * screen.scale) + screen.heightoffset;
-            vheight = (v_table[20 - viewsize] * screen.scale) + (screen.heightoffset * 2);
+            ycenter = (c_table[20 - viewsize] + screen.heightoffset) * screen.scale;
+            vheight = (v_table[20 - viewsize] + (screen.heightoffset * 2)) * screen.scale;
 
             SimpleScaleShape (centerx,ycenter,vheight,shapenum,NO_SHADING);
 
