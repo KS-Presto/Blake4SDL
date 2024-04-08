@@ -2028,8 +2028,8 @@ void SetupGameLevel (void)
     int      i;
     int      x,y;
     int      lock;
-    word     *map,*map1,*map2;
-    unsigned tile,icon;
+    word     *map,*map1;
+    unsigned tile;
     bool     switchon = false;
 
     if (!loadedgame)
@@ -2065,13 +2065,11 @@ void SetupGameLevel (void)
     memset (actorat,0,sizeof(actorat));
 
     map = mapsegs[0];
-    map2 = mapsegs[1];
 
     for (y = 0; y < mapheight; y++)
     {
         for (x = 0; x < mapwidth; x++)
         {
-            icon = *map2++;
             tile = *map++;
 
             if (tile < AMBUSHTILE)
