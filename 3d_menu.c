@@ -3113,7 +3113,7 @@ void SetupControlPanel (void)
 
     fontnumber = 2;
 
-    WindowH = screen.baseheight;
+    WindowH = screen.baseheight - (screen.heightoffset * 2);
 
     if (!ingame)
         CA_LoadAllSounds ();
@@ -3553,7 +3553,7 @@ void DrawMenu (CP_iteminfo *item_i, CP_itemtype *items)
     WindowY = PrintY = item_i->y;
 
     WindowW = screen.basewidth;
-    WindowH = screen.baseheight;
+    WindowH = screen.baseheight - (screen.heightoffset * 2);
 
     for (i = 0; i < item_i->amount; i++)
     {
