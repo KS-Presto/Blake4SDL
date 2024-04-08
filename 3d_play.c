@@ -85,7 +85,22 @@ bool            usedummy;
 //
 bool            mouseenabled,joystickenabled;
 int             dirscan[4] = {sc_UpArrow,sc_RightArrow,sc_DownArrow,sc_LeftArrow};
-int             buttonscan[NUMBUTTONS] = {sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7};
+int             buttonscan[NUMBUTTONS] =
+{
+    //
+    // controls
+    //
+    sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7,
+    sc_W,sc_S,sc_D,sc_A,sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
+    sc_None,sc_None,
+
+    //
+    // special buttons
+    //
+    sc_Tilde,sc_Equal,sc_Minus,sc_C,sc_F,sc_L,sc_M,sc_S,sc_I,sc_P,
+    sc_Q,sc_W,sc_E,sc_Tab,sc_Escape,
+};
+
 int             buttonmouse[4] = {bt_attack,bt_strafe,bt_use,bt_nobutton};
 int             buttonjoy[32] =
 {
@@ -201,6 +216,9 @@ void PollJoystickButtons (void)
 ===================
 =
 = PollKeyboardMove
+=
+= KS: We can probably do away with the dirscan array and just use
+= buttonstate to determine the controlx/controly values
 =
 ===================
 */
@@ -424,14 +442,11 @@ void PollControls (void)
 
 void CheckKeys (void)
 {
-    bool        oneeighty = false;
-    bool        oldloadedgame;
-    int         i;
-    int         lastoffs,oldmusicnum;
-    ScanCode    scan;
-    static bool Plus_KeyReleased;
-    static bool Minus_KeyReleased;
-    static bool I_KeyReleased;
+    bool     oneeighty = false;
+    bool     oldloadedgame;
+    int      i;
+    int      lastoffs,oldmusicnum;
+    ScanCode scan;
 
     if ((screen.flags & SC_FADED) || demoplayback)  // don't do anything with a faded screen
         return;
@@ -462,29 +477,25 @@ void CheckKeys (void)
 
     if (gamestate.rpower)
     {
-        if (Keyboard[sc_Equal] || Keyboard[sc_KeyPadPlus])
+        if (buttonstate[bt_zoomradarin])
         {
-            if (Plus_KeyReleased && gamestate.rzoom < 2)
+            if (!buttonheld[bt_zoomradarin] && gamestate.rzoom < 2)
             {
                 UpdateRadarGauge ();
                 gamestate.rzoom++;
-                Plus_KeyReleased = false;
+                buttonheld[bt_zoomradarin] = true;
             }
         }
-        else
-            Plus_KeyReleased = true;
 
-        if (Keyboard[sc_Minus] || Keyboard[sc_KeyPadMinus])
+        if (buttonstate[bt_zoomradarout])
         {
-            if (Minus_KeyReleased && gamestate.rzoom)
+            if (!buttonheld[bt_zoomradarout] && gamestate.rzoom)
             {
                 UpdateRadarGauge ();
                 gamestate.rzoom--;
-                Minus_KeyReleased = false;
+                buttonheld[bt_zoomradarout] = true;
             }
         }
-        else
-            Minus_KeyReleased = true;
     }
 
     if (Keyboard[sc_Enter])
@@ -540,15 +551,12 @@ void CheckKeys (void)
     //
     // handle quick turning
     //
-    // TODO: change this to use buttonstate so the keys
-    // can be redefined
-    //
     if (!gamestate.turn_around)
     {
         //
         // 90 degrees left
         //
-        if (Keyboard[sc_Q])
+        if (buttonstate[bt_quickturnleft])
         {
             gamestate.turn_around = -ANG90;
             gamestate.turn_angle = player->angle + ANG90;
@@ -560,7 +568,7 @@ void CheckKeys (void)
         //
         // 180 degrees right
         //
-        if (Keyboard[sc_W] || oneeighty)
+        if (buttonstate[bt_quickturn180] || oneeighty)
         {
             gamestate.turn_around = ANG180;
             gamestate.turn_angle = player->angle + ANG180;
@@ -572,7 +580,7 @@ void CheckKeys (void)
         //
         // 90 degrees right
         //
-        if (Keyboard[sc_E])
+        if (buttonstate[bt_quickturnright])
         {
             gamestate.turn_around = ANG90;
             gamestate.turn_angle = player->angle - ANG90;
@@ -583,10 +591,9 @@ void CheckKeys (void)
     }
 
     //
-    //
     // pause key weirdness can't be checked as a scan code
     //
-    if (Paused || Keyboard[sc_P])
+    if (Paused || buttonstate[bt_pause])
     {
         lastoffs = StopMusic();
         fontnumber = 4;
@@ -676,12 +683,12 @@ void CheckKeys (void)
             return;
     }
 
-    if (Keyboard[sc_Tab])
+    if (buttonstate[bt_automap])
         PopupAutoMap ();
 
-    if (Keyboard[sc_Tilde])
+    if (buttonstate[bt_dropdetonator] && !buttonheld[bt_dropdetonator])
     {
-        Keyboard[sc_Tilde] = false;
+        buttonheld[bt_dropdetonator] = true;
         TryDropPlasmaDetonator ();
     }
 
@@ -734,42 +741,36 @@ void CheckKeys (void)
         }
     }
 
-    if (Keyboard[sc_I])
+    if (buttonstate[bt_toggleinfoarea] && !buttonheld[bt_toggleinfoarea])
     {
-        if (I_KeyReleased)
-        {
-            gamestate.flags ^= GS_ATTACK_INFOAREA;
+        gamestate.flags ^= GS_ATTACK_INFOAREA;
 
-            if (gamestate.flags & GS_ATTACK_INFOAREA)
-                DISPLAY_TIMED_MSG (attacker_info_enabled,MP_ATTACK_INFO,MT_GENERAL);
-            else
-                DISPLAY_TIMED_MSG (attacker_info_disabled,MP_ATTACK_INFO,MT_GENERAL);
+        if (gamestate.flags & GS_ATTACK_INFOAREA)
+            DISPLAY_TIMED_MSG (attacker_info_enabled,MP_ATTACK_INFO,MT_GENERAL);
+        else
+            DISPLAY_TIMED_MSG (attacker_info_disabled,MP_ATTACK_INFO,MT_GENERAL);
 
-            I_KeyReleased = false;
-        }
+        buttonheld[bt_toggleinfoarea] = true;
     }
-    else
-        I_KeyReleased = true;
-
 #ifdef CEILING_FLOOR_COLORS
-    if (Keyboard[sc_C])
+    if (buttonstate[bt_toggleceiling] && !buttonheld[bt_toggleceiling])
     {
         gamestate.flags ^= GS_DRAW_CEILING;
-        Keyboard[sc_C] = false;
+        buttonheld[bt_toggleceiling] = true;
     }
 
-    if (Keyboard[sc_F])
+    if (buttonstate[bt_togglefloor] && !buttonheld[bt_togglefloor])
     {
         gamestate.flags ^= GS_DRAW_FLOOR;
-        Keyboard[sc_F] = false;
+        buttonheld[bt_togglefloor] = true;
 #ifdef DUAL_SWAP_FILES
         ChangeSwapFiles (true);
 #endif
     }
 #endif
-    if (Keyboard[sc_L])
+    if (buttonstate[bt_togglelighting] && !buttonheld[bt_togglelighting])
     {
-        Keyboard[sc_L] = false;
+        buttonheld[bt_togglelighting] = true;
         gamestate.flags ^= GS_LIGHTING;
     }
 }
@@ -785,42 +786,37 @@ void CheckKeys (void)
 
 void CheckMusicToggle (void)
 {
-    static bool M_KeyReleased;
-    size_t      len;
-    const char  *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
-    char        buffer[strlen(MusicOn) + 1];
+    size_t     len;
+    const char *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
+    char       buffer[strlen(MusicOn) + 1];
 
-    if (Keyboard[sc_M])
+    if (buttonstate[bt_togglemusic] && !buttonheld[bt_togglemusic])
     {
-        if (M_KeyReleased
 #if GAME_VERSION != SHAREWARE_VERSION
-            && (jam_buff[0] != sc_J || jam_buff[1] != sc_A)
+        if (jam_buff[0] == sc_J && jam_buff[1] == sc_A)
+            return;
 #endif
-            )
+        if (MusicMode != smm_Off)
+            SD_SetMusicMode (smm_Off);
+        else
         {
-            if (MusicMode != smm_Off)
-                SD_SetMusicMode (smm_Off);
-            else
-            {
-                SD_SetMusicMode (smm_AdLib);
-                StartMusic ();
-            }
-
-            snprintf (buffer,sizeof(buffer),MusicOn);
-
-            len = strlen(buffer) - strlen(strend);
-
-            if (strncmp(&buffer[len],strend,strlen(strend)))
-                Quit ("MusicOn string MUST end with \"%s\"!",strend);
-
-            snprintf (&buffer[len],sizeof(buffer) - len,togglestr[MusicMode != smm_Off]);
-
-            DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
-            M_KeyReleased = false;
+            SD_SetMusicMode (smm_AdLib);
+            StartMusic ();
         }
+
+        snprintf (buffer,sizeof(buffer),MusicOn);
+
+        len = strlen(buffer) - strlen(strend);
+
+        if (strncmp(&buffer[len],strend,strlen(strend)))
+            Quit ("MusicOn string MUST end with \"%s\"!",strend);
+
+        snprintf (&buffer[len],sizeof(buffer) - len,togglestr[MusicMode != smm_Off]);
+
+        DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
+
+        buttonheld[bt_togglemusic] = true;
     }
-    else
-        M_KeyReleased = true;
 }
 
 
@@ -834,53 +830,47 @@ void CheckMusicToggle (void)
 
 void CheckSoundToggle (void)
 {
-    static bool S_KeyReleased;
-    size_t      len;
-    const char  *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
-    char        buffer[strlen(SoundOn) + 1];
+    size_t     len;
+    const char *togglestr[2] = {"OFF.","ON. "},*strend = "XXXX";
+    char       buffer[strlen(SoundOn) + 1];
 
-    if (Keyboard[sc_S])
+    if (buttonstate[bt_togglesound] && !buttonheld[bt_togglesound])
     {
-        if (S_KeyReleased)
+        if (SoundMode != sdm_Off || DigiMode != sds_Off)
         {
-            if (SoundMode != sdm_Off || DigiMode != sds_Off)
+            savedsoundmode = SoundMode;
+
+            if (SoundMode != sdm_Off)
             {
-                savedsoundmode = SoundMode;
-
-                if (SoundMode != sdm_Off)
-                {
-                    SD_WaitSoundDone ();
-                    SD_SetSoundMode (sdm_Off);
-                }
-
-                if (DigiMode != sds_Off)
-                    SD_SetDigiDevice (sds_Off);
-            }
-            else
-            {
-                SD_StopDigitized ();
-                SD_SetSoundMode (savedsoundmode);
-                SD_SetDigiDevice (sds_SoundBlaster);
-
-                CA_LoadAllSounds ();
+                SD_WaitSoundDone ();
+                SD_SetSoundMode (sdm_Off);
             }
 
-            snprintf (buffer,sizeof(buffer),SoundOn);
-
-            len = strlen(buffer) - strlen(strend);
-
-            if (strncmp(&buffer[len],strend,strlen(strend)))
-                Quit ("SoundOn string MUST end with \"%s\"!",strend);
-
-            snprintf (&buffer[len],sizeof(buffer) - len,togglestr[SoundMode != sdm_Off]);
-
-            DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
-
-            S_KeyReleased = false;
+            if (DigiMode != sds_Off)
+                SD_SetDigiDevice (sds_Off);
         }
+        else
+        {
+            SD_StopDigitized ();
+            SD_SetSoundMode (savedsoundmode);
+            SD_SetDigiDevice (sds_SoundBlaster);
+
+            CA_LoadAllSounds ();
+        }
+
+        snprintf (buffer,sizeof(buffer),SoundOn);
+
+        len = strlen(buffer) - strlen(strend);
+
+        if (strncmp(&buffer[len],strend,strlen(strend)))
+            Quit ("SoundOn string MUST end with \"%s\"!",strend);
+
+        snprintf (&buffer[len],sizeof(buffer) - len,togglestr[SoundMode != sdm_Off]);
+
+        DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
+
+        buttonheld[bt_togglesound] = true;
     }
-    else
-        S_KeyReleased = true;
 }
 
 #ifdef DUAL_SWAP_FILES

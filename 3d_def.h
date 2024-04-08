@@ -943,19 +943,35 @@ enum buttontypes
     bt_ready_grenade,
     bt_ready_bfg_cannon,
     bt_ready_plasma_detonators,
-
-    // TODO: make sure these don't break anything
-
-    bt_nextweapon,
-    bt_prevweapon,
-    bt_esc,
-    bt_pause,
+    bt_moveup,
+    bt_movedown,
     bt_strafeleft,
     bt_straferight,
     bt_moveforward,
     bt_movebackward,
     bt_turnleft,
     bt_turnright,
+    bt_nextweapon,
+    bt_prevweapon,
+
+    //
+    // special buttons
+    //
+    bt_dropdetonator,
+    bt_zoomradarin,
+    bt_zoomradarout,
+    bt_toggleceiling,
+    bt_togglefloor,
+    bt_togglelighting,
+    bt_togglemusic,
+    bt_togglesound,
+    bt_toggleinfoarea,
+    bt_pause,
+    bt_quickturnleft,
+    bt_quickturn180,
+    bt_quickturnright,
+    bt_automap,
+    bt_esc,
 
     bt_SPACER,  // TODO: why?
 
