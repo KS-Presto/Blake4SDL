@@ -244,11 +244,6 @@ void ReadConfig (void)
 
         fclose (file);
 
-        if (!MousePresent)
-            mouseenabled = false;
-        if (!JoystickPresent)
-            joystickenabled = false;
-
         if (param_windowed)
             screen.flags &= ~(SC_FULLSCREEN | SC_INPUTGRABBED);
 
@@ -265,11 +260,8 @@ void ReadConfig (void)
         //
         // no config file, so select by hardware
         //
-        if (MousePresent)
-            mouseenabled = true;
-
-        if (JoystickPresent)
-            joystickenabled = true;
+        mouseenabled = true;
+        joystickenabled = true;
 
         viewsize = 17;
         mouseadjustment = 5;

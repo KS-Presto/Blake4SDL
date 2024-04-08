@@ -441,6 +441,12 @@ void IN_Startup (void)
 
     MousePresent = true;
     JoystickPresent = Joystick != NULL;
+
+    if (!MousePresent)
+        mouseenabled = false;
+
+    if (!JoystickPresent)
+        joystickenabled = false;
 }
 
 
