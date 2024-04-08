@@ -2095,9 +2095,6 @@ void SetupGameLevel (void)
                         break;
                 }
             }
-
-            if (tile < MAXWALLTILES || icon == PUSHABLETILE)
-                TravelTable[x][y] |= TT_TRAVELED;
         }
     }
 
