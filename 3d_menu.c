@@ -129,7 +129,9 @@ CP_itemtype CtlMenu[] =
 CP_itemtype DisplayMenu[] =
 {
     {AT_ENABLED,"VSYNC",0},
+#ifdef NOTYET
     {AT_ENABLED,"HARDWARE ACCELERATION",0},
+#endif
     {AT_ENABLED,"FULLSCREEN",0},
     {AT_ENABLED,"ASPECT RATIO:",0},
     {AT_ENABLED,"RESOLUTION:",0},
@@ -1169,14 +1171,14 @@ int CP_Display (int blank)
                 screen.flags ^= SC_VSYNC;
                 SDL_RenderSetVSync (screen.renderer,(screen.flags & SC_VSYNC) != 0);
                 break;
-
+#ifdef NOTYET
             case DISP_HWACCEL:
                 screen.flags ^= SC_HWACCEL;
 
                 if (!(screen.flags & SC_HWACCEL))
                     screen.flags &= ~SC_VSYNC;
                 break;
-
+#endif
             case DISP_FULLSCREEN:
                 screen.flags ^= SC_FULLSCREEN;
                 VW_ChangeDisplay (&screen);
@@ -1299,12 +1301,12 @@ void DrawAllDisplayLights (int which)
                     if (screen.flags & SC_VSYNC)
                         shape++;
                     break;
-
+#ifdef NOTYET
                 case DISP_HWACCEL:
                     if (screen.flags & SC_HWACCEL)
                         shape++;
                     break;
-
+#endif
                 case DISP_FULLSCREEN:
                     if (screen.flags & SC_FULLSCREEN)
                         shape++;
@@ -1335,7 +1337,9 @@ void DrawAllDisplayLights (int which)
 void DrawDisplayDescription (int which)
 {
     const char *instr[] = {"REDUCES SCREEN TEARING/FLICKERING",
+#ifdef NOTYET
                            "DISABLE TO USE A SOFTWARE FALLBACK FOR RENDERING",
+#endif
                            "TOGGLES FULLSCREEN",
                            "TOGGLES A SCREEN HEIGHT MULTIPLE OF 240",
                            "CHANGE SCREEN RESOLUTION",

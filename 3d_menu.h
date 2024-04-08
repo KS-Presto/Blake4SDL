@@ -135,7 +135,9 @@ enum sw_labels
 enum disp_labels
 {
     DISP_VSYNC,
+#ifdef NOTYET
     DISP_HWACCEL,
+#endif
     DISP_FULLSCREEN,
     DISP_RATIO,
     DISP_RES,
