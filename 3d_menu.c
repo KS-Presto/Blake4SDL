@@ -69,6 +69,10 @@ int     CP_Switches (int blank);
 void    DrawSwitchMenu (void);
 void    DrawAllSwitchLights (int which);
 void    DrawSwitchDescription (int which);
+int     CP_Display (int blank);
+void    DrawDisplayMenu (screen_t *scr);
+void    DrawAllDisplayLights (int which);
+void    DrawDisplayDescription (int which);
 
 
 CP_itemtype MainMenu[] =
@@ -91,6 +95,9 @@ CP_itemtype GopMenu[] =
 {
     {AT_ENABLED,"SOUND",CP_Sound},
     {AT_ENABLED,"CONTROLS",CP_Control},
+#ifndef CLASSIC_MENU
+    {AT_ENABLED,"DISPLAY",CP_Display},
+#endif
     {AT_ENABLED,"CHANGE VIEW",CP_ChangeView},
     {AT_ENABLED,"SWITCHES",CP_Switches},
 };
@@ -117,6 +124,16 @@ CP_itemtype CtlMenu[] =
     {AT_DISABLED,"JOYSTICK ENABLED",0},
     {AT_DISABLED,"MOUSE SENSITIVITY",MouseSensitivity},
     {AT_ENABLED,"CUSTOMIZE CONTROLS",CustomControls},
+};
+
+CP_itemtype DisplayMenu[] =
+{
+    {AT_ENABLED,"VSYNC",0},
+    {AT_ENABLED,"HARDWARE ACCELERATION",0},
+    {AT_ENABLED,"FULLSCREEN",0},
+    {AT_ENABLED,"ASPECT RATIO:",0},
+    {AT_ENABLED,"RESOLUTION:",0},
+    {AT_ENABLED,"APPLY",0},
 };
 
 CP_itemtype SwitchMenu[] =
@@ -172,17 +189,18 @@ CP_itemtype CusMenu[] =
 };
 
 
-CP_iteminfo MainItems =     {MENU_X,MENU_Y,     lengthof(MainMenu),  MM_READ_THIS,0,9,  {77, 1,154,9,1}  },
-            GopItems =      {MENU_X,MENU_Y + 30,lengthof(GopMenu),   0,           0,9,  {77, 1,154,9,1}  },
-            SndItems =      {SM_X,SM_Y,         lengthof(SndMenu),   0,           0,7,  {87,-1,144,7,1}  },
-            LSItems =       {LSM_X,LSM_Y,       lengthof(LSMenu),    0,           0,8,  {86,-1,144,8,1}  },
-            CtlItems =      {CTL_X,CTL_Y,       lengthof(CtlMenu),  -1,           0,9,  {87,1,174,9,1}   },
-            CusItems =      {CST_X,CST_Y + 7,   lengthof(CusMenu),  -1,           0,15, {54,-1,203,7,1}  },
+CP_iteminfo MainItems =     {MENU_X,MENU_Y,     lengthof(MainMenu),   MM_READ_THIS,0,9,  {77, 1,154,9,1}  },
+            GopItems =      {MENU_X,MENU_Y + 30,lengthof(GopMenu),    0,           0,9,  {77, 1,154,9,1}  },
+            SndItems =      {SM_X,SM_Y,         lengthof(SndMenu),    0,           0,7,  {87,-1,144,7,1}  },
+            LSItems =       {LSM_X,LSM_Y,       lengthof(LSMenu),     0,           0,8,  {86,-1,144,8,1}  },
+            CtlItems =      {CTL_X,CTL_Y,       lengthof(CtlMenu),   -1,           0,9,  {87,1,174,9,1}   },
+            CusItems =      {CST_X,CST_Y + 7,   lengthof(CusMenu),   -1,           0,15, {54,-1,203,7,1}  },
 #if 0
-            NewEitems =     {NE_X,NE_Y,         lengthof(NewEMenu),  0,           0,16, {43,-2,119,16,1} },
+            NewEitems =     {NE_X,NE_Y,         lengthof(NewEMenu),   0,           0,16, {43,-2,119,16,1} },
 #endif
-            NewItems =      {NM_X,NM_Y,         lengthof(NewMenu),   1,           0,16, {60,-2,105,16,1} },
-            SwitchItems =   {MENU_X,MENU_Y + 25,lengthof(SwitchMenu),0,           0,9,  {87,-1,132,7,1}  };
+            NewItems =      {NM_X,NM_Y,         lengthof(NewMenu),    1,           0,16, {60,-2,105,16,1} },
+            SwitchItems =   {MENU_X,MENU_Y + 25,lengthof(SwitchMenu), 0,           0,9,  {87,-1,132,7,1}  },
+            DisplayItems =  {MENU_X,MENU_Y + 25,lengthof(DisplayMenu),0,           0,9,  {87,-1,132,7,1}  };
 
 
 int color_hlite[] =
@@ -1104,6 +1122,245 @@ void ChangeSwaps (void)
 
     IN_UserInput (50);
     IN_ClearKeysDown ();
+}
+
+
+/*
+===================
+=
+= CP_Display
+=
+===================
+*/
+
+int CP_Display (int blank)
+{
+    screen_t newscr;
+    int      which;
+
+    VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
+
+    DrawDisplayMenu (&screen);
+    MenuFadeIn ();
+    WaitKeyUp ();
+
+    //
+    // these are the only screen struct members newscr
+    // should use; DO NOT attempt to use the others in
+    // DrawDisplayMenu (unless you REALLY know what you're
+    // doing!)
+    //
+    memset (&newscr,0,sizeof(newscr));
+
+    newscr.width = screen.width;
+    newscr.height = screen.height;
+    newscr.scale = screen.scale;
+
+    if (screen.heightoffset)
+        newscr.heightoffset = 1;
+
+    do
+    {
+        which = HandleMenu(&DisplayItems,DisplayMenu,DrawAllDisplayLights);
+
+        switch (which)
+        {
+            case DISP_VSYNC:
+                screen.flags ^= SC_VSYNC;
+                SDL_RenderSetVSync (screen.renderer,(screen.flags & SC_VSYNC) != 0);
+                break;
+
+            case DISP_HWACCEL:
+                screen.flags ^= SC_HWACCEL;
+
+                if (!(screen.flags & SC_HWACCEL))
+                    screen.flags &= ~SC_VSYNC;
+                break;
+
+            case DISP_FULLSCREEN:
+                screen.flags ^= SC_FULLSCREEN;
+                VW_ChangeDisplay (&screen);
+                break;
+
+            case DISP_RATIO:
+                newscr.heightoffset ^= 1;
+                break;
+
+            case DISP_RES:
+                if (++newscr.scale > 6)    // TODO: find the largest scale possible from the desktop display mode
+                    newscr.scale = 1;
+                break;
+
+            case DISP_APPLY:
+                VW_ChangeDisplay (&newscr);
+                break;
+        }
+
+        if (which != -1)
+            DrawDisplayMenu (&newscr);
+
+        ShootSnd ();
+
+    } while (which >= 0);
+
+    MenuFadeOut ();
+
+    return blank;
+}
+
+
+/*
+=========================
+=
+= DrawDisplayMenu
+=
+=========================
+*/
+
+void DrawDisplayMenu (screen_t *scr)
+{
+    const char *ratio[2] = {"16:10","4:3"};
+    char       *dispstr;
+    size_t     len;
+
+    VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
+
+    ClearMenuScreen ();
+    DrawMenuTitle ("DISPLAY OPTIONS");
+    DrawInstructions (IT_STANDARD);
+
+    fontnumber = 2;
+
+    scr->width = scr->scale * 320;
+    scr->height = scr->scale * ((scr->heightoffset) ? 240 : 200);
+
+    if (scr->scale != screen.scale || scr->width != screen.width || scr->height != screen.height)
+        DisplayMenu[DISP_APPLY].active = AT_ENABLED;
+    else
+        DisplayMenu[DISP_APPLY].active = AT_DISABLED;
+
+    if (!(screen.flags & SC_HWACCEL))
+        DisplayMenu[DISP_VSYNC].active = AT_DISABLED;
+    else
+        DisplayMenu[DISP_VSYNC].active = AT_ENABLED;
+
+    //
+    // update the aspect ratio/resolution strings with
+    // the current values
+    //
+    dispstr = DisplayMenu[DISP_RATIO].string;
+    len = sizeof(DisplayMenu[DISP_RATIO].string);
+
+    snprintf (dispstr,len,"ASPECT RATIO: %s",ratio[scr->heightoffset]);
+
+    dispstr = DisplayMenu[DISP_RES].string;
+    len = sizeof(DisplayMenu[DISP_RES].string);
+
+    snprintf (dispstr,len,"RESOLUTION: %dX%d",scr->width,scr->height);
+
+    DrawMenu (&DisplayItems,DisplayMenu);
+    DrawAllDisplayLights (DisplayItems.curpos);
+
+    VW_UpdateScreen (screen.buffer);
+}
+
+
+/*
+===================
+=
+= DrawAllDisplayLights
+=
+===================
+*/
+
+void DrawAllDisplayLights (int which)
+{
+    int i;
+    int shape;
+
+    for (i = 0; i < DisplayItems.amount; i++)
+    {
+        if (DisplayMenu[i].string[0])
+        {
+            shape = C_NOTSELECTEDPIC;
+
+            //
+            // draw selected/not selected graphic buttons
+            //
+            if (DisplayItems.cursor.on)
+            {
+                if (i == which)   // is the cursor sitting on this pic?
+                    shape += 2;
+            }
+
+            switch (i)
+            {
+                case DISP_VSYNC:
+                    if (screen.flags & SC_VSYNC)
+                        shape++;
+                    break;
+
+                case DISP_HWACCEL:
+                    if (screen.flags & SC_HWACCEL)
+                        shape++;
+                    break;
+
+                case DISP_FULLSCREEN:
+                    if (screen.flags & SC_FULLSCREEN)
+                        shape++;
+                    break;
+
+                default:
+                    shape = 0;
+                    break;
+            }
+
+            if (shape)
+                VW_DrawPic (DisplayItems.x - 16,DisplayItems.y + (i * DisplayItems.y_spacing) - 1,shape);
+        }
+    }
+
+    DrawDisplayDescription (which);
+}
+
+
+/*
+===================
+=
+= DrawDisplayDescription
+=
+===================
+*/
+
+void DrawDisplayDescription (int which)
+{
+    const char *instr[] = {"REDUCES SCREEN TEARING/FLICKERING",
+                           "DISABLE TO USE A SOFTWARE FALLBACK FOR RENDERING",
+                           "TOGGLES FULLSCREEN",
+                           "TOGGLES A SCREEN HEIGHT MULTIPLE OF 240",
+                           "CHANGE SCREEN RESOLUTION",
+                           "APPLY SCREEN RESOLUTION CHANGES"};
+
+    fontnumber = 2;
+
+    WindowX = 48;
+    WindowY = DESCRIPTIONS_Y_POS;
+    WindowW = 236;
+    WindowH = 8;
+
+    VW_Bar (WindowX - 1,WindowY - 1,WindowW,WindowH,TERM_BACK_COLOR);
+
+    if (instr[which])
+    {
+        SetFontColor (TERM_SHADOW_COLOR,TERM_BACK_COLOR);
+        US_PrintCentered (instr[which]);
+
+        WindowX--;
+        WindowY--;
+
+        SetFontColor (INSTRUCTIONS_TEXT_COLOR,TERM_BACK_COLOR);
+        US_PrintCentered (instr[which]);
+    }
 }
 
 

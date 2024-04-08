@@ -130,6 +130,19 @@ enum sw_labels
 };
 
 //
+// CP_Display menu labels
+//
+enum disp_labels
+{
+    DISP_VSYNC,
+    DISP_HWACCEL,
+    DISP_FULLSCREEN,
+    DISP_RATIO,
+    DISP_RES,
+    DISP_APPLY,
+};
+
+//
 // flags for menu options (see CP_itemtype.active)
 //
 enum menuactivetypes

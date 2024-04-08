@@ -100,6 +100,33 @@ void VW_Startup (void)
 
 
 /*
+===================
+=
+= VW_ClearTexture
+=
+= Deallocate the rendering texture and its
+= associated surfaces
+=
+===================
+*/
+
+void VW_ClearTexture (void)
+{
+    SDL_DestroyTexture (screen.texture);
+    screen.texture = NULL;
+
+    SDL_FreeSurface (screen.surface);
+    screen.surface = NULL;
+
+    SDL_FreeSurface (screen.buffer);
+    screen.buffer = NULL;
+
+    free (ylookup);
+    ylookup = NULL;
+}
+
+
+/*
 =======================
 =
 = VW_Shutdown
@@ -111,20 +138,13 @@ void VW_Startup (void)
 
 void VW_Shutdown (void)
 {
-    SDL_FreeSurface (screen.buffer);
-    SDL_FreeSurface (screen.surface);
-    SDL_DestroyTexture (screen.texture);
+    VW_ClearTexture ();
+
     SDL_DestroyRenderer (screen.renderer);
-    SDL_DestroyWindow (screen.window);
-
-    screen.buffer = NULL;
-    screen.surface = NULL;
-    screen.texture = NULL;
     screen.renderer = NULL;
-    screen.window = NULL;
 
-    free (ylookup);
-    ylookup = NULL;
+    SDL_DestroyWindow (screen.window);
+    screen.window = NULL;
 }
 
 
@@ -146,23 +166,27 @@ void VW_SetupVideo (void)
     w = screen.width;
     h = screen.height;
 
-    if (!(screen.flags & SC_HWACCEL))
-        flags |= SDL_RENDERER_SOFTWARE;
-    else
-    {
-        flags |= SDL_RENDERER_ACCELERATED;
-
-        if (screen.flags & SC_VSYNC)
-            flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-
-    screen.renderer = SDL_CreateRenderer(screen.window,-1,flags);
-
     if (!screen.renderer)
-        Quit ("Unable to create renderer: %s\n",SDL_GetError());
+    {
+        if (!(screen.flags & SC_HWACCEL))
+            flags |= SDL_RENDERER_SOFTWARE;
+        else
+        {
+            flags |= SDL_RENDERER_ACCELERATED;
 
-    SDL_RenderSetLogicalSize (screen.renderer,w,h);
-    SDL_RenderSetViewport (screen.renderer,NULL);
+            if (screen.flags & SC_VSYNC)
+                flags |= SDL_RENDERER_PRESENTVSYNC;
+        }
+
+        screen.renderer = SDL_CreateRenderer(screen.window,-1,flags);
+
+        if (!screen.renderer)
+            Quit ("Unable to create renderer: %s\n",SDL_GetError());
+
+        SDL_RenderSetLogicalSize (screen.renderer,w,h);
+        SDL_RenderSetViewport (screen.renderer,NULL);
+        SDL_RenderSetVSync (screen.renderer,(screen.flags & SC_VSYNC) != 0);
+    }
 
     SDL_PixelFormatEnumToMasks (SDL_PIXELFORMAT_ARGB8888,&screen.bits,&r,&g,&b,&a);
 
@@ -199,6 +223,100 @@ void VW_SetupVideo (void)
     VW_SetBufferOffset (screen.heightoffset);
 
     SDL_SetWindowMinimumSize (screen.window,screen.basewidth,screen.baseheight);
+}
+
+
+/*
+===================
+=
+= VW_ChangeDisplay
+=
+===================
+*/
+
+void VW_ChangeDisplay (screen_t *scr)
+{
+    VW_ClearScreen (BLACK);
+    VW_UpdateScreen (screen.buffer);
+
+    VW_ChangeWindow (scr);
+
+    if (scr->scale != screen.scale || scr->width != screen.width || scr->height != screen.height)
+    {
+        //
+        // update screen variables and re-allocate everything
+        //
+        screen.width = scr->width;
+        screen.height = scr->height;
+
+        Shutdown3DRenderer ();
+        VW_ClearTexture ();
+
+        VW_SetupVideo ();
+        VW_InitRndMask ();
+        Init3DRenderer ();
+    }
+}
+
+
+/*
+===================
+=
+= VW_ChangeWindow
+=
+= Change the current window resolution and/or
+= go to/from fullscreen
+=
+===================
+*/
+
+void VW_ChangeWindow (screen_t *scr)
+{
+    uint32_t        flags;
+    SDL_DisplayMode dm;
+
+    flags = SDL_GetWindowFlags(screen.window);
+
+    if (screen.flags & SC_FULLSCREEN)
+    {
+        if (scr->scale != screen.scale || scr->width != screen.width || scr->height != screen.height)
+        {
+            if (SDL_GetWindowDisplayMode(screen.window,&dm))
+                Quit ("Unable to get display mode: %s\n",SDL_GetError());
+
+            dm.w = scr->width;
+            dm.h = scr->height;
+
+            if (SDL_SetWindowDisplayMode(screen.window,&dm))
+                Quit ("Unable to set display mode: %s\n",SDL_GetError());
+        }
+
+        if (!(flags & SDL_WINDOW_FULLSCREEN))
+        {
+            if (SDL_SetWindowFullscreen(screen.window,SDL_WINDOW_FULLSCREEN_DESKTOP))
+                Quit ("Unable to set fullscreen mode: %s\n",SDL_GetError());
+        }
+    }
+    else
+    {
+        if (flags & SDL_WINDOW_FULLSCREEN)
+        {
+            if (SDL_SetWindowFullscreen(screen.window,0))
+                Quit ("Unable to set windowed mode: %s\n",SDL_GetError());
+        }
+
+        //
+        // KS: there's a weird bug here where switching back from 320x240
+        // to 320x200 will not resize the window height - it stays at 240 and
+        // scales up the screen. None of the other resolutions do this, but I
+        // can't find out why it happens...
+        //
+        SDL_SetWindowSize (screen.window,scr->width,scr->height);
+        SDL_SetWindowPosition (screen.window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
+    }
+
+    SDL_RenderSetLogicalSize (screen.renderer,scr->width,scr->height);
+    SDL_RenderSetViewport (screen.renderer,NULL);
 }
 
 

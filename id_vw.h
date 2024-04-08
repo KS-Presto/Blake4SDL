@@ -75,6 +75,8 @@ extern  SDL_Color    gamepal[256];
 void    VW_Startup (void);
 void    VW_Shutdown (void);
 void    VW_SetupVideo (void);
+void    VW_ChangeDisplay (screen_t *scr);
+void    VW_ChangeWindow (screen_t *scr);
 void    VW_InitRndMask (void);
 void    VW_ConvertPalette (byte *srcpal, SDL_Color *destpal, int numcolors);
 void    VW_SetPalette (SDL_Color *palette);

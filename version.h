@@ -48,6 +48,7 @@
 //
 #define USE_TRANSFORMAREAS
 #define UPDATE_OTHER_SWITCHES
+//#define CLASSIC_MENU              // disables the extra menu screens/options
 //#define WOLFDOORS               // doors open from the side
 //#define MASKABLE_DOORS          // doors are drawn with transparent pixels (not currently working)
 
