@@ -3660,7 +3660,10 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int))
         }
 
         if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
-            exit = 1;
+        {
+            if ((items + which)->active != AT_DISABLED)
+                exit = 1;
+        }
 
         if (ci.button1 || Keyboard[sc_Escape])
             exit = 2;
