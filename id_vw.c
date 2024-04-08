@@ -375,6 +375,7 @@ void VW_FillPalette (int red, int green, int blue)
     }
 
     VW_SetPalette (palette);
+    VW_UpdateScreen (screen.buffer);
 }
 
 
@@ -514,7 +515,7 @@ void VW_FadePaletteIn (int start, int end, SDL_Color *palette, int steps)
     //
     // final color
     //
-    VW_SetPalette (curpal);
+    VW_SetPalette (palette);
     VW_UpdateScreen (screen.buffer);
 
     screen.flags &= ~SC_FADED;
