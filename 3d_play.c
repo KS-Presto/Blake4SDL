@@ -90,14 +90,15 @@ int             buttonscan[NUMBUTTONS] =
     //
     // controls
     //
-    sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7,
 #ifndef CLASSIC_MENU
-    sc_W,sc_S,sc_A,sc_D,
-#else
-    sc_None,sc_None,sc_None,sc_None,
-#endif
-    sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
+    sc_Control,sc_Alt,sc_LShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7,
+    sc_W,sc_S,sc_A,sc_D,sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
     sc_None,sc_None,
+#else
+    sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7,
+    sc_None,sc_None,sc_None,sc_None,sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
+    sc_None,sc_None,
+#endif
 
     //
     // special buttons
