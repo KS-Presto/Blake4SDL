@@ -162,6 +162,7 @@ void WriteConfig (void)
 
         fwrite (&mouseenabled,sizeof(mouseenabled),1,file);
         fwrite (&joystickenabled,sizeof(joystickenabled),1,file);
+        fwrite (&freelookenabled,sizeof(freelookenabled),1,file);
 
         fwrite (&dirscan,sizeof(dirscan),1,file);
         fwrite (&buttonscan,sizeof(buttonscan),1,file);
@@ -214,6 +215,7 @@ void ReadConfig (void)
 
         fread (&mouseenabled,sizeof(mouseenabled),1,file);
         fread (&joystickenabled,sizeof(joystickenabled),1,file);
+        fread (&freelookenabled,sizeof(freelookenabled),1,file);
 
         fread (&dirscan,sizeof(dirscan),1,file);
         fread (&buttonscan,sizeof(buttonscan),1,file);
@@ -262,6 +264,7 @@ void ReadConfig (void)
         //
         mouseenabled = true;
         joystickenabled = true;
+        freelookenabled = true;
 
         viewsize = 17;
         mouseadjustment = 5;

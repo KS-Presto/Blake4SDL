@@ -447,6 +447,9 @@ void IN_Startup (void)
 
     if (!JoystickPresent)
         joystickenabled = false;
+#ifdef CLASSIC_MENU
+    freelookenabled = false;
+#endif
 }
 
 

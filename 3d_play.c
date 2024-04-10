@@ -83,7 +83,7 @@ bool            usedummy;
 //
 // control info
 //
-bool            mouseenabled,joystickenabled;
+bool            mouseenabled,joystickenabled,freelookenabled;
 int             dirscan[4] = {sc_UpArrow,sc_RightArrow,sc_DownArrow,sc_LeftArrow};
 int             buttonscan[NUMBUTTONS] =
 {
@@ -91,14 +91,24 @@ int             buttonscan[NUMBUTTONS] =
     // controls
     //
     sc_Control,sc_Alt,sc_RShift,sc_Space,sc_1,sc_2,sc_3,sc_4,sc_5,sc_6,sc_7,
-    sc_W,sc_S,sc_D,sc_A,sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
+#ifndef CLASSIC_MENU
+    sc_W,sc_S,sc_A,sc_D,
+#else
+    sc_None,sc_None,sc_None,sc_None,
+#endif
+    sc_UpArrow,sc_DownArrow,sc_LeftArrow,sc_RightArrow,
     sc_None,sc_None,
 
     //
     // special buttons
     //
+#ifndef CLASSIC_MENU
+    sc_Tilde,sc_Equal,sc_Minus,sc_C,sc_F,sc_L,sc_M,sc_None,sc_I,sc_P,
+    sc_None,sc_None,sc_None,sc_Tab,sc_Escape,
+#else
     sc_Tilde,sc_Equal,sc_Minus,sc_C,sc_F,sc_L,sc_M,sc_S,sc_I,sc_P,
     sc_Q,sc_W,sc_E,sc_Tab,sc_Escape,
+#endif
 };
 
 int             buttonmouse[4] = {bt_attack,bt_strafe,bt_use,bt_nobutton};
@@ -227,13 +237,13 @@ void PollKeyboardMove (void)
 {
     int delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
 
-    if (Keyboard[dirscan[di_north]])
+    if (buttonstate[bt_moveup] || buttonstate[bt_moveforward])
         controly -= delta;
-    if (Keyboard[dirscan[di_south]])
+    if (buttonstate[bt_movedown] || buttonstate[bt_movebackward])
         controly += delta;
-    if (Keyboard[dirscan[di_west]])
+    if (buttonstate[bt_turnleft])
         controlx -= delta;
-    if (Keyboard[dirscan[di_east]])
+    if (buttonstate[bt_turnright])
         controlx += delta;
 }
 
@@ -258,11 +268,15 @@ void PollMouseMove (void)
     if (Keyboard[sc_LShift] || Keyboard[sc_RShift] || buttonstate[bt_run])
     {
         controlx += ((mousexmove * 10) / (13 - mouseadjustment)) / 2;
-        controly += ((mouseymove * 20) / (13 - mouseadjustment)) * 4;
+
+        if (!freelookenabled)
+            controly += ((mouseymove * 20) / (13 - mouseadjustment)) * 4;
     }
 
     controlx += (mousexmove * 10) / (13 - mouseadjustment);
-    controly += (mouseymove * 20) / (13 - mouseadjustment);
+
+    if (!freelookenabled)
+        controly += (mouseymove * 20) / (13 - mouseadjustment);
 }
 
 
