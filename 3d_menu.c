@@ -11,49 +11,45 @@ enum ctlmenutypes
 {
     MOUSEENABLE,
     JOYENABLE,
+#ifndef CLASSIC_MENU
+    FREELOOKENABLE,
+#endif
     MOUSESENS,
     CUSTOMIZE,
 };
 
 
-enum custmenuactions
-{
-    FIRE,
-    STRAFE,
-    RUN,
-    OPEN,
-};
-
-
-enum custmenumoves
-{
-    FWRD,
-    RIGHT,
-    BKWD,
-    LEFT,
-};
-
-
 char       mbarray[4][3] = {"B0","B1","B2","B3"};
-int        order[4] = {RUN,OPEN,FIRE,STRAFE};
-int        moveorder[4] = {LEFT,RIGHT,FWRD,BKWD};
+int        order[4] = {bt_run,bt_use,bt_attack,bt_strafe};
+#ifndef CLASSIC_MENU
+int        moveorder[lengthof(order)] = {bt_strafeleft,bt_straferight,bt_moveup,bt_movedown};
+#else
+int        moveorder[lengthof(order)] = {bt_turnleft,bt_turnright,bt_moveforward,bt_movebackward};
+#endif
+int        toggleorder[] =
+{
+    bt_togglesound,bt_togglemusic,
+    bt_toggleceiling,bt_togglefloor,
+    bt_togglelighting,bt_toggleinfoarea,
+};
 
-char       LOADSAVE_GAME_MSG[2][25] = {"^ST1^CELoading Game\r^XX",
-                                       "^ST1^CESaving Game\r^XX"};
+int        quickturnorder[] = {bt_quickturnleft,bt_quickturn180,bt_quickturnright};
+int        weaponselectorder[] =
+{
+    bt_ready_autocharge,bt_ready_pistol,bt_ready_burst_rifle,bt_ready_ion_cannon,
+    bt_ready_grenade,bt_ready_bfg_cannon,bt_nextweapon,bt_prevweapon,
+};
+
+int        hudorder[] = {bt_automap,bt_zoomradarin,bt_zoomradarout};
+
+const char *LOADSAVE_GAME_MSG[2] = {"^ST1^CELoading Game\r^XX",
+                                    "^ST1^CESaving Game\r^XX"};
 
 const char *EndGameStr = "    End current game?\n"
                          " Are you sure (Y or N)?";
 
-
-#define ENDGAMESTR (EndGameStr)
-
 const char *QuitToDosStr = "      Quit to DOS?\n"    // TODO: good ol' DOS
                            " Are you sure (Y or N)?";
-
-
-bool EscPressed;
-int  lastmenumusic;
-
 
 int     CP_ReadThis (int blank);
 int     CP_OrderingInfo (int blank);
@@ -122,8 +118,14 @@ CP_itemtype CtlMenu[] =
 {
     {AT_DISABLED,"MOUSE ENABLED",0},
     {AT_DISABLED,"JOYSTICK ENABLED",0},
+#ifndef CLASSIC_MENU
+    {AT_ENABLED,"FREE LOOK ENABLED",0},
+#endif
     {AT_DISABLED,"MOUSE SENSITIVITY",MouseSensitivity},
     {AT_ENABLED,"CUSTOMIZE CONTROLS",CustomControls},
+#ifndef CLASSIC_MENU
+    {AT_ENABLED,"CUSTOMIZE SPECIAL KEYS",CustomSpecialKeys},
+#endif
 };
 
 CP_itemtype DisplayMenu[] =
@@ -190,6 +192,32 @@ CP_itemtype CusMenu[] =
     {AT_ENABLED,"",0},
 };
 
+enum cuskeyitems
+{
+    CK_TOGGLE = 1,
+    CK_QUICKTURN = 4,
+    CK_WEAPONSELECT1 = 7,
+    CK_WEAPONSELECT2 = 9,
+    CK_HUD = 12,
+};
+
+CP_itemtype CusKeyMenu[] =
+{
+    {AT_DISABLED},
+    {AT_ENABLED},
+    {AT_DISABLED},
+    {AT_DISABLED},
+    {AT_ENABLED},
+    {AT_DISABLED},
+    {AT_DISABLED},
+    {AT_ENABLED},
+    {AT_DISABLED},
+    {AT_ENABLED},
+    {AT_DISABLED},
+    {AT_DISABLED},
+    {AT_ENABLED},
+};
+
 
 CP_iteminfo MainItems =     {MENU_X,MENU_Y,     lengthof(MainMenu),   MM_READ_THIS,0,9,  {77, 1,154,9,1}  },
             GopItems =      {MENU_X,MENU_Y + 30,lengthof(GopMenu),    0,           0,9,  {77, 1,154,9,1}  },
@@ -197,6 +225,7 @@ CP_iteminfo MainItems =     {MENU_X,MENU_Y,     lengthof(MainMenu),   MM_READ_TH
             LSItems =       {LSM_X,LSM_Y,       lengthof(LSMenu),     0,           0,8,  {86,-1,144,8,1}  },
             CtlItems =      {CTL_X,CTL_Y,       lengthof(CtlMenu),   -1,           0,9,  {87,1,174,9,1}   },
             CusItems =      {CST_X,CST_Y + 7,   lengthof(CusMenu),   -1,           0,15, {54,-1,203,7,1}  },
+            CusKeyItems =   {CST_X,CST_Y,       lengthof(CusKeyMenu),-1,           0,7,  {33,-4,230,7,1}  },
 #if 0
             NewEitems =     {NE_X,NE_Y,         lengthof(NewEMenu),   0,           0,16, {43,-2,119,16,1} },
 #endif
@@ -223,6 +252,8 @@ int color_norml[] =
 
 int  EpisodeSelect[6] = {1};
 
+bool EscPressed;
+int  lastmenumusic;
 int  StartGame,SoundStatus = 1,pickquick;
 bool SaveGamesAvail[MaxSaveGames];
 char SaveGameNames[MaxSaveGames][GAME_DESCRIPTION_LEN + 1];
@@ -258,7 +289,7 @@ static const char *ScanNames[] =
     "?","?","?","?","?","?","?","?",
     "?","?","?","?","?","?","?","?",
     "?","?","?","?","?","?","?","?",
-    "?","CTRL","SHIFT","ALT","?","RCTRL","RSHFT","RALT",
+    "?","LCTRL","LSHFT","LALT","?","RCTRL","RSHFT","RALT",
     "?","?","?","?","?","?","?","?",
     "?","?","?","?","?","?","?","?",
     "?","?","?","?","?","?","?","?",
@@ -299,17 +330,16 @@ static const char *ScanNames[] =
 
 
 //
-// TODO: these "special keys" refer to hardcoded
+// KS: These "special keys" refer to hardcoded
 // keys such as those in CheckKeys, and you're prevented
 // from assigning them as your controls, but it's a horrible
 // idea, especially since it prevents using the popular WASD
 // control scheme
 //
-// Not to worry, it WILL be changed! I think the easiest way
-// would be to add another menu screen for "special" keys, so
-// you can assign them to whatever keys you want, provided they
-// don't conflict with the main controls
+// If for some reason you enjoy this limitation, then feel
+// free to compile with the CLASSIC_MENU define enabled
 //
+#ifdef CLASSIC_MENU
 static ScanCode specialkeys[] =
 {
     sc_Tilde,
@@ -331,7 +361,7 @@ static ScanCode specialkeys[] =
     sc_5,
     sc_Tab,
 };
-
+#endif
 
 /*
 ===================
@@ -664,7 +694,7 @@ int CP_CheckQuick (int scan)
         case sc_F7:
             WindowH = MaxY - 8;
 
-            if (Confirm(ENDGAMESTR))
+            if (Confirm(EndGameStr))
             {
                 playstate = ex_died;
                 pickquick = gamestate.lives = 0;
@@ -780,7 +810,7 @@ int CP_CheckQuick (int scan)
 
 int CP_EndGame (int blank)
 {
-    if (!Confirm(ENDGAMESTR))
+    if (!Confirm(EndGameStr))
         return 0;
 
     pickquick = gamestate.lives = 0;
@@ -2166,9 +2196,14 @@ int CP_Control (int blank)
                 CusItems.curpos = -1;
                 ShootSnd ();
                 break;
-
-            case MOUSESENS:
-            case CUSTOMIZE:
+#ifndef CLASSIC_MENU
+            case FREELOOKENABLE:
+                freelookenabled ^= true;
+                DrawCtlScreen ();
+                ShootSnd ();
+                break;
+#endif
+            default:
                 DrawCtlScreen ();
                 MenuFadeIn ();
                 WaitKeyUp ();
@@ -2329,12 +2364,12 @@ void DrawCtlScreen (void)
     SetFontColor (TEXTCOLOR,BKGDCOLOR);
 
     if (JoystickPresent)
-        CtlMenu[1].active = AT_ENABLED;
+        CtlMenu[JOYENABLE].active = AT_ENABLED;
 
     if (MousePresent)
-        CtlMenu[0].active = CtlMenu[2].active = AT_ENABLED;
+        CtlMenu[MOUSEENABLE].active = CtlMenu[MOUSESENS].active = AT_ENABLED;
 
-    CtlMenu[2].active = mouseenabled;
+    CtlMenu[MOUSESENS].active = mouseenabled;
 
     fontnumber = 4;
 
@@ -2353,8 +2388,15 @@ void DrawCtlScreen (void)
     if (joystickenabled)
         VW_DrawPic (x,y,C_SELECTEDPIC);
     else
-        VW_DrawPic( x,y,C_NOTSELECTEDPIC);
+        VW_DrawPic (x,y,C_NOTSELECTEDPIC);
+#ifndef CLASSIC_MENU
+    y += 9;
 
+    if (freelookenabled)
+        VW_DrawPic (x,y,C_SELECTEDPIC);
+    else
+        VW_DrawPic (x,y,C_NOTSELECTEDPIC);
+#endif
     //
     // pick first available spot
     //
@@ -2437,7 +2479,7 @@ void DefineMouseBtns (void)
 {
     CustomCtrls mouseallowed = { {1,1,1,1} };
 
-    EnterCtrlData (2,&mouseallowed,DrawCustMouse,PrintCustMouse,MOUSE);
+    EnterCtrlData (&mouseallowed,DrawCustMouse,PrintCustMouse,MOUSE);
 }
 
 
@@ -2453,7 +2495,7 @@ void DefineJoyBtns (void)
 {
     CustomCtrls joyallowed = { {1,1,1,1} };
 
-    EnterCtrlData (5,&joyallowed,DrawCustJoy,PrintCustJoy,JOYSTICK);
+    EnterCtrlData (&joyallowed,DrawCustJoy,PrintCustJoy,JOYSTICK);
 }
 
 
@@ -2469,7 +2511,7 @@ void DefineKeyBtns (void)
 {
     CustomCtrls keyallowed = { {1,1,1,1} };
 
-    EnterCtrlData (8,&keyallowed,DrawCustKeybd,PrintCustKeybd,KEYBOARDBTNS);
+    EnterCtrlData (&keyallowed,DrawCustKeybd,PrintCustKeybd,KEYBOARDBTNS);
 }
 
 
@@ -2485,7 +2527,145 @@ void DefineKeyMove (void)
 {
     CustomCtrls keyallowed = { {1,1,1,1} };
 
-    EnterCtrlData (10,&keyallowed,DrawCustKeys,PrintCustKeys,KEYBOARDMOVE);
+    EnterCtrlData (&keyallowed,DrawCustKeys,PrintCustKeys,KEYBOARDMOVE);
+}
+
+
+/*
+===================
+=
+= CustomSpecialKeys
+=
+===================
+*/
+
+int CustomSpecialKeys (int blank)
+{
+    int which;
+
+    DrawSpecialCustomScreen ();
+
+    do
+    {
+        which = HandleMenu(&CusKeyItems,&CusKeyMenu[0],FixupSpecialCustom);
+
+        switch (which)
+        {
+            case CK_TOGGLE:
+               DefineToggleBtns ();
+               DrawCustToggle (1);
+               break;
+
+            case CK_QUICKTURN:
+                DefineQuickTurnBtns ();
+                DrawCustQuickTurn (0);
+                break;
+
+            case CK_WEAPONSELECT1:
+                DefineWeaponSelectBtns1 ();
+                DrawCustWeaponSelect1 (0);
+                break;
+
+            case CK_WEAPONSELECT2:
+                DefineWeaponSelectBtns2 ();
+                DrawCustWeaponSelect2 (0);
+                break;
+
+            case CK_HUD:
+                DefineHudBtns ();
+                DrawCustHud (0);
+                break;
+        }
+
+    } while (which >= 0);
+
+    MenuFadeOut ();
+    VW_Bar (SCREEN_X,CST_Y - 4,SCREEN_W + 7,89,TERM_BACK_COLOR);
+
+    return blank;
+}
+
+
+/*
+===================
+=
+= DefineToggleBtns
+=
+===================
+*/
+
+void DefineToggleBtns (void)
+{
+    CustomCtrls allowed = { {1,1,1,1,1,1} };
+
+    EnterCtrlData (&allowed,DrawCustToggle,PrintCustToggle,TOGGLEBTNS);
+}
+
+
+/*
+===================
+=
+= DefineQuickTurnBtns
+=
+===================
+*/
+
+void DefineQuickTurnBtns (void)
+{
+    CustomCtrls allowed = { {1,1,1} };
+
+    EnterCtrlData (&allowed,DrawCustQuickTurn,PrintCustQuickTurn,QUICKTURNBTNS);
+}
+
+
+/*
+===================
+=
+= DefineWeaponSelectBtns1
+=
+===================
+*/
+
+void DefineWeaponSelectBtns1 (void)
+{
+    CustomCtrls allowed = { {1,1,1,1,1,1} };
+
+    EnterCtrlData (&allowed,DrawCustWeaponSelect1,PrintCustWeaponSelect1,WEAPONSELECTBTNS1);
+}
+
+
+/*
+===================
+=
+= DefineWeaponSelectBtns2
+=
+= KS: This is awful, but the menu is too rigid to easily
+= allow moving up & down here
+=
+===================
+*/
+
+void DefineWeaponSelectBtns2 (void)
+{
+    CustomCtrls allowed = { {1,1} };
+
+    EnterCtrlData (&allowed,DrawCustWeaponSelect2,PrintCustWeaponSelect2,WEAPONSELECTBTNS2);
+}
+
+
+/*
+===================
+=
+= DefineHudBtns
+=
+===================
+*/
+
+void DefineHudBtns (void)
+{
+    CustomCtrls allowed = { {1,1,1} };
+
+    EnterCtrlData (&allowed,DrawCustHud,PrintCustHud,HUDBTNS);
 }
 
 
@@ -2497,21 +2677,52 @@ void DefineKeyMove (void)
 ===================
 */
 
-bool TestForValidKey (ScanCode scan)
+bool TestForValidKey (ScanCode scan, int type)
 {
-    byte *pos;
+    int       i;
+    ScanCode  *pos;
+    WindowRec win;
 
     pos = memchr(buttonscan,scan,sizeof(buttonscan));
 
-    if (!pos)
-        pos = memchr(dirscan,scan,sizeof(dirscan));
-
     if (pos)
     {
+        if (type >= TOGGLEBTNS && type <= HUDBTNS)
+        {
+            //
+            // check for conflicts in the controls menu
+            //
+            for (i = 0; i < lengthof(order); i++)
+            {
+                if (buttonscan[order[i]] == *pos || buttonscan[moveorder[i]] == *pos)
+                {
+                    US_SaveWindow (&win);
+                    US_ResetWindow (0);
+
+                    if (!Confirm("This key is already\nbound to controls.\n\nAre you sure you want\nto change it?"))
+                    {
+                        DrawSpecialCustomScreen ();
+                        US_RestoreWindow (&win);
+
+                        return -1;
+                    }
+
+                    LastScan = scan;
+                    US_RestoreWindow (&win);
+
+                    break;
+                }
+            }
+        }
+
         *pos = sc_None;
 
         SD_PlaySound (SHOOTDOORSND);
-        DrawCustomScreen ();
+
+        if (type >= TOGGLEBTNS && type <= HUDBTNS)
+            DrawSpecialCustomScreen ();
+        else
+            DrawCustomScreen ();
 
         return true;
     }
@@ -2530,19 +2741,28 @@ bool TestForValidKey (ScanCode scan)
 ===================
 */
 
-void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*PrintRtn)(int), int type)
+void EnterCtrlData (CustomCtrls *cust, void (*DrawRtn)(int), void (*PrintRtn)(int), int type)
 {
-    int         j,exit,tick,which,x,picked;
-    int         button,result;
+    int         j,offset,exit,tick,which,x,start,picked;
+    int         button,result,ordertable;
     int32_t     lastflashtime;
     ControlInfo ci;
     bool        redraw,cleandisplay;
 
     ShootSnd ();
-    PrintY = CST_Y + (13 * index);
     IN_ClearKeysDown ();
-    exit = 0;
+    exit = offset = 0;
     redraw = cleandisplay = true;
+
+    if (type >= TOGGLEBTNS && type <= HUDBTNS)
+    {
+        if (type == WEAPONSELECTBTNS2)
+            offset = lengthof(weaponselectorder) - 2;
+
+        start = WindowX + 2;
+    }
+    else
+        start = CST_START;
 
     //
     // find first spot in allowed array
@@ -2560,7 +2780,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
     {
         if (redraw)
         {
-            x = CST_START + (CST_SPC * which);
+            x = start + (CST_SPC * which);
 
             if (DrawRtn)
                 DrawRtn (1);
@@ -2569,7 +2789,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
             SetFontColor (HIGHLIGHT_TEXT_COLOR,HIGHLIGHT_BOX_COLOR);
 
             if (PrintRtn)
-                PrintRtn (which);
+                PrintRtn (offset + which);
 
             PrintX = x;
 
@@ -2594,14 +2814,14 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
         //
         // change button value?
         //
-        if ((ci.button0 | ci.button1 | ci.button2 | ci.button3) || ((type == KEYBOARDBTNS || type == KEYBOARDMOVE) && LastScan == sc_Enter))
+        if ((ci.button0 | ci.button1 | ci.button2 | ci.button3) || ((type >= KEYBOARDBTNS && type <= HUDBTNS) && LastScan == sc_Enter))
         {
             lastflashtime = GetTimeCount();
             tick = picked = 0;
 
             SetFontColor (HIGHLIGHT_TEXT_COLOR,HIGHLIGHT_BOX_COLOR);
 
-            if (type == KEYBOARDBTNS || type == KEYBOARDMOVE)
+            if (type >= KEYBOARDBTNS && type <= HUDBTNS)
                 IN_ClearKeysDown ();
 
             do
@@ -2623,6 +2843,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
                             PrintX = x;
                             US_Print ("?");
                             SD_PlaySound (HITWALLSND);
+                            break;
                     }
 
                     tick ^= 1;
@@ -2695,46 +2916,57 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
                         }
                         break;
 
-                    case KEYBOARDBTNS:
-                        if (LastScan)
+                    //
+                    // keyboard input
+                    //
+                    default:
+                        if (LastScan && LastScan != sc_Escape)
                         {
-                            if (LastScan == sc_Escape)
-                                break;
-
+#ifdef CLASSIC_MENU
                             if (memchr(specialkeys,LastScan,sizeof(specialkeys)))
                                 SD_PlaySound (NOWAYSND);
                             else
+#endif
                             {
-                                cleandisplay = TestForValidKey(LastScan);
+                                cleandisplay = TestForValidKey(LastScan,type);
 
-                                if (cleandisplay)
-                                    ShootSnd ();
+                                if (cleandisplay != -1)
+                                {
+                                    if (cleandisplay)
+                                        ShootSnd ();
 
-                                buttonscan[order[which]] = LastScan;
-                                picked = 1;
-                            }
+                                    switch (type)
+                                    {
+                                        case KEYBOARDMOVE:
+                                            ordertable = moveorder[which];
+                                            break;
 
-                            IN_ClearKeysDown ();
-                        }
-                        break;
+                                        case TOGGLEBTNS:
+                                            ordertable = toggleorder[which];
+                                            break;
 
-                    case KEYBOARDMOVE:
-                        if (LastScan)
-                        {
-                            if (LastScan == sc_Escape)
-                                break;
+                                        case QUICKTURNBTNS:
+                                            ordertable = quickturnorder[which];
+                                            break;
 
-                            if (memchr(specialkeys,LastScan,sizeof(specialkeys)))
-                                SD_PlaySound (NOWAYSND);
-                            else
-                            {
-                                cleandisplay = TestForValidKey(LastScan);
+                                        case WEAPONSELECTBTNS1:
+                                        case WEAPONSELECTBTNS2:
+                                            ordertable = weaponselectorder[offset + which];
+                                            break;
 
-                                if (cleandisplay)
-                                    ShootSnd ();
+                                        case HUDBTNS:
+                                            ordertable = hudorder[which];
+                                            break;
 
-                                dirscan[moveorder[which]] = LastScan;
-                                picked = 1;
+                                        default:
+                                            ordertable = order[which];
+                                            break;
+                                    }
+
+                                    buttonscan[ordertable] = LastScan;
+
+                                    picked = 1;
+                                }
                             }
 
                             IN_ClearKeysDown ();
@@ -2757,7 +2989,12 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
             } while (!picked);
 
             if (!cleandisplay)
-                DrawCustomScreen ();
+            {
+                if (type >= TOGGLEBTNS && type <= HUDBTNS)
+                    DrawSpecialCustomScreen ();
+                else
+                    DrawCustomScreen ();
+            }
 
             SetFontColor (HIGHLIGHT_TEXT_COLOR,TERM_BACK_COLOR);
 
@@ -2781,7 +3018,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
                 SetFontColor (HIGHLIGHT_TEXT_COLOR,TERM_BACK_COLOR);
 
                 if (PrintRtn)
-                    PrintRtn (which);
+                    PrintRtn (offset + which);
 
                 do
                 {
@@ -2808,7 +3045,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
                 SetFontColor (HIGHLIGHT_TEXT_COLOR,TERM_BACK_COLOR);
 
                 if (PrintRtn)
-                    PrintRtn (which);
+                    PrintRtn (offset + which);
 
                 do
                 {
@@ -2833,6 +3070,7 @@ void EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int), void (*P
             case dir_North:
             case dir_South:
                 exit = 1;
+                break;
         }
 
     } while (!exit);
@@ -2864,10 +3102,9 @@ void FixupCustom (int w)
         case 5: DrawCustKeys (1); break;
     }
 
-
     if (lastwhich >= 0)
     {
-        if (lastwhich!=w)
+        if (lastwhich != w)
         {
             switch (lastwhich)
             {
@@ -2875,6 +3112,38 @@ void FixupCustom (int w)
                 case 2: DrawCustJoy (0); break;
                 case 4: DrawCustKeybd (0); break;
                 case 5: DrawCustKeys (0); break;
+            }
+        }
+    }
+
+    lastwhich = w;
+}
+
+
+void FixupSpecialCustom (int w)
+{
+    static int lastwhich = -1;
+
+    switch (w)
+    {
+        case CK_TOGGLE:        DrawCustToggle (1); break;
+        case CK_QUICKTURN:     DrawCustQuickTurn (1); break;
+        case CK_WEAPONSELECT1: DrawCustWeaponSelect1 (1); break;
+        case CK_WEAPONSELECT2: DrawCustWeaponSelect2 (1); break;
+        case CK_HUD:           DrawCustHud (1); break;
+    }
+
+    if (lastwhich >= 0)
+    {
+        if (lastwhich != w)
+        {
+            switch (lastwhich)
+            {
+                case CK_TOGGLE:        DrawCustToggle (0); break;
+                case CK_QUICKTURN:     DrawCustQuickTurn (0); break;
+                case CK_WEAPONSELECT1: DrawCustWeaponSelect1 (0); break;
+                case CK_WEAPONSELECT2: DrawCustWeaponSelect2 (0); break;
+                case CK_HUD:           DrawCustHud (0); break;
             }
         }
     }
@@ -3129,7 +3398,7 @@ void PrintCustKeys (int i)
 {
     PrintX = CST_START + (CST_SPC * i);
 
-    US_Print (ScanNames[dirscan[moveorder[i]]]);
+    US_Print (ScanNames[buttonscan[moveorder[i]]]);
 }
 
 
@@ -3156,6 +3425,318 @@ void DrawCustKeys (int hilight)
 
     for (i = 0; i < lengthof(moveorder); i++)
         PrintCustKeys (i);
+}
+
+
+/*
+===================
+=
+= DrawSpecialCustomScreen
+=
+= KS: This code is garbage and I'm ashamed
+=
+===================
+*/
+
+const char *specialstrings[] =
+{
+    "SOUND","MUSIC","CEILING","FLOOR","LIGHTING ","INFO AREA\n\n",
+
+    "LEFT","180","RIGHT\n\n",
+
+    "SLOT 1","SLOT 2","SLOT 3","SLOT 4","SLOT 5","SLOT 6\n",
+    "NEXT","PREV\n\n",
+
+    "STATS","ZOOM IN","ZOOM OUT",
+};
+
+void DrawSpecialCustomScreen (void)
+{
+    int        i,x;
+    size_t     len;
+    const char *ss;
+
+    ClearMenuScreen ();
+    DrawMenuTitle ("CUSTOMIZE");
+    DrawInstructions (IT_STANDARD);
+
+    WindowX = 32;
+    WindowW = 244;
+
+    fontnumber = 4;
+
+    SetFontColor (0x0C,TERM_BACK_COLOR);
+
+    PrintY = 46;
+    US_CPrint ("TOGGLE");
+    PrintY = 68;
+    US_CPrint ("QUICK TURN");
+    PrintY = 89;
+    US_CPrint ("WEAPON SELECTION");
+    PrintY = 124;
+    US_CPrint ("HUD");
+
+    fontnumber = 2;
+
+    SetFontColor (DISABLED_TEXT_COLOR,TERM_BACK_COLOR);
+
+    x = WindowX + 2;
+    PrintY = CST_Y - 3;
+
+    for (i = 0; i < lengthof(specialstrings); i++)
+    {
+        ss = specialstrings[i];
+
+        if (ss)
+            ShadowPrint (ss,x,PrintY);
+
+        len = strlen(ss);
+
+        if (ss[len - 1] == '\n')
+        {
+            x = WindowX + 2;
+
+            if (ss[len - 2] == '\n')
+                PrintY += 9;
+            else
+                PrintY += 8;
+        }
+        else
+            x += CST_SPC;
+    }
+
+    DrawCustToggle (0);
+    DrawCustQuickTurn (0);
+    DrawCustWeaponSelect1 (0);
+    DrawCustWeaponSelect2 (0);
+    DrawCustHud (0);
+
+    //
+    // pick starting point in menu
+    //
+    if (CusKeyItems.curpos < 0)
+    {
+        for (i = 0; i < CusKeyItems.amount; i++)
+        {
+            if (CusKeyMenu[i].active)
+            {
+                CusKeyItems.curpos = i;
+                break;
+            }
+        }
+    }
+
+    MenuFadeIn ();
+}
+
+
+/*
+===================
+=
+= PrintCustToggle
+=
+===================
+*/
+
+void PrintCustToggle (int i)
+{
+    PrintX = (WindowX + 2) + (CST_SPC * i);
+
+    US_Print (ScanNames[buttonscan[toggleorder[i]]]);
+}
+
+
+/*
+===================
+=
+= DrawCustToggle
+=
+===================
+*/
+
+void DrawCustToggle (int hilight)
+{
+    int i,color;
+
+    if (hilight)
+        color = HIGHLIGHT_TEXT_COLOR;
+    else
+        color = ENABLED_TEXT_COLOR;
+
+    SetFontColor (color,TERM_BACK_COLOR);
+
+    PrintY = CST_Y + 4;
+
+    for (i = 0; i < lengthof(toggleorder); i++)
+        PrintCustToggle (i);
+}
+
+
+/*
+===================
+=
+= PrintCustQuickTurn
+=
+===================
+*/
+
+void PrintCustQuickTurn (int i)
+{
+    PrintX = (WindowX + 2) + (CST_SPC * i);
+
+    US_Print (ScanNames[buttonscan[quickturnorder[i]]]);
+}
+
+
+/*
+===================
+=
+= DrawCustQuickTurn
+=
+===================
+*/
+
+void DrawCustQuickTurn (int hilight)
+{
+    int i,color;
+
+    if (hilight)
+        color = HIGHLIGHT_TEXT_COLOR;
+    else
+        color = ENABLED_TEXT_COLOR;
+
+    SetFontColor (color,TERM_BACK_COLOR);
+
+    PrintY = CST_Y + 25;
+
+    for (i = 0; i < lengthof(quickturnorder); i++)
+        PrintCustQuickTurn (i);
+}
+
+
+/*
+===================
+=
+= PrintCustWeaponSelect1
+=
+===================
+*/
+
+void PrintCustWeaponSelect1 (int i)
+{
+    PrintX = (WindowX + 2) + (CST_SPC * i);
+
+    US_Print (ScanNames[buttonscan[weaponselectorder[i]]]);
+}
+
+
+/*
+===================
+=
+= DrawCustWeaponSelect1
+=
+===================
+*/
+
+void DrawCustWeaponSelect1 (int hilight)
+{
+    int i,color;
+
+    if (hilight)
+        color = HIGHLIGHT_TEXT_COLOR;
+    else
+        color = ENABLED_TEXT_COLOR;
+
+    SetFontColor (color,TERM_BACK_COLOR);
+
+    PrintY = CST_Y + 46;
+
+    for (i = 0; i < lengthof(weaponselectorder) - 2; i++)
+        PrintCustWeaponSelect1 (i);
+}
+
+
+/*
+===================
+=
+= PrintCustWeaponSelect2
+=
+===================
+*/
+
+void PrintCustWeaponSelect2 (int i)
+{
+    PrintX = (WindowX + 2) + (CST_SPC * (i - (lengthof(weaponselectorder) - 2)));
+
+    US_Print (ScanNames[buttonscan[weaponselectorder[i]]]);
+}
+
+
+/*
+===================
+=
+= DrawCustWeaponSelect2
+=
+===================
+*/
+
+void DrawCustWeaponSelect2 (int hilight)
+{
+    int i,color;
+
+    if (hilight)
+        color = HIGHLIGHT_TEXT_COLOR;
+    else
+        color = ENABLED_TEXT_COLOR;
+
+    SetFontColor (color,TERM_BACK_COLOR);
+
+    PrintY = CST_Y + 60;
+
+    for (i = lengthof(weaponselectorder) - 2; i < lengthof(weaponselectorder); i++)
+        PrintCustWeaponSelect2 (i);
+}
+
+
+/*
+===================
+=
+= PrintCustHud
+=
+===================
+*/
+
+void PrintCustHud (int i)
+{
+    PrintX = (WindowX + 2) + (CST_SPC * i);
+
+    US_Print (ScanNames[buttonscan[hudorder[i]]]);
+}
+
+
+/*
+===================
+=
+= DrawCustHud
+=
+===================
+*/
+
+void DrawCustHud (int hilight)
+{
+    int i,color;
+
+    if (hilight)
+        color = HIGHLIGHT_TEXT_COLOR;
+    else
+        color = ENABLED_TEXT_COLOR;
+
+    SetFontColor (color,TERM_BACK_COLOR);
+
+    PrintY = CST_Y + 81;
+
+    for (i = 0; i < lengthof(hudorder); i++)
+        PrintCustHud (i);
 }
 
 

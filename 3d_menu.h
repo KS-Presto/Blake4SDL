@@ -189,7 +189,7 @@ typedef struct
 
 typedef struct
 {
-    int16_t allowed[4];
+    int16_t allowed[6];
 } CustomCtrls;
 
 
@@ -199,6 +199,11 @@ enum inputtypes
     JOYSTICK,
     KEYBOARDBTNS,
     KEYBOARDMOVE,
+    TOGGLEBTNS,
+    QUICKTURNBTNS,
+    WEAPONSELECTBTNS1,
+    WEAPONSELECTBTNS2,
+    HUDBTNS,
 };
 
 
@@ -247,7 +252,12 @@ void     DefineMouseBtns (void);
 void     DefineJoyBtns (void);
 void     DefineKeyBtns (void);
 void     DefineKeyMove (void);
-void     EnterCtrlData (int index, CustomCtrls *cust, void (*DrawRtn)(int),void (*PrintRtn)(int), int type);
+void     DefineToggleBtns (void);
+void     DefineQuickTurnBtns (void);
+void     DefineWeaponSelectBtns1 (void);
+void     DefineWeaponSelectBtns2 (void);
+void     DefineHudBtns (void);
+void     EnterCtrlData (CustomCtrls *cust, void (*DrawRtn)(int),void (*PrintRtn)(int), int type);
 
 void     DrawMainMenu (void);
 void     DrawSoundMenu (void);
@@ -258,20 +268,32 @@ void     DrawChangeView (int view);
 void     DrawMouseSens (void);
 void     DrawCtlScreen (void);
 void     DrawCustomScreen (void);
+void     DrawSpecialCustomScreen (void);
 void     DrawLSAction (int which);
 void     DrawCustMouse (int hilight);
 void     DrawCustJoy (int hilight);
 void     DrawCustKeybd (int hilight);
 void     DrawCustKeys (int hilight);
+void     DrawCustToggle (int hilight);
+void     DrawCustQuickTurn (int hilight);
+void     DrawCustWeaponSelect1 (int hilight);
+void     DrawCustWeaponSelect2 (int hilight);
+void     DrawCustHud (int hilight);
 void     PrintCustMouse (int i);
 void     PrintCustJoy (int i);
 void     PrintCustKeybd (int i);
 void     PrintCustKeys (int i);
+void     PrintCustToggle (int i);
+void     PrintCustQuickTurn (int i);
+void     PrintCustWeaponSelect1 (int i);
+void     PrintCustWeaponSelect2 (int i);
+void     PrintCustHud (int i);
 
 void     PrintLSEntry (int w, int color);
 void     TrackWhichGame (int w);
 void     DrawNewGameDiff (int w);
 void     FixupCustom (int w);
+void     FixupSpecialCustom (int w);
 
 int      CP_BlakeStoneSaga (int blank);
 int      CP_NewGame (int blank);
@@ -286,6 +308,7 @@ int      CP_ViewScores (int blank);
 int      CP_EndGame (int blank);
 int      CP_CheckQuick (int scan);
 int      CustomControls (int blank);
+int      CustomSpecialKeys (int blank);
 int      MouseSensitivity (int blank);
 
 void     DrawMenuTitle (const char *title);
