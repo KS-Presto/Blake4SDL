@@ -2172,7 +2172,12 @@ void CheckParameters (int argc, char *argv[])
             if (i >= argc || !isdigit(*argv[i]))
                 snprintf (error,sizeof(error),"The samplerate option is missing the rate argument!");
             else
+            {
                 param_samplerate = atoi(argv[i]);
+
+                if (param_samplerate < 7042 || param_samplerate > 44100)
+                    snprintf (error,sizeof(error),"The samplerate must be between 7042 and 44100!");
+            }
         }
         else if (!strcmp(arg,"--audiobuffer"))
         {
@@ -2212,9 +2217,6 @@ void CheckParameters (int argc, char *argv[])
 
         exit (*error != '\0');
     }
-
-    if (param_samplerate != 44100 && param_audiobuffer == 2048)
-        param_audiobuffer = 2048 / (44100 / param_samplerate);
 }
 
 
