@@ -559,7 +559,7 @@ void LoadLevel (int levelnum)
     int       oldwx,oldwy,oldww,oldwh;
     int       oldpx,oldpy;
     word      actornum,laststatobjnum;
-    word      *maptable;
+    word      *maptable,*map;
     unsigned  count;
     byte      *temp,*ptr;
     char      chunk[5];
@@ -793,7 +793,6 @@ void LoadLevel (int levelnum)
     //
     // clear any pushwall icons that were already used
     //
-#if 0
     map = mapsegs[1];
 
     for (y = 0; y < mapheight; y++)
@@ -801,12 +800,11 @@ void LoadLevel (int levelnum)
         for (x = 0; x < mapwidth; x++)
         {
             if (!tilemap[x][y] && *map == PUSHABLETILE)
-                *map = 0;
+                TravelTable[x][y] |= TT_PWALLMOVED;
 
             map++;
         }
     }
-#endif
 }
 
 

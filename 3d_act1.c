@@ -1635,6 +1635,9 @@ void MovePWalls (void)
 
         MAPSPOT(pwallx,pwally,0) = areanumber;
 
+        dx = dirinc[pwalldir][0];
+        dy = dirinc[pwalldir][1];
+
         //
         // see if it should be pushed farther
         //
@@ -1644,13 +1647,21 @@ void MovePWalls (void)
             // the block has been pushed two tiles
             //
             pwallstate = 0;
+
+            //
+            // update the overhead map if the block crossed into another
+            // pushwall tile
+            //
+            if (MAPSPOT(pwallx + dx,pwally + dy,1) == PUSHABLETILE)
+            {
+                TravelTable[pwallx + dx][pwally + dy] &= ~TT_PWALLMOVED;
+                TravelTable[pwallx + dx][pwally + dy] |= TT_TRAVELED;
+            }
+
             return;
         }
         else
         {
-            dx = dirinc[pwalldir][0];
-            dy = dirinc[pwalldir][1];
-
             pwallx += dx;
             pwally += dy;
 

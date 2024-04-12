@@ -145,6 +145,7 @@
 
 #define TT_TRAVELED     0x01
 #define TT_KEYS         0x02
+#define TT_PWALLMOVED   0x04
 
 
 //#define CON_HINTS               // Un/Comment to support concession hints

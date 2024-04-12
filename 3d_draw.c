@@ -1944,7 +1944,7 @@ void ShowOverhead (int bx, int by, int radius, int zoom, unsigned flags)
                                     color = 0x10 + obj->obclass;
                             }
 
-                            if (zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS))
+                            if ((zoom == 4 || (ExtraRadarFlags & OV_PUSHWALLS)) && !(TravelTable[mx][my] & TT_PWALLMOVED))
                             {
                                 iconnum = MAPSPOT(mx,my,1);
 

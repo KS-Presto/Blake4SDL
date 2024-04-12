@@ -2093,6 +2093,9 @@ void SetupGameLevel (void)
                         break;
                 }
             }
+
+            if (tile < MAXWALLTILES)
+                TravelTable[x][y] |= TT_TRAVELED;
         }
     }
 
