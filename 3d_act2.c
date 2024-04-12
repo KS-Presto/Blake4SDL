@@ -5464,7 +5464,7 @@ void T_BlowBack (objtype *obj)
 
     if (!(obj->flags & FL_SLIDE_INIT))
     {
-        killer = obj->tempobj;
+        killer = obj->attacker;
 
         if (!killer)
         {

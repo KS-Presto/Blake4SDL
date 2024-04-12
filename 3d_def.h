@@ -905,6 +905,7 @@ typedef struct objstruct
     ofs_anim_t  anim;
 
     struct      objstruct *tempobj;
+    struct      objstruct *attacker;
 
     /**
     // DO NOT ADD ANY MEMBERS AFTER THESE!!!

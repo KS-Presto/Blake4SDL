@@ -1226,7 +1226,8 @@ void DamageActor (objtype *obj, int damage, objtype *attacker)
                 break;
         }
 
-        obj->tempobj = attacker;
+        obj->attacker = attacker;
+
         KillActor (obj);
         return;
     }

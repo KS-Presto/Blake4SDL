@@ -669,6 +669,7 @@ void LoadLevel (int levelnum)
             newobj->state = (statetype *)((uintptr_t)newobj->state + (uintptr_t)&s_ofs_stand);
 
         newobj->tempobj = (objtype *)((uintptr_t)newobj->tempobj + (uintptr_t)objlist);
+        newobj->attacker = (objtype *)((uintptr_t)newobj->attacker + (uintptr_t)objlist);
 
         //
         // KS: I remember that dead actor spots can become solid after loading
@@ -819,7 +820,7 @@ void LoadLevel (int levelnum)
 
 void SaveLevel (int levelnum)
 {
-    objtype   *obj,*tempobj;
+    objtype   *obj,*tempobj,*attacker;
     statetype *tempstate;
     FILE      *file;
     int       x,y;
@@ -920,6 +921,7 @@ void SaveLevel (int levelnum)
     {
         tempstate = obj->state;
         tempobj = obj->tempobj;
+        attacker = obj->attacker;
 
         if (obj->obclass == playerobj)
             obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_player);
@@ -927,11 +929,13 @@ void SaveLevel (int levelnum)
             obj->state = (statetype *)((uintptr_t)obj->state - (uintptr_t)&s_ofs_stand);
 
         obj->tempobj = (objtype *)((uintptr_t)obj->tempobj - (uintptr_t)objlist);
+        obj->attacker = (objtype *)((uintptr_t)obj->attacker - (uintptr_t)objlist);
 
         memcpy (ptr,obj,sizeof(*obj));
 
         obj->state = tempstate;
         obj->tempobj = tempobj;
+        obj->attacker = attacker;
 
         ptr += sizeof(*obj);
         count++;
