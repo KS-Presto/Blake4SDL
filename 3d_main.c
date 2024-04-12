@@ -559,7 +559,7 @@ void LoadLevel (int levelnum)
     int       oldwx,oldwy,oldww,oldwh;
     int       oldpx,oldpy;
     word      actornum,laststatobjnum;
-    word      *maptable,*map;
+    word      *maptable;
     unsigned  count;
     byte      *temp,*ptr;
     char      chunk[5];
@@ -792,18 +792,20 @@ void LoadLevel (int levelnum)
     //
     // clear any pushwall icons that were already used
     //
+#if 0
     map = mapsegs[1];
 
     for (y = 0; y < mapheight; y++)
     {
         for (x = 0; x < mapwidth; x++)
         {
-            if (*map == PUSHABLETILE)
+            if (!tilemap[x][y] && *map == PUSHABLETILE)
                 *map = 0;
 
             map++;
         }
     }
+#endif
 }
 
 
