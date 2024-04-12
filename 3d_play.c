@@ -136,7 +136,7 @@ int8_t          *demoptr,*lastdemoptr;
 int8_t          *demobuffer;
 #if (GAME_VERSION != SHAREWARE_VERSION) || defined(GEORGE_CHEAT)
 ScanCode        jam_buff_cmp[3] = {sc_J,sc_A,sc_M};
-ScanCode        jam_buff[sizeof(jam_buff_cmp)];
+ScanCode        jam_buff[lengthof(jam_buff_cmp)];
 #endif
 
 const char      *PAUSED_MSG = "^ST1^CEGame Paused\r^CEPress any key to resume.^XX";
@@ -480,10 +480,10 @@ void CheckKeys (void)
 #if GAME_VERSION != SHAREWARE_VERSION
     if (Keyboard[sc_J] || Keyboard[sc_A] || Keyboard[sc_M])
     {
-        if (jam_buff[sizeof(jam_buff_cmp) - 1] != LastScan)
+        if (jam_buff[lengthof(jam_buff_cmp) - 1] != LastScan)
         {
-            memmove (jam_buff,jam_buff + 1,sizeof(jam_buff_cmp) - 1);
-            jam_buff[sizeof(jam_buff_cmp) - 1] = LastScan;
+            memmove (jam_buff,jam_buff + 1,sizeof(jam_buff_cmp) - sizeof(*jam_buff_cmp));
+            jam_buff[lengthof(jam_buff_cmp) - 1] = LastScan;
         }
     }
 #endif
