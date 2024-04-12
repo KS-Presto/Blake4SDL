@@ -76,12 +76,11 @@ void VW_Startup (void)
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     else
     {
-        flags |= SDL_WINDOW_RESIZABLE;
-
         if (screen.flags & SC_INPUTGRABBED)
             flags |= SDL_WINDOW_INPUT_GRABBED;
     }
 
+    flags |= SDL_WINDOW_RESIZABLE;
     x = SDL_WINDOWPOS_CENTERED;
     y = SDL_WINDOWPOS_CENTERED;
     w = screen.width;
