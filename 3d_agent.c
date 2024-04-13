@@ -2908,7 +2908,7 @@ void Cmd_Use (void)
         tryDetonator = true;
     }
 
-    if (tryDetonator)
+    if (tryDetonator && !doornum)
     {
         if (!tryDetonatorDelay && gamestate.plasma_detonators)
         {
