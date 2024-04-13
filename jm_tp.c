@@ -1628,8 +1628,9 @@ void TP_PrintPageNumber (void)
 
 int TP_DrawShape (int x, int y, int shapenum, int shapetype)
 {
+    int  i,j;
     int  width;
-    byte *addr;
+    byte *source,*page;
 
     //
     // mask 'x coordinate' when displaying certain shapes
@@ -1637,7 +1638,7 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
     switch (shapetype)
     {
         case pis_pic:
-            x = (x + 7) & 0xFFF8;
+            x = (x + 7) & 0xfff8;
             break;
     }
 
@@ -1653,23 +1654,23 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
     {
         case pis_scwall:
             TP_CacheIn (ct_scaled,0);
-            addr = PM_GetPage(shapenum);
-            vbuf = VW_LockSurface(screen.buffer);
 
-            if (!vbuf)
-                Quit ("Unable to lock surface: %s\n",SDL_GetError());
+            page = PM_GetPage(shapenum);
 
-            postx = x;
-            postsource = addr;
+            //
+            // rotate the wall 90 degrees right and mirror it
+            //
+            source = SafeMalloc(TEXTURESIZE * TEXTURESIZE);
 
-            for (x = 0; x < TEXTURESIZE; x++, postx++, postsource += TEXTURESIZE)
+            for (j = 0; j < TEXTURESIZE; j++)
             {
-                wallheight[postx] = 256;
-                ScalePost ();
+                for (i = 0; i < TEXTURESIZE; i++)
+                    source[(i << TEXTURESHIFT) + j] = page[(j << TEXTURESHIFT) + i];
             }
 
-            VW_UnlockSurface (screen.buffer);
-            vbuf = NULL;
+            VW_MemToScreen (source,TEXTURESIZE,TEXTURESIZE,x,y);
+
+            free (source);
             break;
 
         case pis_scaled:
@@ -1678,7 +1679,7 @@ int TP_DrawShape (int x, int y, int shapenum, int shapetype)
             if (flags & fl_clearscback)
                 VW_Bar (x,y,64,64,bgcolor);
 
-            MegaSimpleScaleShape (x + 32,y + 32,64,shapenum,NO_SHADING);
+            MegaSimpleScaleShape ((x + 32) * screen.scale,(y + 32) * screen.scale,64 * screen.scale,shapenum,NO_SHADING);
             break;
 
         case pis_pic:
