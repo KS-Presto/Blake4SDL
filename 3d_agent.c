@@ -3658,7 +3658,7 @@ int ShowRatio (int bx, int by, int nx, int ny, int32_t total, int32_t perc, int 
         if (LastScan)
             show_stats_quick = true;
 
-        VW_Bar (bx + i,by,1,BAR_H,0xc8);
+        VW_Vlin (by,by + BAR_H - 1,bx + i,0xc8);
 
         //
         // keep up with current percentage
@@ -3717,7 +3717,7 @@ void PrintStatPercent (int nx, int ny, int percentage)
 
     VW_Bar (nx,ny,PERC_W + 5,PERC_H,0);
     US_PrintSigned (percentage);
-    US_Print ("%");
+    US_Print ("%%");
 }
 
 
