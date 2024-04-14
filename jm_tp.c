@@ -967,7 +967,7 @@ void TP_HandleCodes (void)
                                     switch (anim->animtype)
                                     {
                                         case pia_shapetable:
-                                            shape = &piShapeTable[anim->baseshape+anim->frame];
+                                            shape = &piShapeTable[anim->baseshape + anim->frame];
                                             length += TP_BoxAroundShape(-1,-1,shape->shapenum,shape->shapetype);
                                             break;
 
@@ -1010,12 +1010,9 @@ void TP_HandleCodes (void)
                 pos = ((xh - cur_x + 1) - length) / 2;
 
                 if (pos < 0)
-                    pos = -pos;
-
-                cur_x += pos;
-
-                if (cur_x >= screen.basewidth)
-                    cur_x = screen.basewidth - 1;
+                    cur_x = xh + 1;
+                else
+                    cur_x += pos;
 
                 flags |= fl_center;
 
