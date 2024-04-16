@@ -1760,18 +1760,20 @@ void UpdateTravelTable (void)
 
 void DrawRadar (void)
 {
-    int      zoom = gamestate.rzoom;
+    int      zoom;
     unsigned flags = OV_KEYS | OV_PUSHWALLS | OV_ACTORS;
 
     if (gamestate.rpower)
     {
+        zoom = gamestate.rzoom;
+
         if ((frameon & 1) && !godmode)
         {
             if (zoom)
                 gamestate.rpower -= tics << zoom;
         }
 
-        if (gamestate.rpower < 0)
+        if (gamestate.rpower <= 0)
         {
             gamestate.rpower = 0;
             DISPLAY_TIMED_MSG (RadarEnergyGoneMsg,MP_WEAPON_AVAIL,MT_GENERAL);
@@ -1779,6 +1781,8 @@ void DrawRadar (void)
 
         UpdateRadarGauge ();
     }
+    else
+        zoom = 0;
 
     ShowOverhead (192 - baseviewscreenx,(screen.baseheight - 44) - baseviewscreeny,16,zoom,flags);
 }

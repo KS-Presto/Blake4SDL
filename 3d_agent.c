@@ -232,7 +232,6 @@ void    DisplayTeleportName (int tpNum, bool locked);
 
 void    ForceUpdateStatusBar (void);
 
-void    UpdateRadarGuage (void);
 void    DrawLedStrip (int x, int y, int leds, int max);
 void    DisplayPinballBonus (void);
 void    CheckPinballBonus (int32_t points);
