@@ -2056,7 +2056,7 @@ void ConnectBarriers (void)
             barsconnected = 0;
 
             if (!CheckAndConnect(barrier->coord.tilex,barrier->coord.tiley,num))
-                Quit ("A barrier switch was not connect to any barriers!");
+                Quit ("A barrier switch was not connected to any barriers!");
         }
     }
 }
@@ -2168,6 +2168,7 @@ void TurnPostOff (objtype *obj)
 {
     NewState (obj,&s_barrier_transition);
     obj->temp3 = 0;
+    obj->anim.animtype = at_NONE;
     obj->flags &= ~(FL_SOLID | FL_FAKE_STATIC);
     obj->flags |= (FL_NEVERMARK | FL_NONMARK);
     obj->lighting = 0;
@@ -2175,7 +2176,7 @@ void TurnPostOff (objtype *obj)
 }
 
 
-void TurnPostOn(objtype *obj)
+void TurnPostOn (objtype *obj)
 {
     obj->flags |= (FL_SOLID | FL_FAKE_STATIC);
     obj->flags &= ~(FL_NEVERMARK | FL_NONMARK);
