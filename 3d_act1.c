@@ -833,6 +833,10 @@ void SpawnDoor (int tilex, int tiley, bool vertical, int lock, int type)
 =
 = TODO: this was a confusing mess, make sure it's working properly!
 =
+= KS: After testing the last secret level, there were indeed some doors
+= that didn't open when running over the linked tile. Need to test if
+= it's an original bug or if something was broken here.
+=
 ===============
 */
 
@@ -1118,7 +1122,7 @@ void OperateDoor (int door)
         else
         {
             //
-            // unLock door
+            // unlock door
             //
             TakeKey (lock - kt_red);
 
@@ -1127,7 +1131,7 @@ void OperateDoor (int door)
             doorobjlist[door].lock = kt_none;
         }
     }
-    else
+    else if (doorobjlist[door].action != dr_jammed)
         DISPLAY_TIMED_MSG (od_operating,MP_DOOR_OPERATE,MT_GENERAL);
 
     switch (doorobjlist[door].action)
