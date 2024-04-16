@@ -35,9 +35,11 @@ void DrawColumn (int count, int src, byte *dest)
 
 void DrawTranslucentColumn (int count, byte *dest)
 {
+    byte *shade = &lightsource[0xa00];
+
     while (count--)
     {
-        *dest = shadingtable[0xa00 + *dest];
+        *dest = shade[shadingtable[*dest]];
         dest += screen.buffer->pitch;
     }
 }
