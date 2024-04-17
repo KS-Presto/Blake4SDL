@@ -176,24 +176,22 @@ void SD_PCStopSound (void)
 
 void SD_PCMixCallback (void *udata, Uint8 *stream, int len)
 {
-    static int current_remaining = 0;
-    static int current_freq = 0;
-    static int phase_offset = 0;
+    static int current_remaining;
+    static int current_freq;
+    static int phase_offset;
 
-    Sint16 *leftptr;
-    Sint16 *rightptr;
-    Sint16 this_value;
-    int    i;
-    int    frac;
-    int    nsamples;
+    int  this_value,value;
+    int  i;
+    int  frac;
+    int  nsamples;
+    byte *work;
 
     //
     // number of samples is quadrupled, because of 16-bit and stereo
     //
     nsamples = len / 4;
 
-    leftptr = (Sint16 *)stream;
-    rightptr = ((Sint16 *)stream) + 1;
+    work = stream;
 
     //
     // fill the output buffer
@@ -275,11 +273,15 @@ void SD_PCMixCallback (void *udata, Uint8 *stream, int len)
         //
         // use the same value for the left and right channels.
         //
-        *leftptr += this_value;
-        *rightptr += this_value;
+        value = ReadShort(work) + this_value;
 
-        leftptr += 2;
-        rightptr += 2;
+        *work++ = (byte)value;
+        *work++ = (byte)(value >> 8);
+
+        value = ReadShort(work) + this_value;
+
+        *work++ = (byte)value;
+        *work++ = (byte)(value >> 8);
     }
 }
 
@@ -370,7 +372,7 @@ void SD_SetPosition (int channel, int leftpos, int rightpos)
 ====================
 */
 
-Sint16 SD_GetSample (float csample, byte *samples, int size)
+int SD_GetSample (float csample, byte *samples, int size)
 {
     float   s0,s1,s2,sf;
     float   value;
@@ -400,7 +402,7 @@ Sint16 SD_GetSample (float csample, byte *samples, int size)
 
     ivalue = MAX(-32768,MIN(ivalue,32767));
 
-    return (Sint16)ivalue;
+    return ivalue;
 }
 
 
@@ -418,13 +420,9 @@ void SD_PrepareSound (int which)
     int       page,size;
     int       buffersize;
     int       destsamples;
-    Sint16    *newsamples;
-    float     cursample;
-    float     samplestep;
-    byte      *origsamples;
+    int       cursample;
+    byte      *origsamples,*newsamples;
     byte      *wavebuffer;
-    //headchunk head;
-    //wavechunk dhead;
     SDL_RWops *src;
 
     if (!DigiList)
@@ -450,21 +448,14 @@ void SD_PrepareSound (int which)
     memcpy (wavebuffer,&head,sizeof(head));
     memcpy (wavebuffer + sizeof(head),&dhead,sizeof(dhead));
 
-    //
-    // alignment is correct, as wavebuffer comes from malloc
-    // and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0
-    //
-    // TODO: it's still kinda sus; refactor this
-    //
-    newsamples = (Sint16 *)&wavebuffer[sizeof(headchunk) + sizeof(wavechunk)];
-    cursample = 0.F;
-    samplestep = (float)ORIGSAMPLERATE / (float)param_samplerate;
+    newsamples = &wavebuffer[sizeof(headchunk) + sizeof(wavechunk)];
 
     for (i = 0; i < destsamples; i++)
     {
-        newsamples[i] = SD_GetSample(((float)size * (float)i) / (float)destsamples,origsamples,size);
+        cursample = SD_GetSample(((float)size * (float)i) / (float)destsamples,origsamples,size);
 
-        cursample += samplestep;
+        *newsamples++ = (byte)cursample;
+        *newsamples++ = (byte)(cursample >> 8);
     }
 
     src = SDL_RWFromMem(wavebuffer,buffersize);
@@ -567,15 +558,12 @@ void SD_SetupDigi (void)
 {
     int  i;
     int  size;
-    int  page,lastpage;
-    word *soundInfoPage;
+    int  page,nextstartpage;
+    byte *soundInfoPage;
 
-    //
-    // correct padding enforced by PM_Startup TODO: nasty!
-    //
-    soundInfoPage = (word *)PM_GetPage(ChunksInFile - 1);
+    soundInfoPage = PM_GetPage(ChunksInFile - 1);
 
-    NumDigi = (word)PM_GetPageSize(ChunksInFile - 1) / 4;
+    NumDigi = PM_GetPageSize(ChunksInFile - 1) / sizeof(uint32_t);
 
     DigiList = SafeMalloc(NumDigi * sizeof(*DigiList));
 
@@ -585,9 +573,9 @@ void SD_SetupDigi (void)
         // calculate the size of the digi from the sizes of the pages between
         // the start page and the start page of the next sound
         //
-        DigiList[i].startpage = soundInfoPage[i * 2];
+        DigiList[i].startpage = ReadShort(soundInfoPage);
 
-        if ((int)DigiList[i].startpage >= ChunksInFile - 1)
+        if (DigiList[i].startpage >= ChunksInFile - 1)
         {
             NumDigi = i;
             break;
@@ -595,25 +583,25 @@ void SD_SetupDigi (void)
 
         if (i < NumDigi - 1)
         {
-            lastpage = soundInfoPage[(i * 2) + 2];
+            nextstartpage = ReadShort(soundInfoPage + 4);
 
-            if (!lastpage || lastpage + PMSoundStart > ChunksInFile - 1)
-                lastpage = ChunksInFile - 1;
+            if (!nextstartpage || nextstartpage + PMSoundStart > ChunksInFile - 1)
+                nextstartpage = ChunksInFile - 1;
             else
-                lastpage += PMSoundStart;
+                nextstartpage += PMSoundStart;
         }
         else
-            lastpage = ChunksInFile - 1;
+            nextstartpage = ChunksInFile - 1;
 
         size = 0;
 
-        for (page = PMSoundStart + DigiList[i].startpage; page < lastpage; page++)
+        for (page = PMSoundStart + DigiList[i].startpage; page < nextstartpage; page++)
             size += PM_GetPageSize(page);
 
         //
         // don't include padding of sound info page if padding was added
         //
-        if (lastpage == ChunksInFile - 1 && PMSoundInfoPagePadded)
+        if (nextstartpage == ChunksInFile - 1 && PMSoundInfoPagePadded)
             size--;
 
         //
@@ -621,12 +609,14 @@ void SD_SetupDigi (void)
         // The original VSWAP contains padding which is included in the page size,
         // but not included in the 16-bit size. So we use the more precise value.
         //
-        if ((size & 0xffff0000) != 0 && (size & 0xffff) < soundInfoPage[(i * 2) + 1])
+        if ((size & 0xffff0000) != 0 && (size & 0xffff) < ReadShort(soundInfoPage + 2))
             size -= 0x10000;
 
-        size = (size & 0xffff0000) | soundInfoPage[(i * 2) + 1];
+        size = (size & 0xffff0000) | ReadShort(soundInfoPage + 2);
 
         DigiList[i].length = size;
+
+        soundInfoPage += 4;
     }
 
     DigiChannel = SafeMalloc(NumDigi * sizeof(*DigiChannel));
