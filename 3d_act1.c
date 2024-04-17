@@ -19,7 +19,7 @@ int          xy_offset[8][2] =
 
 concession_t ConHintList;
 
-const char   OutOrder[] = {"\r\r   FOOD UNIT MACHINE\r    IS OUT OF ORDER.^XX"};
+const char   *OutOrder = "\r\r   FOOD UNIT MACHINE\r    IS OUT OF ORDER.^XX";
 
 unsigned     pwallstate;
 unsigned     pwallpos;       // amount a pushable wall has been moved (0-63)
