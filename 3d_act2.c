@@ -3068,13 +3068,14 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
 
         case en_rentacop:
             newobj = SpawnNewObj(tilex,tiley,&s_rent_path1);
+            newobj->flags |= FL_SHOOTABLE | FL_SOLID;
             newobj->flags2 = FL2_BFG_SHOOTABLE;
             newobj->speed = SPDPATROL;
             break;
 
         case en_gen_scientist:
             newobj = SpawnNewObj(tilex,tiley,&s_biopath1);
-            newobj->flags = FL_FRIENDLY | FL_RANDOM_TURN;
+            newobj->flags = FL_SHOOTABLE | FL_SOLID | FL_FRIENDLY | FL_RANDOM_TURN;
             newobj->flags2 = FL2_BFG_SHOOTABLE;
 
             if (US_RndT() & 1)
@@ -3086,6 +3087,7 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
         case en_proguard:
             newobj = SpawnNewObj(tilex,tiley,&s_propath1);
             newobj->speed = SPDPATROL;
+            newobj->flags |= FL_SHOOTABLE | FL_SOLID;
             newobj->flags2 = FL2_BFG_SHOOTABLE;
             ammo = 25;
             break;
@@ -3100,6 +3102,7 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
             else
                 newobj->temp1 = scanvalue;
 
+            newobj->flags |= FL_SHOOTABLE | FL_SOLID;
             newobj->flags2 = FL2_BFG_SHOOTABLE;
             break;
 
@@ -3107,7 +3110,7 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
             newobj = SpawnNewObj(tilex,tiley,&s_scout_path1);
             newobj->speed = SPDPATROL;
             newobj->temp1 = SPR_FSCOUT_W1_1;
-            newobj->flags = FL_OFFSET_STATES;
+            newobj->flags = FL_SHOOTABLE | FL_SOLID | FL_OFFSET_STATES;
             newobj->flags2 = FL2_BFGSHOT_SOLID | FL2_BFG_SHOOTABLE;
             break;
 
@@ -3115,20 +3118,18 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
             newobj = SpawnNewObj(tilex,tiley,&s_scout_path1);
             newobj->speed = SPDPATROL;
             newobj->temp1 = SPR_GSCOUT_W1_1;
-            newobj->flags = FL_OFFSET_STATES;
+            newobj->flags = FL_SHOOTABLE | FL_SOLID | FL_OFFSET_STATES;
             newobj->flags2 = FL2_BFGSHOT_SOLID | FL2_BFG_SHOOTABLE;
             break;
     }
+
+    CheckForSpecialTile (newobj,tilex,tiley);
 
     newobj->ammo = ammo;
     newobj->obclass = rentacopobj + which;
     newobj->dir = dir << 1;
     newobj->hitpoints = starthitpoints[gamestate.difficulty][which];
     newobj->distance = 0;
-
-    if (newobj->obclass != blakeobj)
-        newobj->flags |= FL_SHOOTABLE | FL_SOLID;
-
     newobj->active = ac_yes;
 
     if (newobj->flags & FL_INFORMANT)
@@ -3138,8 +3139,6 @@ objtype *SpawnPatrol (int which, int tilex, int tiley, int dir)
         newobj->flags |= FL_HAS_AMMO | FL_HAS_TOKENS;
         newobj->s_tilex = newobj->s_tiley = 0xff;
     }
-
-    CheckForSpecialTile (newobj,tilex,tiley);
 
     actorat[newobj->tilex][newobj->tiley] = NULL;   // don't use original spot
 
