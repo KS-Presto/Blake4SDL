@@ -1133,7 +1133,17 @@ void DamageActor (objtype *obj, int damage, objtype *attacker)
     modafter = 1;
 
     if (!(obj->flags & FL_SHOOTABLE))
+    {
+#ifdef NOTYET
+        if (attacker)
+        {
+           if (attacker->obclass != bfg_shotobj || !(obj->flags2 & FL2_BFG_SHOOTABLE))
+                return;
+        }
+#else
         return;
+#endif
+    }
 
     //
     // TODO: don't we already call this from GunAttack?
@@ -1164,6 +1174,7 @@ void DamageActor (objtype *obj, int damage, objtype *attacker)
                     BARRIER_STATE(obj) = bt_DISABLING;
                     obj->hitpoints = 15;
                     obj->temp3 = 0;
+                    obj->anim.animtype = at_NONE;
                     obj->temp2 = US_RndT() & 0xf;
 
                     NewState (obj,&s_barrier_shutdown);
