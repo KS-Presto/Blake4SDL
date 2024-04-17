@@ -1855,7 +1855,7 @@ void DemoLoop (void)
             //
             // start music when coming from menu
             //
-            if (!sqActive)
+            if (!SD_MusicPlaying())
                 SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
 
             //
@@ -1938,7 +1938,7 @@ void DemoLoop (void)
                 //
                 // start music when coming from menu
                 //
-                if (!sqActive)    //if (!SD_MusicPlaying())
+                if (!SD_MusicPlaying())
                     SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
             }
 #endif

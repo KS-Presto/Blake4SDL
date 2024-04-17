@@ -3311,7 +3311,7 @@ void GameLoop (void)
             VW_UpdateScreen (screen.buffer);
         }
 
-        if (!sqActive)
+        if (!SD_MusicPlaying())
             StartMusic ();
 
         if (!(loadedgame || LevelInPlaytemp(gamestate.mapon)))
@@ -3373,7 +3373,7 @@ void GameLoop (void)
                 DrawPlayScreen (false);
         }
 
-        if (!sqActive)
+        if (!SD_MusicPlaying())
             StartMusic ();
 
         PlayLoop ();

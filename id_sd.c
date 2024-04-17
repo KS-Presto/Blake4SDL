@@ -1199,7 +1199,7 @@ int SD_PlaySound (int sound)
 
         case sdm_AdLib:
             curAlSound = alSound = NULL;
-            alOut (alFreqH, 0);
+            alOut (alFreqH,0);
 
             SD_ALPlaySound ((AdLibSound *)s);
             break;
@@ -1416,11 +1416,13 @@ void SD_ContinueMusic (int chunk, int startoffs)
 
         if (startoffs >= sqHackLen)
         {
-#ifdef ADDEDFIX // 7                     // Andy, improved by Chris Chokan
+            //
+            // KS: Not sure if this can happen anymore; it definitely
+            // used to in Wolf4SDL, especially when loading saved games
+            //
+            Error ("SD_ContinueMusic: Illegal start offset provided.\n\nStarting music from beginning.");
+
             startoffs = 0;
-#else
-            Quit ("Illegal start offset provided!");
-#endif
         }
 
         //
@@ -1436,7 +1438,7 @@ void SD_ContinueMusic (int chunk, int startoffs)
 
             if (reg >= 0xb1 && reg <= 0xb8)
                 val &= 0xdf;                // disable play note flag
-            else if (reg == 0xbd)
+            else if (reg == alEffects)
                 val &= 0xe0;                // disable drum flags
 
             alOut (reg,val);
