@@ -4596,49 +4596,50 @@ void Message (const char *string)
 /*
 ===================
 =
-= TerminateString
-=
-= Searches for an "^XX" and replaces with a null terminator
-=
-= KS: This will modify the message stored in grsegs, so beware
-= of any further problems caused by the lack of the special "^XX"
-= command in the message. It might be safer to duplicate the string
-= and modify that instead, so the original remains unchanged
-=
-===================
-*/
-
-void TerminateString (char *pos)
-{
-    pos = strstr(pos,int_xx);
-
-    if (!pos)
-        Quit ("A cached message was NOT terminated with \"%s\"!",int_xx);
-
-    if (pos)
-        *pos = '\0';
-}
-
-
-/*
-===================
-=
 = CacheMessage
 =
 = Caches and prints a message in a window
+=
+= KS: This fixes the problem with modifying the original
+= message chunk, but there's still a danger of someone
+= forgetting to include the ^XX end marker. In that case,
+= strstr will plow through grsegs until it finds one or
+= ends up out of bounds and seg faults (or hits a 0, but
+= that could be anywhere). If the program used to build
+= the VGAGRAPH ensures that the end marker is added, then
+= it shouldn't be a problem, but under no circumstances
+= should the original chunk be changed!
 =
 ===================
 */
 
 void CacheMessage (int messagenum)
 {
-    char *string;
+    char   *string,*pos;
+    char   *buffer;
+    size_t len;
 
     string = (char *)grsegs[messagenum];
 
-    TerminateString (string);
+    //
+    // find the end of the message
+    //
+    pos = strstr(string,int_xx);
 
-    Message (string);
+    if (!pos)
+        Quit ("Cached message %d was NOT terminated with \"%s\"!",messagenum,int_xx);
+
+    len = (size_t)(pos - string) + 1;    // can't use strlen here
+
+    buffer = SafeMalloc(len);
+
+    snprintf (buffer,len,string);
+
+    buffer[len - 1] = '\0';
+
+    Message (buffer);
+
+    free (buffer);
 }
 
 

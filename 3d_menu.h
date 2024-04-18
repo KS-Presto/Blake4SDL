@@ -241,7 +241,6 @@ void     ShootSnd (void);
 void     CheckSecretMissions (void);
 void     DrawInstructions (int type);
 void     CacheMessage (int messagenum);
-void     TerminateString (char *pos);
 
 void     DrawCursor (CP_iteminfo *item_i, CP_itemtype *items, int *y, int which, int basey, void (*routine)(int));
 void     EraseCursor (CP_iteminfo *item_i, CP_itemtype *items, int y, int which);

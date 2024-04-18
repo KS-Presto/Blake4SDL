@@ -2559,26 +2559,36 @@ void BMAmsg (const char *msg)
 =
 = Caches in a message number and displays it using BMAmsg
 =
-= KS: Once again this is modifying the original grsegs chunk;
-= it might be wise to modify and print a copy of it instead
-=
 ===================
 */
 
 void CacheBMAmsg (int msgnum)
 {
-    char *string,*pos;
+    char   *string,*pos;
+    char   *buffer;
+    size_t len;
 
     string = (char *)grsegs[msgnum];
 
+    //
+    // find the end of the message
+    //
     pos = strstr(string,int_xx);
 
     if (!pos)
-        Quit ("A cached BMA message was NOT terminated with \"%s\"!",int_xx);
+        Quit ("Cached BMA message %d was NOT terminated with \"%s\"!",msgnum,int_xx);
 
-    pos[strlen(int_xx)] = '\0';
+    len = (size_t)(pos - string) + 1;    // can't use strlen here
+
+    buffer = SafeMalloc(len);
+
+    snprintf (buffer,len,string);
+
+    buffer[len - 1] = '\0';
 
     BMAmsg (string);
+
+    free (buffer);
 }
 
 

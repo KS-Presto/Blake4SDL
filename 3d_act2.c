@@ -5384,9 +5384,6 @@ void T_Projectile (objtype *obj)
             obj->x -= FixedMul(PROJECTILESIZE,costable[obj->angle]);
             obj->y -= -FixedMul(PROJECTILESIZE,sintable[obj->angle]);
 
-            //
-            // KS: nasty!
-            //
             if (obj->flags & FL_STORED_OBJPTR)
                 attacker = obj->tempobj;
             else
