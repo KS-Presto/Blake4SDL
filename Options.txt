@@ -1,0 +1,13 @@
+Launch parameters for Blake4SDL
+
+--q                     Skips the instruction text on a new game
+--nowait                Skips the intro screens
+--version               Displays the version and compile date/time
+--powerball		Enables cheat code activation (hold both shift keys while JAM logo is displayed)
+--windowed              Starts the game in windowed mode
+--res <width> <height>  Sets the window resolution (must be multiple of 320x200 or 320x240)
+--extravbls <vbls>      Sets a delay after each frame, which may help to reduce flickering (unit is currently 8 ms, default: 0)
+--joystick <index>      Use the index-th joystick if available (-1 to disable joystick, default: 0)
+--joystickhat <index>   Enables movement with the given coolie hat
+--samplerate <rate>     Sets the sound sample rate given in Hz (valid values are 7042 to 44100)
+--audiobuffer <size>    Sets the size of the audio buffer (-> sound latency) given in bytes
