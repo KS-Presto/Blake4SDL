@@ -2516,6 +2516,17 @@ void BMAmsg (const char *msg)
         font = (fontstruct *)grsegs[STARTFONT + fontnumber];
         numlines = 1;
 
+        //
+        // KS: It's kinda stupid to copy the string to a buffer here, since msg
+        // might have been passed as a buffer already, but pi.script is a char
+        // pointer, so we shouldn't allow it to modify msg directly. Maybe this
+        // function can be changed to take a char pointer instead, but that would
+        // mean changing a bunch of strings from const char pointers to arrays,
+        // or copying them to a buffer before passing them here (which is probably
+        // the better approach).
+        //
+        // Yay const correctness!
+        //
         len = strlen(msg) + 1;
         string = SafeMalloc(len);
 

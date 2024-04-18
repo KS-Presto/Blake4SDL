@@ -2134,7 +2134,7 @@ int32_t TP_LoadScript (const char *filename, PresenterInfo *pi, int idcache)
     }
 
     pi->script[0] = pi->scriptstart;
-    pi->script[0][size + 4] = 0;      // last byte is trashed!
+    pi->script[0][size + 4] = '\0';      // last byte is trashed!
     pi->flags |= TPF_CACHED_SCRIPT;
 
     TP_InitScript (pi);
