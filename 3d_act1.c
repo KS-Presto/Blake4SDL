@@ -3,11 +3,11 @@
 #include "3d_def.h"
 
 
-int          pint_xy[8][2] =    // TODO: according to comments, this is y by x?
+int          pint_xy[8][2] =
 {
-    {-1,-1},{-1, 0},{-1, 1},
-    { 0,-1},        { 0, 1},
-    { 1,-1},{ 1, 0},{ 1, 1},
+    {-1,-1},{0,-1},{1,-1},
+    {-1, 0},       {1, 0},
+    {-1, 1},{0, 1},{1, 1},
 };
 
 
@@ -490,8 +490,8 @@ void PlaceReservedItemNearTile (int itemtype, int tilex, int tiley)
 
     for (i = 0; i < 8; i++)
     {
-        x = tilex + pint_xy[i][1];
-        y = tiley + pint_xy[i][0];
+        x = tilex + pint_xy[i][0];
+        y = tiley + pint_xy[i][1];
 
         if (!tilemap[x][y])
         {
@@ -569,17 +569,14 @@ void PlaceItemType (int itemtype, int tilex, int tiley)
 
 void PlaceItemNearTile (int itemtype, int tilex, int tiley)
 {
-// [0] is the y offset
-// [1] is the x offset
-//
     int     i;
     int     x,y;
     objtype *check;
 
     for (i = 0; i < 8; i++)
     {
-        x = tilex + pint_xy[i][1];
-        y = tiley + pint_xy[i][0];
+        x = tilex + pint_xy[i][0];
+        y = tiley + pint_xy[i][1];
 
         if (!tilemap[x][y])
         {
