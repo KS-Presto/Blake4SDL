@@ -257,6 +257,13 @@ int      grenade_shapes[] =
 };
 
 
+int      xy_offset[8][2] =
+{
+    {0,-1},{0,1},{-1,0},{1,0},      // vert / horz
+    {-1,-1},{1,1},{-1,1},{1,-1},    // diagnals
+};
+
+
 void    T_Path (objtype *obj);
 void    T_Shoot (objtype *obj);
 void    T_Shade (objtype *obj);
@@ -2833,6 +2840,125 @@ void T_SwatWound (objtype *obj)
 
 
 /*
+=================
+=
+= CheckSpawnEA
+=
+=================
+*/
+
+void CheckSpawnEA (void)
+{
+    objtype  temp,*check,*newobj;
+    int      i;
+    int      nx,ny;
+    word     *map;
+    unsigned areanumber;
+    int      ofs;
+
+    if (objcount > MAXACTORS - 8)
+        return;
+
+    for (i = 0; i < NumEAWalls; i++)
+    {
+        map = &MAPSPOT(eaList[i].tilex,eaList[i].tiley,1);
+
+        //
+        // limit the number of aliens spawned by each outlet
+        //
+        if (eaList[i].aliens_out > gamestate.difficulty)
+            continue;
+
+        if (eaList[i].delay > tics)
+        {
+            eaList[i].delay -= tics;
+            continue;
+        }
+
+        //
+        // reset to 1 because it's possible that an alien won't be spawned
+        // if NOT, we'll try again on the next refresh
+        // if SO, the delay is set to a true value below
+        //
+        eaList[i].delay = 1;
+
+        //
+        // does this wall touch the area that the player is in?
+        //
+        for (ofs = 0; ofs < 4; ofs++)
+        {
+            nx = eaList[i].tilex + xy_offset[ofs][0];
+            ny = eaList[i].tiley + xy_offset[ofs][1];
+            areanumber = GetAreaNumber(nx,ny);
+
+            if (nx < 0 || nx > (mapwidth - 1) || ny < 0 || ny > (mapheight - 1))
+                continue;
+
+            if (areanumber != 127 && areabyplayer[areanumber])
+                break;
+        }
+
+        //
+        // not in the same area
+        //
+        if (ofs == 4)
+            continue;
+
+        temp.tilex = eaList[i].tilex + xy_offset[ofs][0];
+        temp.tiley = eaList[i].tiley + xy_offset[ofs][1];
+
+        check = actorat[temp.tilex][temp.tiley];
+
+        if (ISPOINTER(check))
+        {
+            if (!(check->flags & FL_DEADGUY))
+                continue;    // tile is already occupied
+        }
+
+        if (abs(player->tilex - temp.tilex) < 2 && abs(player->tiley - temp.tiley) < 2)
+            continue;
+
+        //
+        // setup x,y in temp obj and see if obj is in player's view
+        // actor is released if it's in player's view OR
+        // a random chance to release whether it can be seen or not
+        //
+        temp.x = ((fixed)temp.tilex << TILESHIFT) + TILECENTER;
+        temp.y = ((fixed)temp.tiley << TILESHIFT) + TILECENTER;
+
+        if (!CheckSight(player,&temp) && US_RndT() < 200)
+            continue;
+
+        //
+        // spawn Electro-Alien!
+        //
+        usedummy = true;
+
+        newobj = SpawnStand(en_electro_alien,temp.tilex,temp.tiley,0);
+        SD_PlaySound (ELECAPPEARSND);
+        usedummy = false;
+
+        if (newobj != &dummyobj)
+        {
+            eaList[i].aliens_out++;
+            newobj->temp2 = i;
+            PlaySoundLocActor (ELECAPPEARSND,newobj);
+        }
+
+        //
+        // reset spawn delay
+        //
+        if ((*map & 0xff00) == 0xfa00)
+            eaList[i].delay = 60 * (*map & 0xff);
+        else
+            eaList[i].delay = (60 * 8) + Random(60 * 22);
+
+        break;
+    }
+}
+
+
+/*
 ===============
 =
 = SpawnStand
@@ -4356,6 +4482,97 @@ void InitGoldsternInfo (void)
 {
     memset (&GoldsternInfo,0,sizeof(GoldsternInfo));
     GoldsternInfo.LastIndex = GOLDIE_MAX_SPAWNS;
+}
+
+
+/*
+=================
+=
+= CheckSpawnGoldstern
+=
+=================
+*/
+
+void CheckSpawnGoldstern (void)
+{
+    int tilex,tiley;
+
+    if (GoldsternInfo.WaitTime > tics)
+        GoldsternInfo.WaitTime -= tics;
+    else
+    {
+        if (GoldsternInfo.flags == GS_COORDFOUND)
+        {
+            //
+            // see if we can spawn Dr. Goldstern
+            //
+            tilex = GoldieList[GoldsternInfo.LastIndex].tilex;
+            tiley = GoldieList[GoldsternInfo.LastIndex].tiley;
+
+            if (!actorat[tilex][tiley] && abs(player->tilex - tilex) > 1 && abs(player->tiley - tiley) > 1)
+            {
+                SpawnStand (en_goldstern,tilex,tiley,0);
+                GoldsternInfo.GoldSpawned = true;
+            }
+        }
+        else
+            FindNewGoldieSpawnSite ();
+    }
+}
+
+/*
+=================
+=
+= FindNewGoldieSpawnSite
+=
+= Find a new coord to spawn Goldie (GS_NEEDCOORD or GS_FIRSTTIME)
+=
+=================
+*/
+
+void FindNewGoldieSpawnSite (void)
+{
+    objtype temp;
+    int     i;
+
+    GoldsternInfo.WaitTime = 0;
+
+    for (i = 0; i < GoldsternInfo.SpawnCnt; i++)
+    {
+        //
+        // avoid repeats
+        //
+        if (GoldsternInfo.SpawnCnt > 1 && i == GoldsternInfo.LastIndex)
+            continue;
+
+        temp.tilex = GoldieList[i].tilex;
+        temp.tiley = GoldieList[i].tiley;
+
+        //
+        // setup x,y in temp obj and see if obj is in player's view
+        //
+        temp.x = ((fixed)temp.tilex << TILESHIFT) + TILECENTER;
+        temp.y = ((fixed)temp.tiley << TILESHIFT) + TILECENTER;
+
+        if (!CheckSight(player,&temp))
+            continue;
+
+        //
+        // mark to spawn Dr Goldstern
+        //
+        GoldsternInfo.LastIndex = i;
+
+        if (gamestate.mapon == 9)    // TODO: GOLD_MORPH_LEVEL?
+            GoldsternInfo.WaitTime = 60;
+        else if (GoldsternInfo.flags == GS_FIRSTTIME)
+            GoldsternInfo.WaitTime = MIN_GOLDIE_FIRST_WAIT + Random(MAX_GOLDIE_FIRST_WAIT - MIN_GOLDIE_FIRST_WAIT);
+        else
+            GoldsternInfo.WaitTime = MIN_GOLDIE_WAIT + Random(MAX_GOLDIE_WAIT - MIN_GOLDIE_WAIT);
+
+        GoldsternInfo.flags = GS_COORDFOUND;
+
+        break;
+    }
 }
 
 

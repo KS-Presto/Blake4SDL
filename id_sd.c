@@ -140,7 +140,7 @@ void SD_SoundFinished (void)
 
 void SD_PCPlaySound (PCSound *sound)
 {
-    pcLastSample = (byte)-1;    // TODO: why
+    pcLastSample = 0xff;
     pcLengthLeft = sound->common.length;
     pcSound = sound->data;
 }
@@ -394,9 +394,6 @@ int SD_GetSample (float csample, byte *samples, int size)
     else
         s2 = 0;
 
-    //
-    // TODO: lack of parentheses was a mess; this might be wrong
-    //
     value = ((((s0 * sf) * (sf - 1)) / 2) - (s1 * (sf * sf - 1))) + (((s2 * (sf + 1)) * sf) / 2);
     ivalue = (int32_t)(value * 256);
 
@@ -727,7 +724,6 @@ void SD_ALPlaySound (AdLibSound *sound)
 
 void SD_ShutAL (void)
 {
-    // TODO: is it safe to use SD_ALStopSound here? alOut(alEffects,0); might break it...
     alSound = 0;
     alOut (alEffects,0);
     alOut (alFreqH,0);

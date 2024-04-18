@@ -235,7 +235,7 @@ void MOVIE_HandlePage (MovieStuff_t *MovieStuff)
 
             movietimecount = 0;
 
-            if (!(screen.flags & SC_FADED) && (ci.button0 || ci.button1 || LastScan))
+            if (!(screen.flags & SC_FADED) && (ci.button0 || ci.button1 || LastScan != sc_None))
             {
                 ExitMovie = true;
 

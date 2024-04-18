@@ -2314,7 +2314,7 @@ void TP_CacheIn (int type, int chunk)
 
 int TP_LineCommented (const char *string)
 {
-    const char *str = string;
+    const char *strstart = string;
 
     //
     // if a line starts with a semi-colon, the entire line is considered a
@@ -2328,5 +2328,5 @@ int TP_LineCommented (const char *string)
         string += 2;
     }
 
-    return (int)(string - str);
+    return (int)(string - strstart);
 }

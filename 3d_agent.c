@@ -2874,7 +2874,7 @@ void Cmd_Use (void)
                 if (dist >= intdist)
                     continue;
 
-                if ((obj->flags & (FL_FRIENDLY | FL_VISIBLE)) == (FL_FRIENDLY | FL_VISIBLE))  // TODO no need?
+                if ((obj->flags & (FL_FRIENDLY | FL_VISIBLE)) == (FL_FRIENDLY | FL_VISIBLE))
                 {
                     angle = abs(player->angle - CalcAngle(player,obj));
 
@@ -3563,7 +3563,7 @@ int ShowStats (int bx, int by, int type, statsInfoType *stats)
     //
     // setup to test for bypassing stats
     //
-    LastScan = 0;
+    LastScan = sc_None;
 
     if (type == ss_quick)
         show_stats_quick = true;
@@ -3654,7 +3654,7 @@ int ShowRatio (int bx, int by, int nx, int ny, int32_t total, int32_t perc, int 
 
     for (i = 0; i < numbars; i++)
     {
-        if (LastScan)
+        if (LastScan != sc_None)
             show_stats_quick = true;
 
         VW_Vlin (by,by + BAR_H - 1,bx + i,0xc8);
@@ -3683,10 +3683,7 @@ int ShowRatio (int bx, int by, int nx, int ny, int32_t total, int32_t perc, int 
     {
         SD_PlaySound (STATS2SND);
 
-        //
-        // TODO: check this loop
-        //
-        while (SD_SoundPlaying() && !LastScan)
+        while (SD_SoundPlaying() && LastScan == sc_None)
         {
             IN_ProcessEvents ();
             SDL_Delay (3);

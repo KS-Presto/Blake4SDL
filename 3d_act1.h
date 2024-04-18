@@ -201,7 +201,6 @@ typedef struct doorstruct
 } doorobj_t;
 
 
-extern  int          xy_offset[8][2];
 extern  stattype     statinfo[];
 extern  concession_t ConHintList;
 
@@ -240,12 +239,8 @@ void      OperateConcession (int concession);
 void      SpawnConcession (int tilex, int tiley, int credits, int machinetype);
 unsigned  LoadConcessionHint (unsigned MsgNum);
 void      CacheInfoAreaMsg (unsigned block, unsigned MsgNum, const char *hint_buffer, unsigned MaxBufferLen);
-void      CheckSpawnEA(void);
 
 unsigned  TransformAreas (int tilex, int tiley, int xform);
-
-void      CheckSpawnGoldstern (void);
-void      FindNewGoldieSpawnSite (void);
 
 void      DropPlasmaDetonator (void);
 void      TryDropPlasmaDetonator (void);

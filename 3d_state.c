@@ -877,7 +877,6 @@ void KillActor (objtype *obj)
             // init timer & search for a location out of all possible locations
             //
             GoldsternInfo.WaitTime = MIN_GOLDIE_WAIT + Random(MAX_GOLDIE_WAIT - MIN_GOLDIE_WAIT);
-            clas = goldsternobj;
             break;
 
         case gold_morphobj:
@@ -927,7 +926,7 @@ void KillActor (objtype *obj)
             NewState (obj,&s_swatdie1);
 
             if (!(gamestate.weapons & (1 << wp_burst_rifle)))
-                PlaceItemType(bo_burst_rifle,tilex,tiley);
+                PlaceItemType (bo_burst_rifle,tilex,tiley);
             else if (US_RndT() < 65 || !obj->ammo)
                 PlaceItemType (bo_coin,tilex,tiley);
             else if (obj->ammo)

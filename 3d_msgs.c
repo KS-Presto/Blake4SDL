@@ -294,20 +294,20 @@ char bonus_msg27[] =    "^SH0D9^FC57\r   RADAR:  \r"
 
 char *BonusMsg[]=
 {
-   bonus_msg1,bonus_msg2,bonus_msg4,
-   bonus_msg7,bonus_msg7,bonus_msg8,bonus_msg9,bonus_msg10,bonus_msg21,bonus_msg21a,
+    bonus_msg1,bonus_msg2,bonus_msg4,
+    bonus_msg7,bonus_msg7,bonus_msg8,bonus_msg9,bonus_msg10,bonus_msg21,bonus_msg21a,
 
-   bonus_msg12,bonus_msg11,
-   bonus_msg18,bonus_msg17,bonus_msg23,bonus_msg22,bonus_msg19,
+    bonus_msg12,bonus_msg11,
+    bonus_msg18,bonus_msg17,bonus_msg23,bonus_msg22,bonus_msg19,
 
-   bonus_msg20,
-   bonus_msg13,bonus_msg14,bonus_msg15,
-   bonus_msg15,bonus_msg15,bonus_msg15,
-   bonus_msg16,
+    bonus_msg20,
+    bonus_msg13,bonus_msg14,bonus_msg15,
+    bonus_msg15,bonus_msg15,bonus_msg15,
+    bonus_msg16,
 
-   0,0,0,   // TODO: what's this
-   bonus_msg24,bonus_msg25,
-   bonus_msg26,bonus_msg27,
+    0,0,0,
+    bonus_msg24,bonus_msg25,
+    bonus_msg26,bonus_msg27,
 };
 
 

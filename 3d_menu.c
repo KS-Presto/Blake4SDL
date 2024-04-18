@@ -48,7 +48,7 @@ const char *LOADSAVE_GAME_MSG[2] = {"^ST1^CELoading Game\r^XX",
 const char *EndGameStr = "    End current game?\n"
                          " Are you sure (Y or N)?";
 
-const char *QuitToDosStr = "      Quit to DOS?\n"    // TODO: good ol' DOS
+const char *QuitToDosStr = "      Quit to DOS?\n"
                            " Are you sure (Y or N)?";
 
 int     CP_ReadThis (int blank);
@@ -2920,7 +2920,7 @@ void EnterCtrlData (CustomCtrls *cust, void (*DrawRtn)(int), void (*PrintRtn)(in
                     // keyboard input
                     //
                     default:
-                        if (LastScan && LastScan != sc_Escape)
+                        if (LastScan != sc_None && LastScan != sc_Escape)
                         {
 #ifdef CLASSIC_MENU
                             if (memchr(specialkeys,LastScan,sizeof(specialkeys)))
@@ -4612,10 +4612,9 @@ void TerminateString (char *pos)
 {
     pos = strstr(pos,int_xx);
 
-#ifdef IN_DEVELOPMENT
     if (!pos)
         Quit ("A cached message was NOT terminated with \"%s\"!",int_xx);
-#endif
+
     if (pos)
         *pos = '\0';
 }

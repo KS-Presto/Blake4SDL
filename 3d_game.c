@@ -2559,7 +2559,8 @@ void BMAmsg (const char *msg)
 =
 = Caches in a message number and displays it using BMAmsg
 =
-= TODO: make this safe
+= KS: Once again this is modifying the original grsegs chunk;
+= it might be wise to modify and print a copy of it instead
 =
 ===================
 */
@@ -2571,6 +2572,10 @@ void CacheBMAmsg (int msgnum)
     string = (char *)grsegs[msgnum];
 
     pos = strstr(string,int_xx);
+
+    if (!pos)
+        Quit ("A cached BMA message was NOT terminated with \"%s\"!",int_xx);
+
     pos[strlen(int_xx)] = '\0';
 
     BMAmsg (string);
@@ -2833,7 +2838,7 @@ void StartDemoRecord (int levelnumber)
 {
     demobuffer = SafeMalloc(MAXDEMOSIZE);
     demoptr = demobuffer;
-    lastdemoptr = &demoptr[MAXDEMOSIZE];    // TODO: buffer overflow
+    lastdemoptr = &demoptr[MAXDEMOSIZE - 1];
 
     *demoptr++ = levelnumber;
     demoptr += sizeof(uint16_t);    // leave space for length

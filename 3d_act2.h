@@ -17,6 +17,7 @@ extern  int       morphwaittime;
 extern  int       detonators_spawned;
 extern  int       starthitpoints[NUMDIFFICULTY][NUMHITENEMIES];
 extern  int       MorphClass[];
+extern  int       xy_offset[8][2];
 extern  unsigned  scanvalue;
 
 
@@ -40,6 +41,7 @@ objtype  *SpawnOffsetObj (int which, int tilex, int tiley);
 objtype  *SpawnStand (int which, int tilex, int tiley, int dir);
 objtype  *SpawnPatrol (int which, int tilex, int tiley, int dir);
 void     SpawnBarrier (int which, int tilex, int tiley, bool OnOff);
+void     CheckSpawnEA (void);
 
 void     DoAttack (objtype *obj);
 void     ChangeShootMode (objtype *obj);
@@ -62,5 +64,7 @@ objtype  *MoveHiddenOfs (int which_class, int new_class, fixed x, fixed y);
 void     CheckForSpecialTile (objtype *obj, int tilex, int tiley);
 void     DropCargo (objtype *obj);
 void     InitGoldsternInfo (void);
+void     CheckSpawnGoldstern (void);
+void     FindNewGoldieSpawnSite (void);
 
 #endif

@@ -678,7 +678,7 @@ void CheckKeys (void)
 
             SD_StopDigitized ();
 
-            if (!sqActive || !loadedgame)
+            if (!SD_MusicPlaying() || !loadedgame)
                 StartMusic ();
 
             IN_ClearKeysDown ();
@@ -692,7 +692,7 @@ void CheckKeys (void)
             else if (!refreshscreen)
                 DrawPlayBorder ();
 
-            if (!sqActive)
+            if (!SD_MusicPlaying())
                 StartMusic ();
 
             return;
@@ -987,15 +987,14 @@ void InitObjList (void)
     //
     // init the actor lists and nullify global pointers
     //
-    // TODO: make sure fixing the overflow doesn't break Blake
-    //
-    for (i = 0; i < MAXACTORS; i++)
+    for (i = 0; i < MAXACTORS - 1; i++)
     {
         objlist[i].prev = &objlist[i + 1];
         objlist[i].next = NULL;
     }
 
     objlist[MAXACTORS - 1].prev = NULL;
+    objlist[MAXACTORS - 1].next = NULL;
 
     objfreelist = &objlist[0];
     lastobj = lastattacker = NULL;

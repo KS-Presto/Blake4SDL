@@ -718,7 +718,7 @@ bool IN_CheckAck (void)
 //
 // see if something has been pressed
 //
-    if (LastScan)
+    if (LastScan != sc_None)
         return true;
 
     buttons = IN_GetJoyButtons() << 4;
