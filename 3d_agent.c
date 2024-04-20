@@ -3382,12 +3382,12 @@ void LoadOverheadChunk (int tpNum)
     //
     // open PLAYTEMP file
     //
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"rb+");
+    file = fopen(configpath,"rb+");
 
     if (!file)
-        CA_CannotOpen (tempPath);
+        CA_CannotOpen (configpath);
 
     buffersize = mapwidth * mapheight;
 
@@ -3401,10 +3401,10 @@ void LoadOverheadChunk (int tpNum)
         ov_noImage = false;
 
         if (!fread(ov_buffer,buffersize,1,file))
-            Quit ("Error reading file %s: %s",tempPath,strerror(errno));
+            Quit ("Error reading file %s: %s",configpath,strerror(errno));
 
         if (!fread(&ov_stats,sizeof(ov_stats),1,file))
-            Quit ("Error reading file %s: %s",tempPath,strerror(errno));
+            Quit ("Error reading file %s: %s",configpath,strerror(errno));
     }
     else
     {
@@ -3438,12 +3438,12 @@ void SaveOverheadChunk (int tpNum)
     //
     // open PLAYTEMP file
     //
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"rb+");
+    file = fopen(configpath,"rb+");
 
     if (!file)
-        CA_CannotOpen (tempPath);
+        CA_CannotOpen (configpath);
 
     //
     // remove level chunk from file
@@ -3476,16 +3476,16 @@ void SaveOverheadChunk (int tpNum)
     // write chunk ID, SIZE, and IMAGE
     //
     if (!fwrite(chunk,sizeof(chunk) - 1,1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     if (!fwrite(&cksize,sizeof(cksize),1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     if (!fwrite(ov_buffer,buffersize,1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     if (!fwrite(&ov_stats,sizeof(ov_stats),1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     fclose (file);
 }

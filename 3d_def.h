@@ -54,8 +54,6 @@
 
 #define MAX_WARP_LEVEL      23
 
-#define MAX_DEST_PATH_LEN	30
-
 #define MAX_GUN_DELAY       12
 
 #define MAX_RADAR_ENERGY    14400
@@ -1351,14 +1349,14 @@ typedef struct
 
 #define TITLE_LOOP_MUSIC    PLOT_MUS
 
-extern  char      tempPath[MAX_DEST_PATH_LEN + 15];
-
 extern  levelinfo default_level[MAPS_PER_EPISODE];
 extern  int       starting_level,starting_episode,starting_difficulty;
 
 extern  int       lastmap_tilex,lastmap_tiley;
 extern  char      str[256],error[256];
 extern  char      configname[13];
+extern  char      *configpath;
+extern  size_t    configpathlen;
 
 extern  int       savedsoundmode,savedmusicmode,saveddigimode;
 extern  int       mouseadjustment;
@@ -1398,8 +1396,8 @@ void     CleanUpDoors_N_Actors (void);
 
 void     Terminate (const char *func, const char *string, ...);
 
-void     MakeDestPath (const char *file);
-void     InitDestPath (void);
+void     InitConfigPath (void);
+void     MakeConfigPath (const char *filename);
 
 int32_t  FindChunk (FILE *file, const char *chunk);
 int32_t  NextChunk (FILE *file);

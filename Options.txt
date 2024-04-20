@@ -11,3 +11,4 @@ Launch parameters for Blake4SDL
 --joystickhat <index>   Enables movement with the given coolie hat
 --samplerate <rate>     Sets the sound sample rate given in Hz (valid values are 7042 to 44100)
 --audiobuffer <size>    Sets the size of the audio buffer (-> sound latency) given in bytes
+--configpath            Sets the path where config file and savegames will be stored (default is game directory for Windows or $HOME/.blake4sdl for Linux)

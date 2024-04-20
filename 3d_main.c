@@ -15,7 +15,6 @@
 =============================================================================
 */
 
-#define MAX_DEST_PATH_LEN       30
 #define LZH_WORK_BUFFER_SIZE    8192
 
 
@@ -24,11 +23,10 @@ int32_t checksum;
 
 int     starting_episode,starting_level,starting_difficulty;
 
-char    destPath[MAX_DEST_PATH_LEN + 1];
-char    tempPath[MAX_DEST_PATH_LEN + 15];
-
 char    str[256],error[256];
 char    configname[13] = "CONFIG.";
+char    *configpath;
+size_t  configpathlen;
 
 int     savedsoundmode = -1,savedmusicmode = -1,saveddigimode = -1;
 int     mouseadjustment;
@@ -150,7 +148,9 @@ void WriteConfig (void)
 
     snprintf (fname,sizeof(fname),"%s%s",configname,extension);
 
-    file = fopen(fname,"wb");
+    MakeConfigPath (fname);
+
+    file = fopen(configpath,"wb");
 
     if (file)
     {
@@ -180,6 +180,11 @@ void WriteConfig (void)
 
         fclose (file);
     }
+    else
+    {
+        snprintf (error,sizeof(error),"Unable to open config file: %s",strerror(errno));
+        Error (error);
+    }
 }
 
 
@@ -200,7 +205,9 @@ void ReadConfig (void)
 
     snprintf (fname,sizeof(fname),"%s%s",configname,extension);
 
-    file = fopen(fname,"rb");
+    MakeConfigPath (fname);
+
+    file = fopen(configpath,"rb");
 
     if (file)
     {
@@ -301,12 +308,12 @@ void InitPlaytemp (void)
 {
     FILE *file;
 
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"wb");
+    file = fopen(configpath,"wb");
 
     if (!file)
-        CA_CannotOpen (tempPath);
+        CA_CannotOpen (configpath);
 
     fclose (file);
 }
@@ -436,12 +443,12 @@ int32_t DeleteChunk (FILE *sourcefile, const char *chunk)
             //
             fseek (sourcefile,cksize,SEEK_CUR);         // seek source to NEXT chunk
 
-            MakeDestPath (PLAYTEMP_FILE);
+            MakeConfigPath (PLAYTEMP_FILE);
 
-            destfile = fopen(tempPath,"rb+");
+            destfile = fopen(configpath,"rb+");
 
             if (!destfile)
-                CA_CannotOpen (tempPath);
+                CA_CannotOpen (configpath);
 
             fseek (destfile,offset,SEEK_SET);           // seek dest to THIS chunk
 
@@ -575,9 +582,9 @@ void LoadLevel (int levelnum)
     //
     // open PLAYTEMP file
     //
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"rb");
+    file = fopen(configpath,"rb");
 
     //
     // if level exists in PLAYTEMP file, use it; otherwise, load it from scratch!
@@ -847,12 +854,12 @@ void SaveLevel (int levelnum)
     //
     // open PLAYTEMP file
     //
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"rb+");
+    file = fopen(configpath,"rb+");
 
     if (!file)
-        CA_CannotOpen (tempPath);
+        CA_CannotOpen (configpath);
 
     //
     // remove level chunk from file
@@ -870,7 +877,7 @@ void SaveLevel (int levelnum)
     // write level chunk id
     //
     if (!fwrite(chunk,sizeof(chunk - 1),1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     fseek (file,sizeof(chunk) - 1,SEEK_CUR);    // leave space for chunk size
 
@@ -979,10 +986,10 @@ void SaveLevel (int levelnum)
     fseek (file,-(cksize + sizeof(cksize)),SEEK_CUR);
 
     if (!fwrite(&cksize,sizeof(cksize),1,file))
-        Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+        Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
     if (ftruncate(fileno(file),size) == -1)
-        Quit ("Error truncating file %s: %s",tempPath,strerror(errno));
+        Quit ("Error truncating file %s: %s",configpath,strerror(errno));
 
     fclose (file);
 
@@ -1036,7 +1043,7 @@ bool LoadTheGame (FILE *file)
     infospace = SafeMalloc(len);
 
     if (!fread(infospace,len,1,file))
-        Quit ("Error reading file: %s, %d",strerror(errno),ftell(file));
+        Quit ("Error reading file: %s",strerror(errno));
 
     infospace[len - 1] = '\0';
 
@@ -1118,9 +1125,9 @@ bool LoadTheGame (FILE *file)
     //
     // copy all remaining chunks to PLAYTEMP file
     //
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    tempfile = fopen(tempPath,"wb");
+    tempfile = fopen(configpath,"wb");
 
     if (!tempfile)
         return false;
@@ -1145,7 +1152,7 @@ bool LoadTheGame (FILE *file)
         // write chunk to PLAYTEMP file
         //
         if (!fwrite(temp,cksize,1,tempfile))
-            Quit ("Error writing file %s: %s",tempPath,strerror(errno));
+            Quit ("Error writing file %s: %s",configpath,strerror(errno));
 
         free (temp);
     }
@@ -1250,15 +1257,12 @@ bool SaveTheGame (FILE *file, const char *description)
     //
     fseek (file,cksize,SEEK_CUR);
 
-    MakeDestPath (PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    //
-    // TODO: might need access()
-    //
-    if (stat(tempPath,&statbuf))
+    if (stat(configpath,&statbuf))
         return false;
 
-    tempfile = fopen(tempPath,"rb");
+    tempfile = fopen(configpath,"rb");
 
     if (!tempfile)
         return false;
@@ -1287,9 +1291,9 @@ bool LevelInPlaytemp (int levelnum)
     char chunk[5];
     bool retval;
 
-    MakeDestPath(PLAYTEMP_FILE);
+    MakeConfigPath (PLAYTEMP_FILE);
 
-    file = fopen(tempPath,"rb");
+    file = fopen(configpath,"rb");
 
     //
     // see if level exists in PLAYTEMP file
@@ -1707,8 +1711,8 @@ void Terminate (const char *func, const char *string, ...)
     //
     // cleanup
     //
-    MakeDestPath (PLAYTEMP_FILE);
-    remove (tempPath);
+    MakeConfigPath (PLAYTEMP_FILE);
+    remove (configpath);
 
     SD_StopDigitized ();
 
@@ -1717,6 +1721,7 @@ void Terminate (const char *func, const char *string, ...)
 
     ShutdownId ();
     Shutdown3DRenderer ();
+    free (configpath);
 
     //
     // abnormal exit?
@@ -2192,6 +2197,33 @@ void CheckParameters (int argc, char *argv[])
             else
                 param_audiobuffer = atoi(argv[i]);
         }
+        else if (!strcmp(arg,"--configpath"))
+        {
+            if (++i >= argc)
+                snprintf (error,sizeof(error),"The configpath option is missing the path argument!");
+            else if (!configpath)
+            {
+                len = strlen(argv[i]) + 1;
+
+                if (argv[i][len - 2] != DIR_SEPARATOR)
+                    len++;    // add space for the separator
+
+                if (len + sizeof(configname) - 1 > GetMaxPathLen())
+                    snprintf (error,sizeof(error),"The config directory path is too long!");
+                else
+                {
+                    configpath = SafeMalloc(len + sizeof(configname) - 1);
+
+                    snprintf (configpath,len,argv[i]);
+
+                    //
+                    // make sure there's a separator at the end
+                    //
+                    configpath[len - 2] = DIR_SEPARATOR;
+                    configpath[len - 1] = '\0';
+                }
+            }
+        }
         else
             snprintf (error,sizeof(error),"Invalid parameter(s)!");
     }
@@ -2227,56 +2259,21 @@ void CheckParameters (int argc, char *argv[])
 /*
 ==========================
 =
-= InitDestPath
+= MakeConfigPath
 =
 ==========================
 */
 
-void InitDestPath (void)
+void MakeConfigPath (const char *filename)
 {
-    struct stat statbuf;
-    int         len;
-    const char  *str;
-    char        *buffer;
+    size_t len;
 
-    str = getenv("APOGEECD");
+    len = strlen(filename) + 1;
 
-    if (str)
-    {
-        len = strlen(str);
+    if (len > sizeof(configname))
+        Quit ("The file name \"%s\" is too long!",filename);
 
-        if (len > MAX_DEST_PATH_LEN)
-            Quit ("APOGEECD path too long!");
-
-        buffer = SafeMalloc(len + 1);
-        snprintf (buffer,len + 1,str);
-
-        if (buffer[len] == '\\')
-            buffer[len] = '\0';
-
-        if (stat(buffer,&statbuf))
-            Quit ("APOGEECD directory not found!");
-
-        snprintf (destPath,sizeof(destPath),"%s\\",buffer);
-
-        free (buffer);
-    }
-    else
-        *destPath = '\0';
-}
-
-
-/*
-==========================
-=
-= MakeDestPath
-=
-==========================
-*/
-
-void MakeDestPath (const char *file)
-{
-    snprintf (tempPath,sizeof(tempPath),file);
+    snprintf (&configpath[configpathlen],len,filename);
 }
 
 
@@ -2290,17 +2287,14 @@ void MakeDestPath (const char *file)
 
 int main (int argc, char *argv[])
 {
-    //
-    // TODO: check if the file exists first and that we're allowed to delete it
-    //
-    MakeDestPath (PLAYTEMP_FILE);
-    remove (tempPath);
+    CheckParameters (argc,argv);
 
-    InitDestPath ();
+    InitConfigPath ();
+
+    MakeConfigPath (PLAYTEMP_FILE);
+    remove (configpath);
 
     CheckForEpisodes ();
-
-    CheckParameters (argc,argv);
 
     InitGame ();
 

@@ -1835,12 +1835,12 @@ int CP_LoadGame (int quick)
         {
             name[7] = which + '0';
 
-            MakeDestPath (name);
+            MakeConfigPath (name);
 
-            file = fopen(tempPath,"rb");
+            file = fopen(configpath,"rb");
 
             if (!file)
-                CA_CannotOpen (tempPath);
+                CA_CannotOpen (configpath);
 
             DrawLSAction (0);       // testing
 
@@ -1867,12 +1867,12 @@ int CP_LoadGame (int quick)
 
             name[7] = which + '0';
 
-            MakeDestPath (name);
+            MakeConfigPath (name);
 
-            file = fopen(tempPath,"rb");
+            file = fopen(configpath,"rb");
 
             if (!file)
-                CA_CannotOpen (tempPath);
+                CA_CannotOpen (configpath);
 
             DrawLSAction (0);
 
@@ -2037,12 +2037,12 @@ int CP_SaveGame (int quick)
 
             name[7] = which + '0';
 
-            MakeDestPath (name);
+            MakeConfigPath (name);
 
-            file = fopen(tempPath,"wb");
+            file = fopen(configpath,"wb");
 
             if (!file)
-                CA_CannotOpen (tempPath);
+                CA_CannotOpen (configpath);
 
             SaveTheGame (file,SaveGameNames[which]);
 
@@ -2099,12 +2099,12 @@ int CP_SaveGame (int quick)
 
                 snprintf (SaveGameNames[which],sizeof(SaveGameNames[which]),input);
 
-                MakeDestPath (name);
+                MakeConfigPath (name);
 
-                file = fopen(tempPath,"wb");
+                file = fopen(configpath,"wb");
 
                 if (!file)
-                    CA_CannotOpen (tempPath);
+                    CA_CannotOpen (configpath);
 
                 DrawLSAction (1);
                 SaveTheGame (file,input);
@@ -3990,9 +3990,9 @@ void ReadGameNames (void)
     {
         name[7] = '0' + i;
 
-        MakeDestPath (name);
+        MakeConfigPath (name);
 
-        file = fopen(tempPath,"rb");
+        file = fopen(configpath,"rb");
 
         if (file)
         {
@@ -4001,7 +4001,7 @@ void ReadGameNames (void)
             if (FindChunk(file,"DESC"))
             {
                 if (!fread(SaveGameNames[i],sizeof(SaveGameNames[i]),1,file))
-                    Quit ("Error reading file %s: %s",tempPath,strerror(errno));
+                    Quit ("Error reading file %s: %s",configpath,strerror(errno));
             }
             else
                 snprintf (SaveGameNames[i],sizeof(SaveGameNames[i]),"DESCRIPTION LOST");

@@ -11,9 +11,10 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <io.h>
+#include <direct.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,7 +23,6 @@
 #include <time.h>
 #include <string.h>
 #include <sys\stat.h>
-#include <dir.h>
 #include <libgen.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
@@ -76,6 +76,7 @@ typedef struct
 #include "jm_lzh.h"
 #include "jm_tp.h"
 #include "movie.h"
+#include "platutil.h"
 
 #define Quit(s, ...)    Terminate(__func__,(s),##__VA_ARGS__)
 
