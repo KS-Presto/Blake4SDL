@@ -153,7 +153,7 @@ void US_Print (const char *string)
 
 void US_PrintUnsigned (uint32_t n)
 {
-    char buffer[32];
+    char buffer[INTBUFFERSIZE];
 
     snprintf (buffer,sizeof(buffer),"%u",n);
 
@@ -173,9 +173,11 @@ void US_PrintUnsigned (uint32_t n)
 
 void US_PrintSigned (int32_t n)
 {
-    char buffer[32];
+    char buffer[INTBUFFERSIZE];
 
-    US_Print (ltoa(n,buffer,10));
+    ltoa (n,buffer,10);
+
+    US_Print (buffer);
 }
 
 

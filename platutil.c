@@ -132,3 +132,64 @@ void InitConfigPath (void)
             Quit ("Unable to create config directory: %s",strerror(errno));
     }
 }
+
+#ifndef _WIN32
+/*
+===================
+=
+= ltoa
+=
+===================
+*/
+
+char *ltoa (intmax_t value, char *string, int radix)
+{
+    char digits[] = "0123456789abcdef";
+    char temp;
+    int  i = 0,j = 0;
+
+    switch (radix)
+    {
+        case 2:
+        case 8:
+        case 10:
+        case 16:
+            break;
+
+        default:
+            *string = '\0';
+
+            return NULL;    // invalid radix
+    }
+
+    if (value < 0)
+    {
+        if (radix == 10)
+            j = 1;
+
+        value = -value;
+    }
+
+    do
+    {
+        string[i++] = digits[value % radix];
+        value /= radix;
+
+    } while (value);
+
+    if (j)
+        string[i++] = '-';
+
+    string[i] = '\0';
+
+    for (j = 0; j < i / 2; j++)
+    {
+        temp = string[j];
+        string[j] = string[i - 1 - j];
+        string[i - 1 - j] = temp;
+    }
+
+    return string;
+}
+
+#endif

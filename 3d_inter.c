@@ -179,7 +179,7 @@ void DrawLevelTransition (void)
 
 void DrawHighScores (void)
 {
-    char      buffer[16];
+    char      buffer[INTBUFFERSIZE];
     int       i;
     word      w,h;
     HighScore *s;

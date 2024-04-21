@@ -11,8 +11,10 @@
 
 #include <ctype.h>
 #include <errno.h>
+#ifdef _WIN32
 #include <io.h>
 #include <direct.h>
+#endif
 #include <unistd.h>
 #include <limits.h>
 #include <stdio.h>
@@ -22,7 +24,7 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 #include <libgen.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
@@ -38,6 +40,7 @@
 #include "mapsvsi.h"
 #include "spr_vsi.h"
 
+#define INTBUFFERSIZE    ((sizeof(intmax_t) * CHAR_BIT) + 1)    // enough for base 2 SIZE_MAX + null byte
 
 #ifndef __cplusplus
 enum boolean

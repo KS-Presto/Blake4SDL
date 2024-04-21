@@ -2312,7 +2312,7 @@ void GetBonus (statobj_t *check)
 
 void WriteTokenString (char *string)
 {
-    char   buffer[3];
+    char   buffer[INTBUFFERSIZE];
     size_t len;
 
     len = strlen(string) - 2;

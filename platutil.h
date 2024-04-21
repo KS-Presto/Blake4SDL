@@ -10,4 +10,12 @@
 int  GetMaxPathLen (void);
 void InitConfigPath (void);
 
+#ifndef _WIN32
+
+#define itoa(v,s,r)    ltoa ((int)(v),(s),(r))
+
+char *ltoa (intmax_t value, char *string, int radix);
+
+#endif
+
 #endif

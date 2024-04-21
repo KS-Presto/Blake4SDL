@@ -2668,7 +2668,11 @@ void ShadowPrintLocationText (int type)
                 ShPrint (" AREA: ",0,false);
 
                 if (!type)
-                    ShPrint (itoa(gamestate.mapon + 1,str,10),0,false);
+                {
+                    itoa (gamestate.mapon + 1,str,10);
+
+                    ShPrint (str,0,false);
+                }
             }
 
             //
@@ -2679,7 +2683,11 @@ void ShadowPrintLocationText (int type)
             ShPrint ("LIVES: ",0,false);
 
             if (!type)
-                ShPrint (itoa(gamestate.lives,str,10),0,false);
+            {
+                itoa (gamestate.lives,str,10);
+
+                ShPrint (str,0,false);
+            }
 
             //
             // print location text
