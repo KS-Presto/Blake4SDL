@@ -51,6 +51,7 @@ Thumbs.db
 *.cbp
 *.dev
 *.o
+*.d
 
 # VS Files & Folders #
 ##############
