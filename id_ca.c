@@ -14,7 +14,7 @@ byte        *audiosegs[NUMSNDCHUNKS];
 byte        *grsegs[NUMCHUNKS];
 
 
-char        extension[3];  // need a string, not constant to change cache files
+char        extension[4];  // need a string, not constant to change cache files
 char        gheadname[13] = "VGAHEAD.";
 char        gfilename[13] = "VGAGRAPH.";
 char        gdictname[13] = "VGADICT.";

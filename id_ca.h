@@ -51,7 +51,7 @@ extern  maptype     *mapheaderseg[NUMMAPS];
 extern  byte        *audiosegs[NUMSNDCHUNKS];
 extern  byte        *grsegs[NUMCHUNKS];
 
-extern  char        extension[3];
+extern  char        extension[4];
 extern  char        gheadname[13];
 extern  char        gfilename[13];
 extern  char        gdictname[13];
