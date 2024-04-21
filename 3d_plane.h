@@ -8,12 +8,13 @@ extern  int         ceilingpic,floorpic;
 
 extern  int16_t     *spanstart;
 
+extern  void        (*MapRowPtr) (void);
+
 
 void    LoadPlanes (void);
 void    DrawPlanes (void);
 void    MapRow (void);
 void    C_MapRow (void);
 void    F_MapRow (void);
-void    (*MapRowPtr) (void);
 
 #endif
