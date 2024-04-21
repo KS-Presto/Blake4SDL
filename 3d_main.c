@@ -24,7 +24,7 @@ int32_t checksum;
 int     starting_episode,starting_level,starting_difficulty;
 
 char    str[256],error[256];
-char    configname[13] = "CONFIG.";
+char    configname[13];
 char    *configpath;
 size_t  configpathlen;
 
@@ -144,11 +144,8 @@ void SetupDisplayDefaults (void)
 void WriteConfig (void)
 {
     FILE *file;
-    char fname[13];
 
-    snprintf (fname,sizeof(fname),"%s%s",configname,extension);
-
-    MakeConfigPath (fname);
+    MakeConfigPath (configname);
 
     file = fopen(configpath,"wb");
 
@@ -199,13 +196,10 @@ void WriteConfig (void)
 void ReadConfig (void)
 {
     FILE     *file;
-    char     fname[13];
     bool     configfound = false;
     uint16_t flags = gamestate.flags;
 
-    snprintf (fname,sizeof(fname),"%s%s",configname,extension);
-
-    MakeConfigPath (fname);
+    MakeConfigPath (configname);
 
     file = fopen(configpath,"rb");
 
@@ -1657,10 +1651,8 @@ void InitGame (void)
 ==========================
 */
 
-bool DoMovie (int movie, SDL_Color *palette)
+void DoMovie (int movie, SDL_Color *palette)
 {
-    bool retval;
-
     //StopMusic ();
     SD_StopSound ();
 
@@ -1668,11 +1660,9 @@ bool DoMovie (int movie, SDL_Color *palette)
 
     Movies[movie].palette = palette;
 
-    retval = MOVIE_Play(&Movies[movie]);
+    MOVIE_Play (&Movies[movie]);
 
     SD_StopSound ();
-
-    return retval;
 }
 
 
@@ -1788,8 +1778,7 @@ void PreDemo (void)
         //
         SD_StartMusic (STARTMUSIC + TITLE_LOOP_MUSIC);
 
-        if (!DoMovie(mv_intro,gamepal))
-            Quit ("JAM animation (IANIM.%s) does not exist!",extension);
+        DoMovie (mv_intro,gamepal);
 
         if (PowerBall)
         {

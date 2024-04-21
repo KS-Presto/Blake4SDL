@@ -46,8 +46,8 @@ int32_t    movietimecount;
 //
 MovieStuff_t Movies[mv_NUM_MOVIES] =
 {
-    {{"IANIM."},3},     // mv_intro
-    {{"EANIM."},30},    // mv_final
+    {"",3},     // mv_intro
+    {"",30},    // mv_final
 };
 
 
@@ -270,11 +270,10 @@ void MOVIE_HandlePage (MovieStuff_t *MovieStuff)
 
 bool MOVIE_Play (MovieStuff_t *MovieStuff)
 {
-    char fname[13];
+    moviefile = fopen(MovieStuff->fname,"rb");
 
-    snprintf (fname,sizeof(fname),"%s%s",MovieStuff->fname,extension);
-
-    moviefile = fopen(fname,"rb");
+    if (!moviefile)
+        CA_CannotOpen (MovieStuff->fname);
 
     SetupMovie (MovieStuff);
 

@@ -40,6 +40,9 @@ int             NumEAWalls;
 tilecoord_t     GoldieList[GOLDIE_MAX_SPAWNS];
 GoldsternInfo_t GoldsternInfo;
 
+//
+// TODO: demo file names need handling like the others
+//
 #if GAME_VERSION == SHAREWARE_VERSION
 char            demoname[13] = "DEMO?S.";
 #else

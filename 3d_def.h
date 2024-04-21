@@ -14,8 +14,7 @@
 
 #define MSG_BUFFER_LEN      150     // max length of info area messages
 
-#define PLAYTEMP_FILE       "PLAYTEMP"
-#define OLD_PLAYTEMP_FILE   "OLDPTEMP"
+#define PLAYTEMP_FILE       "playtemp"
 
 #define BORDER_HI_COLOR     0x85
 #define BORDER_MED_COLOR    0x82
@@ -1382,7 +1381,7 @@ void     HelpScreens (void);
 void     OrderingInfo (void);
 void     AlignPlayerOnTransporter (void);
 
-bool     DoMovie (int movie, SDL_Color *palette);
+void     DoMovie (int movie, SDL_Color *palette);
 void     SaveLevel (int levelnum);
 void     LoadLevel (int levelnum);
 bool     SaveTheGame (FILE *file, const char *description);

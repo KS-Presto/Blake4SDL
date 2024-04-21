@@ -257,7 +257,7 @@ int  lastmenumusic;
 int  StartGame,SoundStatus = 1,pickquick;
 bool SaveGamesAvail[MaxSaveGames];
 char SaveGameNames[MaxSaveGames][GAME_DESCRIPTION_LEN + 1];
-char savefilename[13] = "SAVEGAM?.";
+char savefilename[13];
 
 static const char *ScanNames[] =
 {
@@ -1820,9 +1820,6 @@ int CP_LoadGame (int quick)
 {
     FILE *file;
     int  which,exit = 0;
-    char name[13];
-
-    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
 
     //
     // quickload?
@@ -1833,9 +1830,9 @@ int CP_LoadGame (int quick)
 
         if (SaveGamesAvail[which])
         {
-            name[7] = which + '0';
+            savefilename[7] = which + '0';
 
-            MakeConfigPath (name);
+            MakeConfigPath (savefilename);
 
             file = fopen(configpath,"rb");
 
@@ -1865,9 +1862,9 @@ int CP_LoadGame (int quick)
         {
             ShootSnd ();
 
-            name[7] = which + '0';
+            savefilename[7] = which + '0';
 
-            MakeConfigPath (name);
+            MakeConfigPath (savefilename);
 
             file = fopen(configpath,"rb");
 
@@ -2016,10 +2013,8 @@ int CP_SaveGame (int quick)
     FILE           *file;
     int            x,y;
     int            which,exit = 0;
-    char           name[13],input[GAME_DESCRIPTION_LEN + 1];
+    char           input[GAME_DESCRIPTION_LEN + 1];
     CustomCursor_t TermCursor = {'@',0,HIGHLIGHT_TEXT_COLOR,2};
-
-    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
 
     usecustomcursor = true;
     CustomCursor = TermCursor;
@@ -2035,9 +2030,9 @@ int CP_SaveGame (int quick)
         {
             DrawLSAction (1);     // testing
 
-            name[7] = which + '0';
+            savefilename[7] = which + '0';
 
-            MakeConfigPath (name);
+            MakeConfigPath (savefilename);
 
             file = fopen(configpath,"wb");
 
@@ -2082,7 +2077,7 @@ int CP_SaveGame (int quick)
 
             snprintf (input,sizeof(input),"%s",SaveGameNames[which]);
 
-            name[7] = which + '0';
+            savefilename[7] = which + '0';
 
             fontnumber = 2;
 
@@ -2099,7 +2094,7 @@ int CP_SaveGame (int quick)
 
                 snprintf (SaveGameNames[which],sizeof(SaveGameNames[which]),"%s",input);
 
-                MakeConfigPath (name);
+                MakeConfigPath (savefilename);
 
                 file = fopen(configpath,"wb");
 
@@ -3978,19 +3973,16 @@ void SetupControlPanel (void)
 void ReadGameNames (void)
 {
     FILE *file;
-    char name[13];
     int  i;
 
     //
     // see which save game files are available & read string in
     //
-    snprintf (name,sizeof(name),"%s%s",savefilename,extension);
-
     for (i = 0; i < MaxSaveGames; i++)
     {
-        name[7] = '0' + i;
+        savefilename[7] = '0' + i;
 
-        MakeConfigPath (name);
+        MakeConfigPath (savefilename);
 
         file = fopen(configpath,"rb");
 
@@ -4818,23 +4810,71 @@ void ExitGame (void)
 
 void CheckForEpisodes (void)
 {
+    char   extension[4];
     struct stat statbuf;
 
-#if (GAME_VERSION != SHAREWARE_VERSION)
-    if (stat("*.VSI",&statbuf))
-        snprintf (extension,sizeof(extension),"VSI");
+    snprintf (extension,sizeof(extension),"vsi");
+
+    //
+    // make sure all files are present and correct
+    //
+    snprintf (aheadname,sizeof(aheadname),"audiohed.%s",extension);
+
+    if (stat(aheadname,&statbuf))
+        Quit ("File %s not found!",aheadname);
+
+    snprintf (afilename,sizeof(afilename),"audiot.%s",extension);
+
+    if (stat(afilename,&statbuf))
+        Quit ("File %s not found!",afilename);
+
+    snprintf (mheadname,sizeof(mheadname),"maphead.%s",extension);
+
+    if (stat(mheadname,&statbuf))
+        Quit ("File %s not found!",mheadname);
+#ifdef CARMACIZED
+    snprintf (mfilename,sizeof(mfilename),"gamemaps.%s",extension);
 #else
-    if (stat("*.FSW",&statbuf))
-        snprintf (extension,sizeof(extension),"FSW");
+    snprintf (mfilename,sizeof(mfilename),"maptemp.%s",extension);
 #endif
-    else
-        Quit ("No Fire Strike data files found!");
+    if (stat(mfilename,&statbuf))
+        Quit ("File %s not found!",mfilename);
+
+    snprintf (gdictname,sizeof(gdictname),"vgadict.%s",extension);
+
+    if (stat(gdictname,&statbuf))
+        Quit ("File %s not found!",gdictname);
+
+    snprintf (gfilename,sizeof(gfilename),"vgagraph.%s",extension);
+
+    if (stat(gfilename,&statbuf))
+        Quit ("File %s not found!",gfilename);
+
+    snprintf (gheadname,sizeof(gheadname),"vgahead.%s",extension);
+
+    if (stat(gheadname,&statbuf))
+        Quit ("File %s not found!",gheadname);
 
 #ifdef DUAL_SWAP_FILES
-    char altpagefilename[13];
+    snprintf (altpagefilename,sizeof(altpagefilename),"svswap.%s",extension);
 
-    snprintf (altpagefilename,sizeof(altpagefilename),"SVSWAP.%s",extension);
-
-    ShadowsAvail = stat(altpagefilename,&statbuf);
+    shadowsavail = stat(pagefilename,&statbuf) != 0;
 #endif
+    snprintf (pagefilename,sizeof(pagefilename),"vswap.%s",extension);
+
+    if (stat(pagefilename,&statbuf))
+        Quit ("File %s not found!",pagefilename);
+
+    snprintf (Movies[mv_intro].fname,sizeof(Movies[mv_intro].fname),"ianim.%s",extension);
+
+    if (stat(Movies[mv_intro].fname,&statbuf))
+        Quit ("File %s not found!",Movies[mv_intro].fname);
+
+    snprintf (Movies[mv_final].fname,sizeof(Movies[mv_final].fname),"eanim.%s",extension);
+
+    if (stat(Movies[mv_final].fname,&statbuf))
+        Quit ("File %s not found!",Movies[mv_final].fname);
+
+    snprintf (configname,sizeof(configname),"config.%s",extension);
+    snprintf (savefilename,sizeof(savefilename),"savegam0.%s",extension);
 }

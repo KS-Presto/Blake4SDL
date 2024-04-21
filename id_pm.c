@@ -6,12 +6,14 @@ word ChunksInFile;
 word PMSpriteStart;
 word PMSoundStart;
 
-bool PMSoundInfoPagePadded = false;
+bool PMSoundInfoPagePadded;
 
 word *pageLengths;
 
 byte *PMPageData;
 byte **PMPages;
+
+char pagefilename[13];
 
 enum shadfiletypes
 {
@@ -23,6 +25,8 @@ enum shadfiletypes
 int  FileUsed = sd_NONE;
 
 #ifdef DUAL_SWAP_FILES
+char altpagefilename[13];
+
 bool shadowsavail;
 #endif
 
@@ -37,24 +41,24 @@ bool shadowsavail;
 FILE *PM_OpenPageFile (void)
 {
     FILE *file;
-    char pagefilename[13];
+    char fname[13];
 #ifdef DUAL_SWAP_FILES
     if (!(gamestate.flags & GS_DRAW_FLOOR) && shadowsavail)
     {
-        snprintf (pagefilename,sizeof(pagefilename),"svswap.%s",extension);
+        snprintf (fname,sizeof(fname),"%s",altpagefilename);
         FileUsed = sd_SHADOWS;
     }
     else
 #endif
     {
-        snprintf (pagefilename,sizeof(pagefilename),"vswap.%s",extension);
+        snprintf (fname,sizeof(fname),"%s",pagefilename);
         FileUsed = sd_NO_SHADOWS;
     }
 
-    file = fopen(pagefilename,"rb");
+    file = fopen(fname,"rb");
 
     if (!file)
-        CA_CannotOpen (pagefilename);
+        CA_CannotOpen (fname);
 
     return file;
 }

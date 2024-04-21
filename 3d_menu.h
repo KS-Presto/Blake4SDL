@@ -209,7 +209,8 @@ enum inputtypes
 
 extern  int         StartGame,SoundStatus;
 extern  bool        SaveGamesAvail[MaxSaveGames];
-extern  char        SaveGameNames[MaxSaveGames][GAME_DESCRIPTION_LEN + 1],savefilename[13];
+extern  char        SaveGameNames[MaxSaveGames][GAME_DESCRIPTION_LEN + 1];
+extern  char        savefilename[13];
 
 extern  CP_itemtype MainMenu[],NewEMenu[];
 extern  CP_iteminfo MainItems;

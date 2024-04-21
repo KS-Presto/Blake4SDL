@@ -13,19 +13,17 @@ maptype     *mapheaderseg[NUMMAPS];
 byte        *audiosegs[NUMSNDCHUNKS];
 byte        *grsegs[NUMCHUNKS];
 
-
-char        extension[4];  // need a string, not constant to change cache files
-char        gheadname[13] = "VGAHEAD.";
-char        gfilename[13] = "VGAGRAPH.";
-char        gdictname[13] = "VGADICT.";
-char        mheadname[13] = "MAPHEAD.";
+char        gheadname[13];
+char        gfilename[13];
+char        gdictname[13];
+char        mheadname[13];
 #ifdef CARMACIZED
-char        mfilename[13] = "GAMEMAPS.";
+char        mfilename[13];
 #else
-char        mfilename[13] = "MAPTEMP.";
+char        mfilename[13];
 #endif
-char        aheadname[13] = "AUDIOHED.";
-char        afilename[13] = "AUDIOT.";
+char        aheadname[13];
+char        afilename[13];
 
 int32_t     *audiostarts;  // array of offsets in audio / audiot
 
@@ -271,7 +269,6 @@ void CA_RLEWexpand (word *source, word *dest, int32_t length, word rlewtag)
 
 void CA_SetupGrFile (void)
 {
-    char     fname[13];
     void     *compseg;
     int      i;
     int32_t  value;
@@ -284,12 +281,10 @@ void CA_SetupGrFile (void)
 //
 // load vgadict (huffman dictionary for graphics files)
 //
-    snprintf (fname,sizeof(fname),"%s%s",gdictname,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(gdictname,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (gdictname);
 
     length = CA_GetFileLength(file);
 
@@ -301,17 +296,15 @@ void CA_SetupGrFile (void)
 //
 // load the data offsets from vgahead
 //
-    snprintf (fname,sizeof(fname),"%s%s",gheadname,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(gheadname,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (gheadname);
 
     headersize = CA_GetFileLength(file) / FILEPOSSIZE;
 
     if (headersize != NUMCHUNKS + 1)
-        Terminate (NULL,STR_BAD_VGAHEAD,fname,headersize,NUMCHUNKS + 1);
+        Terminate (NULL,STR_BAD_VGAHEAD,gheadname,headersize,NUMCHUNKS + 1);
 
     grstarts = SafeMalloc((NUMCHUNKS + 1) * sizeof(*grstarts));
 
@@ -344,12 +337,10 @@ void CA_SetupGrFile (void)
 //
 // Open the graphics file
 //
-    snprintf (fname,sizeof(fname),"%s%s",gfilename,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(gfilename,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (gfilename);
 
 //
 // load the pic headers
@@ -389,18 +380,15 @@ void CA_SetupMapFile (void)
 {
     int     i;
     int32_t pos;
-    char    fname[13];
     FILE    *file;
 
 //
 // load maphead.ext (offsets and tileinfo for map file)
 //
-    snprintf (fname,sizeof(fname),"%s%s",mheadname,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(mheadname,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (mheadname);
 
     tinf = SafeMalloc(sizeof(*tinf));
 
@@ -410,12 +398,10 @@ void CA_SetupMapFile (void)
 //
 // open the data file
 //
-    snprintf (fname,sizeof(fname),"%s%s",mfilename,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(mfilename,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (mfilename);
 
 //
 // load all map header
@@ -454,14 +440,11 @@ void CA_SetupMapFile (void)
 void CA_SetupAudioFile (void)
 {
     size_t length;
-    char   fname[13];
 
-    snprintf (fname,sizeof(fname),"%s%s",aheadname,extension);
-
-    audiofile = fopen(fname,"rb");
+    audiofile = fopen(aheadname,"rb");
 
     if (!audiofile)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (aheadname);
 
     length = CA_GetFileLength(audiofile);
 
@@ -475,12 +458,10 @@ void CA_SetupAudioFile (void)
 //
 // TODO: see if it's worth reading it all in and then closing the file
 //
-    snprintf (fname,sizeof(fname),"%s%s",afilename,extension);
+    audiofile = fopen(afilename,"rb");
 
-    audiofile = fopen(fname,"rb");
-
-	if (!audiofile)
-		CA_CannotOpen (fname);
+    if (!audiofile)
+        CA_CannotOpen (afilename);
 }
 
 
@@ -819,7 +800,6 @@ void CA_CacheGrChunks (FILE *grfile, int32_t *offset, huffnode *hufftable)
 
 void CA_CacheMap (int mapnum)
 {
-    char    fname[13];
     FILE    *file;
     int     plane;
     int32_t pos,compressed;
@@ -829,12 +809,10 @@ void CA_CacheMap (int mapnum)
     word    *rlewtable;
     int32_t expanded;
 #endif
-    snprintf (fname,sizeof(fname),"%s%s",mfilename,extension);
-
-    file = fopen(fname,"rb");
+    file = fopen(mfilename,"rb");
 
     if (!file)
-        CA_CannotOpen (fname);
+        CA_CannotOpen (mfilename);
 
 //
 // load the planes into the already allocated buffers
