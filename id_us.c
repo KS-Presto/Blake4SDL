@@ -107,7 +107,7 @@ void US_Print (const char *string)
 	strstart = SafeMalloc(len);
     str = strstart;
 
-	snprintf (str,len,string);
+	snprintf (str,len,"%s",string);
 
 	while (*str)
 	{
@@ -277,7 +277,7 @@ void US_CPrint (const char *string)
     strstart = SafeMalloc(len);
     str = strstart;
 
-    snprintf (str,len,string);
+    snprintf (str,len,"%s",string);
 
 	while (*str)
 	{
@@ -466,7 +466,7 @@ static void US_XORICursor (int x, int y, const char *string, int cursor)
     int         temp;
     word        w,h;
 
-    snprintf (buf,sizeof(buf),string);
+    snprintf (buf,sizeof(buf),"%s",string);
 
     buf[cursor] = '\0';
 
@@ -506,7 +506,7 @@ static void US_CustomCursor (int x, int y, const char *string, int cursor)
     int         temp,tempfont;
     word        w,h;
 
-    snprintf (buf,sizeof(buf),string);
+    snprintf (buf,sizeof(buf),"%s",string);
 
     buf[cursor] = '\0';
 
@@ -560,7 +560,7 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
     uint32_t lasttime,curtime;
 
     if (def)
-        snprintf (string,sizeof(string),def);
+        snprintf (string,sizeof(string),"%s",def);
     else
         string[0] = '\0';
 
@@ -594,7 +594,7 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
         switch (scan)
         {
             case sc_Return:
-                snprintf (buf,maxchars + 1,string);
+                snprintf (buf,maxchars + 1,"%s",string);
                 done = true;
                 result = true;
                 break;
@@ -651,7 +651,7 @@ bool US_LineInput (int x, int y, char *buf, const char *def, bool escok, int max
             fontcolor = backcolor;
             VW_DrawString (oldstring);
             fontcolor = temp;
-            snprintf (oldstring,sizeof(oldstring),string);
+            snprintf (oldstring,sizeof(oldstring),"%s",string);
 
             px = x;
             py = y;

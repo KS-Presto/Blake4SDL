@@ -47,7 +47,7 @@ void *safe_malloc (size_t size, const char *file, uint32_t line)
 
     if (!ptr)
     {
-        snprintf (str,sizeof(str),file);
+        snprintf (str,sizeof(str),"%s",file);
         Terminate (NULL,"Error allocating memory: %s\nFile: %s Line: %u",strerror(errno),basename(str),line);
     }
 
@@ -67,7 +67,7 @@ void CustomAssert (bool cond, const char *file, uint32_t line, const char *strin
 {
     if (!cond)
     {
-        snprintf (str,sizeof(str),file);
+        snprintf (str,sizeof(str),"%s",file);
         snprintf (error,sizeof(error),"Assertion failed: %s\nFile: %s Line: %u",string,basename(str),line);
         Terminate (NULL,error);
     }

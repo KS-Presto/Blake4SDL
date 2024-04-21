@@ -1466,7 +1466,7 @@ bool DisplayInfoMsg (const char *Msg, int Priority, int DisplayTime, int MsgType
     if (strlen(Msg) > MSG_BUFFER_LEN)
         Quit ("Message \"%s\" is too long!",Msg);
 
-    snprintf (gamestate.msg,sizeof(gamestate.msg),Msg);
+    snprintf (gamestate.msg,sizeof(gamestate.msg),"%s",Msg);
 
     DrawInfoArea_COUNT = InitInfoArea_COUNT = 3;
 
@@ -1609,7 +1609,7 @@ void DisplayNoMoMsgs (void)
         switch (gamestate.mapon)
         {
             case GOLD_MORPH_LEVEL:
-                snprintf (str,sizeof(str),destroyGoldfire_msg);
+                snprintf (str,sizeof(str),"%s",destroyGoldfire_msg);
                 break;
 
             case 20:
@@ -1620,9 +1620,9 @@ void DisplayNoMoMsgs (void)
 
             default:
                 if (gamestate.plasma_detonators)
-                    snprintf (str,sizeof(str),haveDetonator_msg);
+                    snprintf (str,sizeof(str),"%s",haveDetonator_msg);
                 else
-                    snprintf (str,sizeof(str),needDetonator_msg);
+                    snprintf (str,sizeof(str),"%s",needDetonator_msg);
                 break;
         }
     }
@@ -1633,7 +1633,7 @@ void DisplayNoMoMsgs (void)
     defmsglen = strlen(default_msg);
     outmsg = SafeMalloc(defmsglen + 1);
 
-    snprintf (outmsg,defmsglen + 1,default_msg);
+    snprintf (outmsg,defmsglen + 1,"%s",default_msg);
 
     //
     // find the food tokens substring
@@ -2325,7 +2325,7 @@ void WriteTokenString (char *string)
         itoa (gamestate.tokens,buffer + 1,10);
     }
 
-    snprintf (&string[len],len,buffer);
+    snprintf (&string[len],len,"%s",buffer);
 }
 
 
@@ -3031,7 +3031,7 @@ bool Interrogate (objtype *obj)
     }
     else
     {
-        snprintf (msgbuffer,sizeof(msgbuffer),int_interrogate);
+        snprintf (msgbuffer,sizeof(msgbuffer),"%s",int_interrogate);
 
         rt_value = false;
 
@@ -3713,7 +3713,7 @@ void PrintStatPercent (int nx, int ny, int percentage)
 
     VW_Bar (nx,ny,PERC_W + 5,PERC_H,0);
     US_PrintSigned (percentage);
-    US_Print ("%%");
+    US_Print ("%");
 }
 
 

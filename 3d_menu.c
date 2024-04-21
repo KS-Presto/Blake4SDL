@@ -2080,7 +2080,7 @@ int CP_SaveGame (int quick)
 
             ShootSnd ();
 
-            snprintf (input,sizeof(input),SaveGameNames[which]);
+            snprintf (input,sizeof(input),"%s",SaveGameNames[which]);
 
             name[7] = which + '0';
 
@@ -2097,7 +2097,7 @@ int CP_SaveGame (int quick)
             {
                 SaveGamesAvail[which] = true;
 
-                snprintf (SaveGameNames[which],sizeof(SaveGameNames[which]),input);
+                snprintf (SaveGameNames[which],sizeof(SaveGameNames[which]),"%s",input);
 
                 MakeConfigPath (name);
 
@@ -4633,7 +4633,7 @@ void CacheMessage (int messagenum)
 
     buffer = SafeMalloc(len);
 
-    snprintf (buffer,len,string);
+    snprintf (buffer,len,"%s",string);
 
     buffer[len - 1] = '\0';
 

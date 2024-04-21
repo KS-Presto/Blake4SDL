@@ -2530,7 +2530,7 @@ void BMAmsg (const char *msg)
         len = strlen(msg) + 1;
         string = SafeMalloc(len);
 
-        snprintf (string,len,msg);
+        snprintf (string,len,"%s",msg);
         s = string;
 
         memset (&pi,0,sizeof(pi));
@@ -2593,7 +2593,7 @@ void CacheBMAmsg (int msgnum)
 
     buffer = SafeMalloc(len);
 
-    snprintf (buffer,len,string);
+    snprintf (buffer,len,"%s",string);
 
     buffer[len - 1] = '\0';
 

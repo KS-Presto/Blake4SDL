@@ -64,7 +64,7 @@ void ShPrint (const char *text, int shadowcolor, bool singlechar)
         len = strlen(text) + 1;
         str = SafeMalloc(len);
 
-        snprintf (str,len,text);
+        snprintf (str,len,"%s",text);
     }
 
     fontcolor = shadowcolor;

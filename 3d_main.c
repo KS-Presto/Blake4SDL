@@ -2214,7 +2214,7 @@ void CheckParameters (int argc, char *argv[])
                 {
                     configpath = SafeMalloc(len + sizeof(configname) - 1);
 
-                    snprintf (configpath,len,argv[i]);
+                    snprintf (configpath,len,"%s",argv[i]);
 
                     //
                     // make sure there's a separator at the end
@@ -2273,7 +2273,7 @@ void MakeConfigPath (const char *filename)
     if (len > sizeof(configname))
         Quit ("The file name \"%s\" is too long!",filename);
 
-    snprintf (&configpath[configpathlen],len,filename);
+    snprintf (&configpath[configpathlen],len,"%s",filename);
 }
 
 

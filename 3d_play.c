@@ -819,14 +819,14 @@ void CheckMusicToggle (void)
             StartMusic ();
         }
 
-        snprintf (buffer,sizeof(buffer),MusicOn);
+        snprintf (buffer,sizeof(buffer),"%s",MusicOn);
 
         len = strlen(buffer) - strlen(strend);
 
         if (strncmp(&buffer[len],strend,strlen(strend)))
             Quit ("MusicOn string MUST end with \"%s\"!",strend);
 
-        snprintf (&buffer[len],sizeof(buffer) - len,togglestr[MusicMode != smm_Off]);
+        snprintf (&buffer[len],sizeof(buffer) - len,"%s",togglestr[MusicMode != smm_Off]);
 
         DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
 
@@ -873,14 +873,14 @@ void CheckSoundToggle (void)
             CA_LoadAllSounds ();
         }
 
-        snprintf (buffer,sizeof(buffer),SoundOn);
+        snprintf (buffer,sizeof(buffer),"%s",SoundOn);
 
         len = strlen(buffer) - strlen(strend);
 
         if (strncmp(&buffer[len],strend,strlen(strend)))
             Quit ("SoundOn string MUST end with \"%s\"!",strend);
 
-        snprintf (&buffer[len],sizeof(buffer) - len,togglestr[SoundMode != sdm_Off]);
+        snprintf (&buffer[len],sizeof(buffer) - len,"%s",togglestr[SoundMode != sdm_Off]);
 
         DISPLAY_TIMED_MSG (buffer,MP_BONUS,MT_GENERAL);
 

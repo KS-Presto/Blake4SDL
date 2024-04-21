@@ -81,7 +81,7 @@ void InitConfigPath (void)
 
             configpath = SafeMalloc(len);
 
-            snprintf (configpath,len,basedir);
+            snprintf (configpath,len,"%s",basedir);
 
             if (configpath[len - 1] == DIR_SEPARATOR)
                 configpath[len - 1] = '\0';
