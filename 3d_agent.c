@@ -174,22 +174,22 @@ scientist_t InfHintList;  // Informant messages
 scientist_t NiceSciList;  // Non-informant, non-pissed messages
 scientist_t MeanSciList;  // Non-informant, pissed messages
 
-const char  int_interrogate[] = "INTERROGATE:";
-const char  int_informant[] = " ^FC3aINFORMANT^FCa6";
-const char  int_rr[] = "\r\r";
-const char  int_haveammo[] = " HEY BLAKE,\r TAKE MY CHARGE PACK!";
-const char  int_havetoken[] = " HEY BLAKE,\r TAKE MY FOOD TOKENS!";
+const char  *int_interrogate = "INTERROGATE:";
+const char  *int_informant =   " ^FC3aINFORMANT^FCa6";
+const char  *int_rr = "\r\r";
+const char  *int_haveammo =  " HEY BLAKE,\r TAKE MY CHARGE PACK!";
+const char  *int_havetoken = " HEY BLAKE,\r TAKE MY FOOD TOKENS!";
 
 //
 // elevator variables
 //
-const char  if_help[] =     "UP/DN MOVES SELECTOR - ENTER ACTIVATES";
-const char  if_noImage[] =  "   AREA\n"
-                            "  UNMAPPED\n"
-                            "\n"
-                            "\n"
-                            " PRESS ENTER\n"
-                            " TO TELEPORT";
+const char  *if_help =     "UP/DN MOVES SELECTOR - ENTER ACTIVATES";
+const char  *if_noImage =  "   AREA\n"
+                           "  UNMAPPED\n"
+                           "\n"
+                           "\n"
+                           " PRESS ENTER\n"
+                           " TO TELEPORT";
 
 statsInfoType   ov_stats;
 void            *ov_buffer;
