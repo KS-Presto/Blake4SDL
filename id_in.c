@@ -321,7 +321,7 @@ static void IN_HandleEvent (SDL_Event *event)
 
                 if (Keyboard[sc_Alt] && Keyboard[sc_F4])
                     Quit (NULL);
-                else if (Keyboard[sc_ScrollLock])
+                else if (Keyboard[sc_ScrollLock] || Keyboard[sc_F11])
                 {
                     screen.flags ^= SC_INPUTGRABBED;
 
