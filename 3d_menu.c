@@ -1167,8 +1167,9 @@ void ChangeSwaps (void)
 
 int CP_Display (int blank)
 {
-    screen_t newscr;
-    int      which;
+    int             which;
+    screen_t        newscr;
+    SDL_DisplayMode dm;
 
     VW_DrawPic (0,0,BACKGROUND_SCREENPIC);
 
@@ -1219,7 +1220,16 @@ int CP_Display (int blank)
                 break;
 
             case DISP_RES:
-                if (++newscr.scale > 6)    // TODO: find the largest scale possible from the desktop display mode
+                if (SDL_GetDesktopDisplayMode(0,&dm))
+                    Quit ("Unable to get desktop display mode: %s\n",SDL_GetError());
+
+                if (dm.w % 320)
+                {
+                    dm.w += 320;
+                    dm.w -= dm.w % 320;
+                }
+
+                if (++newscr.scale > dm.w / 320)
                     newscr.scale = 1;
                 break;
 
