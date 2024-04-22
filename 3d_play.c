@@ -84,7 +84,6 @@ bool            usedummy;
 // control info
 //
 bool            mouseenabled,joystickenabled,freelookenabled;
-int             dirscan[4] = {sc_UpArrow,sc_RightArrow,sc_DownArrow,sc_LeftArrow};
 int             buttonscan[NUMBUTTONS] =
 {
     //
@@ -227,9 +226,6 @@ void PollJoystickButtons (void)
 ===================
 =
 = PollKeyboardMove
-=
-= KS: We can probably do away with the dirscan array and just use
-= buttonstate to determine the controlx/controly values
 =
 ===================
 */
@@ -538,7 +534,7 @@ void CheckKeys (void)
 
             gamestate.timecount += 42000L;
 
-            for (i = 0; i < NUMWEAPONS - 1; i++)
+            for (i = 0; i < NUMWEAPONS; i++)
                 GiveWeapon (i);
 
             DrawWeapon ();

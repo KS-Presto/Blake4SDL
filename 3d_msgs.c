@@ -158,11 +158,6 @@ char pd_dropped[] = "^FC19\r       WARNING:\r"
                     "^FCA6   FISSION DETONATOR\r"
                     "       DROPPED!";
 
-
-char pd_nomore[] =  "^FCA6\r\r      NO FISSION\r"
-                    "   DETONATORS AVAIL.";
-
-
 char pd_notnear[] = "^SH035^FCA6\r  YOU MUST\r"
                     "  FIND THE\r"
                     "  SECURITY\r"

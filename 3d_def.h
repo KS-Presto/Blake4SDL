@@ -972,8 +972,6 @@ enum buttontypes
     bt_automap,
     bt_esc,
 
-    bt_SPACER,  // TODO: why?
-
     NUMBUTTONS,
 };
 
@@ -986,9 +984,6 @@ enum weapontypes
     wp_ion_cannon,
     wp_grenade,
     wp_bfg_cannon,
-    // wp_plasma_detonators,
-
-    wp_SPACER,
 
     NUMWEAPONS,
 };
@@ -1486,7 +1481,6 @@ extern  const char  *MusicOn;
 extern  const char  *SoundOn;
 
 extern  char  pd_dropped[];
-extern  char  pd_nomore[];
 extern  char  pd_switching[];
 extern  char  pd_notnear[];
 extern  char  pd_getcloser[];

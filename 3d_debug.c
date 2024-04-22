@@ -559,7 +559,7 @@ bool DebugKeys (void)
         HealSelf (99);
         GiveToken (5);
 
-        for (i = wp_autocharge; i <= wp_bfg_cannon; i++)
+        for (i = wp_autocharge; i < NUMWEAPONS; i++)
         {
             if (!(gamestate.weapons & (1 << i)))
             {

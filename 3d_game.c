@@ -861,7 +861,7 @@ void ScanInfoPlane (void)
 
                         GoldsternInfo.flags = GS_FIRSTTIME;
 
-                        if (gamestate.mapon == 9)    // TODO: should this have been GOLD_MORPH_LEVEL?
+                        if (gamestate.mapon == 9)
                             GoldsternInfo.WaitTime = 60;
                         else
                             GoldsternInfo.WaitTime = MIN_GOLDIE_FIRST_WAIT + Random(MAX_GOLDIE_FIRST_WAIT - MIN_GOLDIE_FIRST_WAIT);
@@ -3517,9 +3517,6 @@ void GameLoop (void)
 
                 if (playstate == ex_victorious)
                 {
-                    //
-                    // TODO: test if this looks like the original
-                    //
                     VW_ConvertPalette (grsegs[ENDINGPALETTE],endingpal,lengthof(endingpal));
 
                     DoMovie (mv_final,endingpal);

@@ -2979,7 +2979,7 @@ objtype *SpawnStand (int which, int tilex, int tiley, int dir)
             newobj->flags2 = FL2_BFG_SHOOTABLE;
             newobj->speed = SPDPATROL;
 
-            if (gamestate.mapon == 9)  // TODO: GOLD_MORPH_LEVEL?
+            if (gamestate.mapon == 9)
                 newobj->hitpoints = starthitpoints[gamestate.difficulty][which] * 15;
 
             ammo = 25;
@@ -4562,7 +4562,7 @@ void FindNewGoldieSpawnSite (void)
         //
         GoldsternInfo.LastIndex = i;
 
-        if (gamestate.mapon == 9)    // TODO: GOLD_MORPH_LEVEL?
+        if (gamestate.mapon == 9)
             GoldsternInfo.WaitTime = 60;
         else if (GoldsternInfo.flags == GS_FIRSTTIME)
             GoldsternInfo.WaitTime = MIN_GOLDIE_FIRST_WAIT + Random(MAX_GOLDIE_FIRST_WAIT - MIN_GOLDIE_FIRST_WAIT);

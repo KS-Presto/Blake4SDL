@@ -272,7 +272,6 @@ atkinf_t  attackinfo[NUMWEAPONS][4] =
     { {6,0,1},{6,1,2},{3,4,3},{3,-1,4} },       // ION
     { {6,0,1},{6,5,2},{6,6,3},{6,-1,4} },
     { {6,0,1},{6,9,2},{6,10,3},{6,-1,4} },
-    { {5,7,0},{5,8,0},{2,-2,0},{0,0,0} },
 };
 
 
@@ -299,7 +298,7 @@ void CheckWeaponChange (void)
 {
 	int	i;
 
-	for (i = wp_autocharge; i <= wp_bfg_cannon; i++)
+	for (i = wp_autocharge; i < NUMWEAPONS; i++)
 	{
 		if (buttonstate[bt_ready_autocharge + i - wp_autocharge])
 		{
@@ -977,12 +976,6 @@ void DrawAmmo (bool ForceRefresh)
     //
     switch (gamestate.weapon)
     {
-#if 0
-        case wp_plasma_detonators:
-            DrawAmmoPic_COUNT = 3;
-            DrawAmmoNum_COUNT = 0;
-            return;
-#endif
         case wp_autocharge:
             DrawAmmoPic_COUNT = 3;
             DrawAmmoNum_COUNT = 0;
@@ -1035,21 +1028,8 @@ void DrawAmmoNum (void)
     PrintX = 252;
     PrintY = screen.baseheight - STATUSLINES + 38;
 
-#if 0
-    switch (gamestate.weapon)
-    {
-        case wp_plasma_detonators:
-        case wp_autocharge:
-            break;
-
-        default:
-            DrawGAmmoNum ();
-            break;
-    }
-#else
     DrawGAmmoNum ();
 
-#endif
     DrawAmmoNum_COUNT--;
 }
 
@@ -1097,11 +1077,7 @@ void DrawAmmoPic (void)
         case wp_autocharge:
             DrawAmmoMsg ();
             break;
-#if 0
-        case wp_plasma_detonators:
-            DrawPDAmmoMsg ();
-            break;
-#endif
+
         default:
             DrawAmmoGauge ();
         break;
@@ -2370,7 +2346,9 @@ bool TryMove (objtype *obj, unsigned size)
 //
 // check for actors
 //
-// TODO: ???
+// KS: This is done to scan a wider range, probably
+// because the x/y coords of both actors being checked
+// might be totally different to their tilex/tiley coords
 //
     yl -= 2;
     yh += 2;
@@ -4096,7 +4074,6 @@ void T_Player (objtype *obj)
 void T_Attack (objtype *obj)
 {
     atkinf_t *cur;
-    int      i;
 
     if (noShots)
     {
@@ -4152,30 +4129,6 @@ void T_Attack (objtype *obj)
                         DrawWeapon ();
                         DisplayInfoMsg (NotEnoughEnergyForWeapon,MP_NO_MORE_AMMO,DISPLAY_MSG_STD_TIME << 1,MT_OUT_OF_AMMO);
                     }
-                }
-
-                gamestate.attackframe = gamestate.weaponframe = 0;
-                return;
-
-            case -2:
-                obj->state = &s_player;
-
-                if (!gamestate.plasma_detonators)
-                {
-                    //
-                    // check to see what weapons are possible
-                    //
-                    for (i = wp_bfg_cannon; i >= wp_autocharge; i--)
-                    {
-                        if (gamestate.useable_weapons & (1 << i))
-                        {
-                            gamestate.weapon = i;
-                            break;
-                        }
-                    }
-
-                    DrawWeapon ();
-                    /*DisplayInfoMsg (pd_switching,MP_NO_MORE_AMMO,DISPLAY_MSG_STD_TIME << 1,MT_OUT_OF_AMMO);*/
                 }
 
                 gamestate.attackframe = gamestate.weaponframe = 0;

@@ -1235,7 +1235,6 @@ int weaponscale[NUMWEAPONS] =
     SPR_CHAINREADY,
     SPR_GRENADEREADY,
     SPR_BFG_WEAPON1,
-    0,
 };
 
 

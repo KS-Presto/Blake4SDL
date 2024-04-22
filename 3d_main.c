@@ -44,9 +44,6 @@ int     param_audiobuffer;
 int     param_joystickindex;
 int     param_joystickhat = -1;
 
-//
-// TODO: Aliens of Gold, huh?
-//
 const char *SavegameInfoText =  "\n\r"
                                 "\n\r"
                                 "-------------------------------------\n\r"
@@ -161,7 +158,6 @@ void WriteConfig (void)
         fwrite (&joystickenabled,sizeof(joystickenabled),1,file);
         fwrite (&freelookenabled,sizeof(freelookenabled),1,file);
 
-        fwrite (&dirscan,sizeof(dirscan),1,file);
         fwrite (&buttonscan,sizeof(buttonscan),1,file);
         fwrite (&buttonmouse,sizeof(buttonmouse),1,file);
         fwrite (&buttonjoy,sizeof(buttonjoy),1,file);
@@ -218,7 +214,6 @@ void ReadConfig (void)
         fread (&joystickenabled,sizeof(joystickenabled),1,file);
         fread (&freelookenabled,sizeof(freelookenabled),1,file);
 
-        fread (&dirscan,sizeof(dirscan),1,file);
         fread (&buttonscan,sizeof(buttonscan),1,file);
         fread (&buttonmouse,sizeof(buttonmouse),1,file);
         fread (&buttonjoy,sizeof(buttonjoy),1,file);
@@ -557,8 +552,7 @@ void LoadLevel (int levelnum)
     FILE      *file;
     int       x,y;
     int       mod;
-    int       oldwx,oldwy,oldww,oldwh;
-    int       oldpx,oldpy;
+    WindowRec win;
     word      actornum,laststatobjnum;
     word      *maptable,*map;
     unsigned  count;
@@ -742,12 +736,7 @@ void LoadLevel (int levelnum)
 
     if (oldchecksum != checksum)
     {
-        oldwx = WindowX;
-        oldwy = WindowY;
-        oldww = WindowW;
-        oldwh = WindowH,
-        oldpx = px;
-        oldpy = py;
+        US_SaveWindow (&win);
 
         WindowX = 0;
         WindowY = 16;
@@ -756,12 +745,7 @@ void LoadLevel (int levelnum)
 
         CacheMessage (BADINFO_TEXT);
 
-        WindowX = oldwx;
-        WindowY = oldwy;
-        WindowW = oldww;
-        WindowH = oldwh;
-        px = oldpx;
-        py = oldpy;
+        US_RestoreWindow (&win);
 
         IN_ClearKeysDown ();
         IN_Ack ();
@@ -1012,8 +996,7 @@ bool LoadTheGame (FILE *file)
     FILE       *tempfile;
 #ifdef NOTYET
     bool       oldversion;
-    int        oldwx,oldwy,oldww,oldwh;
-    int        oldpx,oldpy;
+    WindowRec  win;
     size_t     len;
     char       *infospace;
 #endif
@@ -1050,12 +1033,7 @@ bool LoadTheGame (FILE *file)
         //
         // old version of game
         //
-        oldwx = WindowX;
-        oldwy = WindowY;
-        oldww = WindowW;
-        oldwh = WindowH;
-        oldpx = px;
-        oldpy = py;
+        US_SaveWindow (&win);
 
         WindowX = 0;
         WindowY = 16;
@@ -1065,12 +1043,7 @@ bool LoadTheGame (FILE *file)
         CacheMessage (BADSAVEGAME_TEXT);
         SD_PlaySound (NOWAYSND);
 
-        WindowX = oldwx;
-        WindowY = oldwy;
-        WindowW = oldww;
-        WindowH = oldwh;
-        px = oldpx;
-        py = oldpy;
+        US_RestoreWindow (&win);
 
         IN_ClearKeysDown ();
         IN_Ack ();

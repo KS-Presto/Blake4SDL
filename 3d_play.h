@@ -71,7 +71,6 @@ extern  int         tics,realtics;
 // control info
 //
 extern  bool        mouseenabled,joystickenabled,freelookenabled;
-extern  int         dirscan[4];
 extern  int         buttonscan[NUMBUTTONS];
 extern  int         buttonmouse[4];
 extern  int         buttonjoy[32];
