@@ -1998,7 +1998,7 @@ void DrawCreditsPage (void)
 
 void CheckParameters (int argc, char *argv[])
 {
-    const char *header = "Blake4SDL pre-release\n"
+    const char *header = "Blake4SDL v1.0\n"
                          "Original Blake Stone by JAM Productions\n"
                          "Usage: Blake4SDL [options]\n"
                          "See Options.txt for help\n\n";
