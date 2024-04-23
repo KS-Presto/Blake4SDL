@@ -2833,8 +2833,8 @@ void Cmd_Use (void)
         {
             for (x = -MDIST; x < MDIST + 1; x++)
             {
-                if (!(player->tilex + x) || player->tilex + x >= mapwidth - 1
-                 || !(player->tiley + y) || player->tiley + y >= mapheight - 1)
+                if (player->tilex < MDIST || player->tilex > mapwidth - (MDIST + 1)
+                 || player->tiley < MDIST || player->tiley > mapheight - (MDIST + 1))
                     continue;
 
                 obj = actorat[player->tilex + x][player->tiley + y];
