@@ -1293,7 +1293,7 @@ void DrawDisplayMenu (screen_t *scr)
     dispstr = DisplayMenu[DISP_RATIO].string;
     len = sizeof(DisplayMenu[DISP_RATIO].string);
 
-    snprintf (dispstr,len,"ASPECT RATIO: %s",ratio[scr->heightoffset]);
+    snprintf (dispstr,len,"ASPECT RATIO: %s",ratio[scr->heightoffset != 0]);
 
     dispstr = DisplayMenu[DISP_RES].string;
     len = sizeof(DisplayMenu[DISP_RES].string);
