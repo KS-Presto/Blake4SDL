@@ -24,7 +24,12 @@
 #define MASKCOLOR           0xfe
 
 //
-// FONT DEFINES
+// font defines
+//
+// TODO: need to hunt down all the hardcoded
+// fontnumbers and replace them with these; only
+// COAL_FONT was ever used, once, and since NUMFONT
+// is 5, RADAR_FONT appears to not exist.
 //
 #define ID_FONT         STARTFONT
 #define BIG_FONT        (STARTFONT + 1)
