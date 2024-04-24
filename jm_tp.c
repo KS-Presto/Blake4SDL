@@ -643,10 +643,10 @@ void TP_Presenter (PresenterInfo *pinfo)
     //
     // debug stuff -- draws box AROUND text presenter's printable region
     //
-    //VW_Hlin (xl - TP_MARGIN,xh + (TP_MARGIN * 2),yl - TP_MARGIN,255);
-    //VW_Vlin (yl - TP_MARGIN,yh + (TP_MARGIN * 2),xh + TP_MARGIN,255);
-    //VW_Hlin (xl - TP_MARGIN,xh + (TP_MARGIN * 2),yh + TP_MARGIN,255);
-    //VW_Vlin (yl - TP_MARGIN,yh + (TP_MARGIN * 2),xl - TP_MARGIN,255);
+    //VW_Hlin (xl - TP_MARGIN,xh + TP_MARGIN,yl - TP_MARGIN,255);
+    //VW_Vlin (yl - TP_MARGIN,yh + TP_MARGIN,xh + TP_MARGIN,255);
+    //VW_Hlin (xl - TP_MARGIN,xh + TP_MARGIN,yh + TP_MARGIN,255);
+    //VW_Vlin (yl - TP_MARGIN,yh + TP_MARGIN,xl - TP_MARGIN,255);
 
     while (flags & fl_presenting)
     {
@@ -1864,6 +1864,10 @@ void TP_CachePage (const char *script)
 
         switch (*script++)
         {
+            case '\0':
+                Quit ("Script not terminated with %s!",int_xx);
+                break;
+
             case TP_CONTROL_CHAR:
                 code = ReadShort(script);
 

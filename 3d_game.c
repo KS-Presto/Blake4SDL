@@ -2592,6 +2592,8 @@ void CacheBMAmsg (int msgnum)
     if (!pos)
         Quit ("Cached BMA message %d was NOT terminated with \"%s\"!",msgnum,int_xx);
 
+    pos += strlen(int_xx);               // need to insert null terminator AFTER end marker!
+
     len = (size_t)(pos - string) + 1;    // can't use strlen here
 
     buffer = SafeMalloc(len);
@@ -2600,7 +2602,7 @@ void CacheBMAmsg (int msgnum)
 
     buffer[len - 1] = '\0';
 
-    BMAmsg (string);
+    BMAmsg (buffer);
 
     free (buffer);
 }
