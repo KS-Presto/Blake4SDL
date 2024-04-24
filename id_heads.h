@@ -37,7 +37,6 @@
 #include "version.h"
 #include "gfxv_vsi.h"
 #include "audiovsi.h"
-#include "mapsvsi.h"
 #include "spr_vsi.h"
 
 #define INTBUFFERSIZE    ((sizeof(intmax_t) * CHAR_BIT) + 1)    // enough for base 2 SIZE_MAX + null byte
