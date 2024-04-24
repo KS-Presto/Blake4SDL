@@ -27,8 +27,8 @@ RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS)
-OBJDIR_RELEASE = ./obj/Ubuntu
-OUT_RELEASE = ./Blake4SDL_Ubuntu
+OBJDIR_RELEASE = ./obj
+OUT_RELEASE = ./Blake4SDL
 
 SOURCES = id_ca.c id_in.c id_pm.c id_sd.c id_us.c id_vw.c colormap.c \
 	jm_io.c jm_lzh.c jm_tp.c mame/fmopl.c movie.c platutil.c \

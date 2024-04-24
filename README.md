@@ -14,7 +14,7 @@ improvements mentioned below.
 
  - Currently supported operating systems (little endian only):
  	- Windows XP and later (32 & 64 bit)
- 	- Linux
+ 	- Linux (compiles and runs but not yet tested)
 
  - Currently supported Blake Stone versions:
  	- Only Blake Stone: Planet Strike is currently supported.
@@ -87,6 +87,7 @@ reason)
 	- Enemy morph animations sometimes display the wrong graphics
 	- Crates don't make an explosion sound
 	- Arc barriers cannot be destroyed by BFG
+ 	- Animated shapes in the Text Presenter overdraw each other when coming back from the 2nd to last page
 
 #### If you find any not listed here, please let me know!
 
