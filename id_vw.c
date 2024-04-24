@@ -182,8 +182,8 @@ void VW_SetupVideo (void)
         if (!screen.renderer)
             Quit ("Unable to create renderer: %s\n",SDL_GetError());
 
-        SDL_RenderSetLogicalSize (screen.renderer,w,h);
-        SDL_RenderSetViewport (screen.renderer,NULL);
+        VW_SetViewport (w,h);
+
         SDL_RenderSetVSync (screen.renderer,(screen.flags & SC_VSYNC) != 0);
     }
 
@@ -314,7 +314,67 @@ void VW_ChangeWindow (screen_t *scr)
         SDL_SetWindowPosition (screen.window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
     }
 
-    SDL_RenderSetLogicalSize (screen.renderer,scr->width,scr->height);
+    VW_SetViewport (scr->width,scr->height);
+}
+
+
+/*
+=================
+=
+= VW_SetViewport
+=
+= If the window resolution is larger than the desktop resolution,
+= the viewport dimensions are adjusted to avoid going off the screen
+=
+=================
+*/
+
+void VW_SetViewport (int width, int height)
+{
+    int             vpwidth,vpheight;
+    SDL_Rect        viewport;
+    SDL_DisplayMode dm;
+
+    SDL_RenderSetLogicalSize (screen.renderer,width,height);
+
+    if (!(screen.flags & SC_FULLSCREEN))
+    {
+        if (SDL_GetDesktopDisplayMode(0,&dm))
+            Quit ("Unable to get desktop display mode: %s\n",SDL_GetError());
+
+        vpwidth = dm.w;
+        vpheight = dm.h;
+
+        if (width > vpwidth || height > vpheight)
+        {
+            if (width > vpwidth)
+            {
+                viewport.x = (width - vpwidth) / 2;
+                viewport.w = vpwidth;
+            }
+            else
+            {
+                viewport.x = 0;
+                viewport.w = width;
+            }
+
+            if (height > vpheight)
+            {
+                viewport.y = (height - vpheight) / 2;
+                viewport.h = vpheight;
+            }
+            else
+            {
+                viewport.y = 0;
+                viewport.h = height;
+            }
+
+            SDL_RenderSetViewport (screen.renderer,&viewport);
+
+            return;
+        }
+    }
+
     SDL_RenderSetViewport (screen.renderer,NULL);
 }
 
