@@ -47,6 +47,7 @@ enum boolean
     false,
     true,
 };
+
 typedef int8_t   bool;
 #endif
 
