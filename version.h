@@ -12,17 +12,26 @@
 //
 #define _VERSION_           "V1.01"
 
-#define SHAREWARE_VERSION   0x0001
-#define MISSIONS_1_THR_3    0x0003
-#define MISSIONS_4_THR_6    0x0004
-#define MISSIONS_1_THR_6    0x0007
+//
+// Aliens of Gold
+//
+#define SHAREWARE_VERSION   0x0001     // .BS1
+#define MISSIONS_1_THR_3    0x0002     // KS: were these two
+#define MISSIONS_4_THR_6    0x0004     // ever a thing?
+#define MISSIONS_1_THR_6    0x0008     // .BS6
 
 //
-// change this define according to the
-// game release versions 1,1-3,4-6, or 1-6.
-#define GAME_VERSION        MISSIONS_1_THR_6
-//#define GAME_VERSION        MISSIONS_1_THR_3
-//#define GAME_VERSION        SHAREWARE_VERSION
+// Planet Strike
+//
+#define PLANET_STRIKE       0x00010    // .VSI
+
+//
+// change GAME_VERSION according to the
+// game release versions
+//
+#define GAME_VERSION        PLANET_STRIKE
+
+#define ALIENS_OF_GOLD      0x000f    // bit mask for convenience, don't set it as the game version!
 
 #define CHECK_FOR_EPISODES
 

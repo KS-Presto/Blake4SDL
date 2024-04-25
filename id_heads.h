@@ -35,9 +35,20 @@
 #pragma pack(1)
 
 #include "version.h"
-#include "gfxv_vsi.h"
-#include "audiovsi.h"
-#include "spr_vsi.h"
+
+#if GAME_VERSION == PLANET_STRIKE
+ #include "gfxv_vsi.h"
+ #include "audiovsi.h"
+ #include "spr_vsi.h"
+#elif GAME_VERSION == MISSIONS_1_THR_6
+ #include "gfxv_bs6.h"
+ #include "audiobs6.h"
+ #include "spr_bs6.h"
+#elif GAME_VERSION == SHAREWARE_VERSION
+ #include "gfxv_bs1.h"
+ #include "audiobs1.h"
+ #include "spr_bs1.h"
+#endif
 
 #define INTBUFFERSIZE    ((sizeof(intmax_t) * CHAR_BIT) + 1)    // enough for base 2 SIZE_MAX + null byte
 
