@@ -1,3 +1,6 @@
+# *** - Notice - ***
+
+## This GitHub repository is now archived and no longer maintained. Migrated repo can be found at [Bitbucket](https://bitbucket.org/ks-presto/blake4sdl) where development will continue, without being badgered to enable 2FA.
 
 # Blake4SDL ~ by KS-Presto
 
